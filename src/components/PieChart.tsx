@@ -7,12 +7,17 @@ interface PieChartProps {
 
 export const GenericPieChart = ({ data, colors = {} }: PieChartProps) => {
   const defaultColors: Record<string, string> = {
-    completed: "#1bdf2b", 
-    cancelled: "#F43F5E", 
-    pending: "#F59E0B",
-    confirmed:"#6ad8b3",
-     rejected:"#ce2c2c",
-    default: "#21b966"  
+    requested: "#6366f1", 
+    approved: "#10b981",  
+    pending: "#f59e0b",  
+    rejected: "#ef4444",  
+    "sick": "#ec4899",
+    "medical": "#8b5cf6", 
+    "casual": "#06b6d4",
+    completed: "#1bdf2b",
+    cancelled: "#F43F5E",
+    confirmed: "#6ad8b3",
+    default: "#21b966"
   };
 
   return (
@@ -30,16 +35,16 @@ export const GenericPieChart = ({ data, colors = {} }: PieChartProps) => {
             nameKey="label"
           >
             {data.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={colors[entry.label.toLowerCase()] || defaultColors[entry.label.toLowerCase()] || defaultColors.default} 
+              <Cell
+                key={`cell-${index}`}
+                fill={colors[entry.label.toLowerCase()] || defaultColors[entry.label.toLowerCase()] || defaultColors.default}
               />
             ))}
           </Pie>
-          <Tooltip 
+          <Tooltip
             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
           />
-          <Legend verticalAlign="bottom" height={36}/>
+          <Legend verticalAlign="bottom" height={36} />
         </PieChart>
       </ResponsiveContainer>
     </div>

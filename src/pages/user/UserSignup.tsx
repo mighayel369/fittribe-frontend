@@ -12,7 +12,7 @@ import PasswordInput from '../../components/PasswordInput';
 import SubmitButton from '../../components/SubmitButton';
 import GoogleAuthButton from '../../components/GoogleAuthButton';
 import BackgroundImageWrapper from '../../components/BackgroundImage';
-import { AuthService } from '../../services/auth-service';
+import { UserAuthService } from '../../services/user/user.auth';
 import type { ValidationErrors } from '../../validations/ValidationErrors';
 import type { UserSignupDTO } from '../../types/userType';
 import { userSignupValidation } from '../../validations/userSignupValidation';
@@ -48,7 +48,7 @@ const UserSignup: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await AuthService.RegisterUser(name, email, password);
+      const response = await UserAuthService.register({name, email, password});
 
       if (response.success) {
         dispatch(setEmail(email));
@@ -146,7 +146,7 @@ const UserSignup: React.FC = () => {
             <div className="h-[1px] bg-gray-200 flex-1"></div>
           </div>
 
-          <GoogleAuthButton text="Sign up with Google" onClick={() => AuthService.GoogleLogin()} />
+          <GoogleAuthButton text="Sign up with Google" onClick={() => UserAuthService.initiateGoogleLogin()} />
 
           <footer className="mt-8 text-center text-sm text-gray-500">
             Already have an account?{' '}

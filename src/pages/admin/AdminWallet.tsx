@@ -2,7 +2,7 @@ import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import { useEffect, useState, useCallback } from "react";
 import GenericTable from "../../components/GenericTable";
-import { WalletService } from "../../services/wallet-service";
+import { WalletService } from "../../services/shared/wallet.service";
 import { useNavigate } from "react-router-dom";
 import { getAdminWalletColumns } from "../../constants/TableColumns/AdminWalletColumns";
 import { FaHistory } from "react-icons/fa";
@@ -20,25 +20,25 @@ const AdminWallet = () => {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   
   const walletColumns = getAdminWalletColumns(navigate);
-
-  const fetchAdminWallet = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await WalletService.GetOwnerWallet(page, 5);
-      if (res?.success) {
-        const {balance,data,total,activeHoldCount}=res.wallet
-        setWalletTransactions(data);
-        setTotalPages(total);
-        setWalletBalance(balance)
-        setActiveHoldCount(activeHoldCount)
-      }
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || "Internal Server Error: Could not load treasury.";
-      setToast({ message: errorMsg, type: "error" });
-    } finally {
-      setLoading(false);
+const fetchAdminWallet = useCallback(async () => {
+  try {
+    setLoading(true);
+    const res = await WalletService.fetchWalletData("admin", page, 5); 
+    
+    if (res?.success) {
+      const { balance, data, total, activeHoldCount } = res.wallet;
+      setWalletTransactions(data);
+      setTotalPages(total);
+      setWalletBalance(balance);
+      setActiveHoldCount(activeHoldCount);
     }
-  }, [page]);
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || "Could not load treasury.";
+    setToast({ message: errorMsg, type: "error" });
+  } finally {
+    setLoading(false);
+  }
+}, [page]);
 
   useEffect(() => {
     document.title = "FitTribe | Admin Wallet";

@@ -15,8 +15,8 @@ import {
   FaWallet
 } from "react-icons/fa";
 import { MdWork } from "react-icons/md";
-import { WalletService } from "../../services/wallet-service";
-import { TrainerService } from "../../services/trainer-service";
+import { WalletService } from "../../services/shared/wallet.service";
+import { TrainerProfileService } from "../../services/trainer/trainer.profile";
 import DEFAULT_IMAGE from '../../assets/default image.png'
 
 
@@ -44,7 +44,7 @@ const TrainerProfile = () => {
   useEffect(() => {
     const fetchTrainerProfile = async () => {
       try {
-        const res = await TrainerService.FullProfile();
+        const res = await TrainerProfileService.getProfile();
         console.log(res);
         setTrainer(res?.trainer || null);
       } catch (err) {
@@ -63,7 +63,7 @@ const TrainerProfile = () => {
   const fetchWallet = async () => {
     try {
       setWalletLoading(true);
-      const res = await WalletService.GetOwnerWallet(page, 5);
+      const res = await WalletService.fetchWalletData('trainer',page,5);
       if (res?.success) {
         const {balance,data,total,activeHoldCount}=res.wallet
         setWalletTransactions(data);
@@ -88,7 +88,7 @@ const TrainerProfile = () => {
       const formData = new FormData();
       formData.append("profilePic", file);
 
-      const res = await TrainerService.UpdateProfilePic(formData)
+      const res = await TrainerProfileService.updateAvatar(formData)
       console.log(res)
       setTrainer((prev: any) => ({
         ...prev,

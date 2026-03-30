@@ -1,91 +1,139 @@
 
 
-
 export const API_ENDPOINTS = {
-  AUTH: {
-    LOGIN_USER: '/auth/user/login',
-    REGISTER_USER: '/auth/user/register',
-    LOGIN_TRAINER: '/auth/trainer/login',
-    REGISTER_TRAINER: '/auth/trainer/register',
-    REAPPLY_TRAINER: '/auth/trainer/re-apply',
-    LOGIN_ADMIN: '/auth/admin/login',
-    LOGOUT: '/auth/logout',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: (token: string) => `/auth/reset-password/${token}`,
-    CHANGE_PASSWORD: '/auth/change-password',
-    REFRESH_TOKEN: '/auth/refresh-token',
-    RESEND_OTP: '/auth/resend-otp',
-    VERIFY_USER_OTP: '/auth/verify-user',
-    VERIFY_TRAINER_OTP: '/auth/verify-trainer',
-    GOOGLE_AUTH: '/auth/google',
-    VERIFY_USER_ACCOUNT: '/auth/verify-user',
-    VERIFY_TRAINER_ACCOUNT: '/auth/verify-trainer',
+  SHARED_AUTH: {
+    RESEND_OTP: (role: string) => `${role}/auth/resend-otp`,
+    REFRESH: (role: string) => `${role}/auth/refresh-token`,
+    LOGOUT: (role: string) => `${role}/auth/security/logout`,
+    CHANGE_PASSWORD: (role: string) => `${role}/auth/security/change-password`,
+    VERIFY_OTP:(role:string) =>`${role}/auth/verify-otp`,
   },
 
-TRAINER: {
-    EXPLORE: '/trainer/explore',
-    DETAILS: (id: string) => `/trainer/explore/${id}`,
-
-      GET_FULL_PROFILE: '/trainer/profile',
-      UPDATE_PROFILE: '/trainer/profile',
-      UPDATE_AVATAR: '/trainer/profile/avatar',
-
-
-      LIST_VERIFIED: '/trainer/admin/list/verified',
-      LIST_PENDING: '/trainer/admin/list/pending',
-      GET_DETAILS: (id: string) => `/trainer/admin/details/${id}`,
-      UPDATE_STATUS: (id: string) => `/trainer/admin/status/${id}`,
-      HANDLE_APPROVAL: (id: string) => `/trainer/verify-trainer-action/${id}`,
+  USER_AUTH: {
+    LOGIN: 'user/auth/login',
+    REGISTER: 'user/auth/register',
+    FORGOT_PW: 'user/auth/forgot-password',
+    RESET_PW: (token: string) => `user/auth/reset-password/${token}`,
+    GOOGLE: 'user/auth/google'
   },
 
-  USER: {
-    GET_ALL: '/user/admin/all',
-    GET_DETAILS: (id: string) => `/user/admin/details/${id}`,
-    UPDATE_STATUS: (id: string) => `/user/admin/update-status/${id}`,
-    GET_FULL_PROFILE: '/user/profile/full',
-    UPDATE_PROFILE: '/user/profile/update',
-    UPDATE_PROFILE_IMAGE: '/user/profile/image',
+  TRAINER_AUTH: {
+    LOGIN: 'trainer/auth/login',
+    REGISTER: 'trainer/auth/register'
   },
-BOOKING: {
-    CHECKOUT: '/booking/checkout',
-    CLIENT_HISTORY: '/booking/user/history',
-    CLIENT_DETAILS: (id: string) => `/booking/user/details/${id}`,
-    RESCHEDULE_REQUEST: '/booking/reschedule/request',
-    CANCEL: (bookingId: string) => `/booking/${bookingId}/cancel`,
 
-    TRAINER_HISTORY: '/booking/trainer/history',
-    TRAINER_DETAILS: (bookingId: string) => `/booking/trainer/details/${bookingId}`,
-    PENDING_REQUESTS: '/booking/trainer/pending',
-    RESCHEDULE_LIST: '/booking/trainer/reschedule-requests',
-    ACCEPT_BOOKING:   '/booking/pending/accept',
-    REJECT_BOOKING:'/booking/pending/reject',
-    APPROVE_RESCHEDULE_REQUEST: '/booking/reschedule/approve',
-    REJECT_RESCHEDULE_REQUEST:  '/booking/reschedule/reject',
+  ADMIN_AUTH: {
+    LOGIN: 'admin/auth/login',
   },
-  PAYMENT: {
-    INITIATE: '/payment/initiate',
-    VERIFY: '/payment/verify'
+
+
+  ADMIN_MGMT: {
+    PLATFORM: {
+      OVERVIEW: 'admin/platform/platform-overview',
+      METRICS:'/admin/platform/leave-metrics',
+      LEAVE_REQUEST_HISTORY:'/admin/platform/history',
+      LEAVE_STATUS:(id:string)=>`/admin/platform/update-status/${id}`
+    },
+
+    USERS: {
+      GET_ALL: 'admin/users',
+      GET_DETAILS: (id: string) => `admin/users/${id}`,
+      TOGGLE_STATUS: (id: string) => `admin/users/${id}/status`,
+    },
+
+    TRAINERS: {
+      LIST_VERIFIED: 'admin/trainers/verified',
+      LIST_PENDING: 'admin/trainers/pending',
+      GET_DETAILS: (id: string) => `admin/trainers/${id}`,
+      UPDATE_STATUS: (id: string) => `admin/trainers/${id}/status`,
+      VERIFY_ACTION: (id: string) => `admin/trainers/${id}/verify`,
+    },
+
+    PROGRAMS: {
+      ONBOARD: 'admin/programs/onboard', 
+      INVENTORY: 'admin/programs/inventory',
+      GET_DETAILS: (id: string) => `admin/programs/${id}`,
+      UPDATE_SPECS: (id: string) => `admin/programs/${id}/specs`,
+      TOGGLE_VISIBILITY: (id: string) => `admin/programs/${id}/visibility`,
+      DELETE: (id: string) => `admin/programs/${id}`,
+    },
   },
   WALLET: {
-    GET_DETAILS: '/wallet'
+    GET_MY_WALLET: (role: string) => `${role}/wallet/my-wallet`
   },
-  PROGRAMS: {
-  ONBOARD: '/programs/onboard',
-  INVENTORY: '/programs/inventory',
-  DETAILS: (id: string) => `/programs/details/${id}`,
-  MODIFY: (id: string) => `/programs/modify/${id}`,
-  ARCHIVE: (id: string) => `/programs/archive/${id}`,
-  TOGGLE_VISIBILITY: (id: string) => `/programs/visibility/${id}`,
-  DISCOVER: '/programs/explore', 
-},
-SLOT:{
-  TRAINER_SCHEDULE:'/slot/schedule',
-  MODIFY_WEEKLY_SCHEDULE:'/slot/weekly-template',
-  AVAILABLE_BOOKING_SLOTS:'/slot/browse-availability'
-},
-DASHBOARD: {
-    ADMIN_INSIGHTS: '/dashboard/admin',
-    TRAINER_METRICS: '/dashboard/trainer/metrics',
-    TRAINER_AGENDA: '/dashboard/trainer/agenda'
+  USER_PAYMENTS: {
+    INITIATE: 'user/payments/initiate', 
+    VERIFY: 'user/payments/verify',  
+  },
+  TRAINER_ACCOUNT: {
+    GET_ME: 'trainer/account/me',
+    VERIFY_SESSION: 'trainer/account/verify',
+    UPDATE_PROFILE: 'trainer/account/profile',
+    UPDATE_AVATAR: 'trainer/account/avatar',   
+    REAPPLY: 'trainer/account/re-apply',  
+
+
+    METRICS: 'trainer/dashboard/metrics',
+    AGENDA: 'trainer/dashboard/agenda',
+
+ 
+    GET_CONFIG: 'trainer/schedule/config',
+    SYNC_TEMPLATE: 'trainer/schedule/weekly-template',
+  },
+
+
+  USER_ACCOUNT: {
+  
+    GET_ME: 'user/account/me',
+    VERIFY_SESSION: 'user/account/verify',
+    UPDATE_PROFILE: 'user/account/update',
+    UPDATE_AVATAR: 'user/account/avatar', 
+  },
+  TRAINER_BOOKINGS: {
+    HISTORY: 'trainer/bookings/history',
+    PENDING: 'trainer/bookings/pending',
+    RESCHEDULE_REQUESTS: 'trainer/bookings/reschedule',
+    DETAILS: (bookingId: string) => `trainer/bookings/${bookingId}`,
+    
+    ACCEPT: 'trainer/bookings/accept',
+    REJECT: 'trainer/bookings/reject',
+    APPROVE_RESCHEDULE: 'trainer/bookings/reschedule/approve',
+    REJECT_RESCHEDULE: 'trainer/bookings/reschedule/reject',
+    RESCHEDULE_BY_TRAINER:'trainer/bookings/reschedule'
+  },
+
+  USER_BOOKINGS: {
+    HISTORY: 'user/bookings/history',
+    DETAILS: (id: string) => `user/bookings/${id}/details`,
+    
+
+    CHECKOUT: 'user/bookings/checkout',
+    RESCHEDULE_REQUEST: 'user/bookings/reschedule',
+    CANCEL: (bookingId: string) => `user/bookings/${bookingId}`,
+    ACCEPT_RESCHEDULE: (id: string) => `user/bookings/${id}/reschedule/accept`,
+    DECLINE_RESCHEDULE: (id: string) => `user/bookings/${id}/reschedule/decline`,
+  },
+  DISCOVERY: {
+    PROGRAMS: {
+      EXPLORE: (role: string) => `${role}/discovery/explore`,
+    },
+
+    TRAINERS: {
+      EXPLORE: 'user/discovery/trainers/explore',
+      DETAILS: (id: string) => `user/discovery/trainers/explore/${id}`,
+      AVAILABILITY: 'user/discovery/trainers/availability',
+    },
+  },
+  TRAINER_LEAVES: {
+    APPLY: 'trainer/leaves/apply',
+    HISTORY: 'trainer/leaves/history',
+    CANCEL: (leaveId: string) => `trainer/leaves/${leaveId}/cancel`,
+    METRICS:'trainer/leaves/metrics',
+    WITHDRAW_REQUEST:(id:string)=>`trainer/leaves/withdraw/${id}`
+  },
+  NOTIFICATION:{
+    GET_ALL:(role:string)=>`/${role}/notification/get`,
+    MARK_AS_READ:(role:string,id:string)=>`/${role}/notification/mark-as-read/${id}`,
+    MARK_ALL_READ:(role:string)=>`/${role}/notification/mark-all-as-read`
   }
 };

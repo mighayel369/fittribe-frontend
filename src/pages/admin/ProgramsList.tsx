@@ -1,7 +1,7 @@
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import { useEffect, useState, useCallback } from "react";
-import { ProgramService } from "../../services/programs-service";
+import { AdminProgramService } from "../../services/admin/admin.program.service";
 import Modal from "../../components/Modal";
 import Toast from "../../components/Toast";
 import GenericTable from "../../components/GenericTable";
@@ -43,7 +43,7 @@ const ProgramList = () => {
   const fetchPrograms = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await ProgramService.FetchProgramsInventory(page, search);
+      const response = await AdminProgramService.fetchProgramsInventory(page, search);
       setPrograms(response.programs.data?? []);
       setTotalPages(response.programs.total ?? 1);
     } catch (error) {
@@ -70,13 +70,13 @@ const ProgramList = () => {
 
     try {
       if (actionType === "delete") {
-        await ProgramService.ArchiveProgram(targetId);
+        await AdminProgramService.archiveProgram(targetId);
         setToastType("success");
         setToastMessage("Program archived successfully");
         fetchPrograms();
       } else if (actionType === "list" || actionType === "unlist") {
         const isVisible = actionType === "list";
-        const response = await ProgramService.ToggleProgramVisibility(targetId, isVisible);
+        const response = await AdminProgramService.toggleProgramVisibility(targetId, isVisible);
         
         setPrograms((prev) =>
           prev.map((p) =>
@@ -156,16 +156,6 @@ const ProgramList = () => {
                 className: "text-center",
               },
               { header: "Program Name", accessor: "name", className: "font-semibold" },
-              {
-                header: "Duration",
-                accessor: "duration",
-                render: (program) => (
-                  <span className="font-medium text-gray-700">
-                    {program.duration} mins
-                  </span>
-                ),
-                className: "text-center",
-              },
               {
                 header: "Status",
                 accessor: "status",

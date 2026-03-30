@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useDispatch } from 'react-redux';
-import { setAccessToken } from '../../redux/slices/authSlice';
+import { useAppDispatch } from "../../redux/hooks";
+import { setAuth } from '../../redux/slices/authSlice';
 
 const GoogleAuthSuccess: React.FC = () => {
   const navigate = useNavigate()
   const [status, setStatus] = useState<"loading" | "error">("loading")
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const token = urlParams.get("token");
     if (token) {
-      dispatch(setAccessToken(token));
+     dispatch(setAuth({ 
+     accessToken: token, 
+            role: 'user'
+          }));
       setTimeout(() => navigate("/"), 1000)
     } else {
       setStatus("error");

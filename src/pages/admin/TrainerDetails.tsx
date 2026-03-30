@@ -13,7 +13,7 @@ import NotFound from "../../components/NotFound";
 import { type AdminTrainerDetails } from "../../types/trainerType";
 import SubmitButton from "../../components/SubmitButton";
 import DEFAULT_IMAGE from '../../assets/default image.png'
-import { TrainerService } from "../../services/trainer-service";
+import { AdminTrainerService } from "../../services/admin/admin.trainer.service";
 const TrainerDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const TrainerDetails = () => {
   const fetchTrainer = async () => {
     try {
       setLoading(true);
-      const response = await TrainerService.GetTrainerDetails(id!);
+      const response = await  AdminTrainerService.getTrainerDetails(id!);
       setTrainer(response.trainer);
     } catch (error:any) {
       setToast({ 
@@ -58,7 +58,7 @@ const TrainerDetails = () => {
     setShowVerifyModal(false);
 
     try {
-      const result = await TrainerService.HandleTrainerApproval(id, verifyAction, reason);
+      const result = await  AdminTrainerService.handleTrainerApproval(id, verifyAction, reason);
       if (result.success) {
         setTrainer((prev) => prev ? { ...prev, verified: result.updatedStatus } : null);
         setToast({ message: result.message, type: "success" });
@@ -79,7 +79,7 @@ const TrainerDetails = () => {
     setShowStatusModal(false);
 
     try {
-      const result = await TrainerService.BlockUnblockTrainer(trainer.trainerId, !trainer.status);
+      const result = await  AdminTrainerService.updateTrainerStatus(trainer.trainerId, !trainer.status);
       if (result.success) {
         setTrainer((prev) => prev ? { ...prev, status: result.newStatus } : null);
         setToast({ message: result.message, type: "success" });

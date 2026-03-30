@@ -8,13 +8,6 @@ export const PROGRAM_FIELDS = [
     required: true,
   },
   {
-    name: "duration",
-    label: "Duration (minutes)",
-    type: "number" as const,
-    placeholder: "10 - 180",
-    required: true,
-  },
-  {
     name: "description",
     label: "Program Description",
     type: "textarea" as const,

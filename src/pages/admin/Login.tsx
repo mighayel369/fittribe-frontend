@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
 import {type AdminLoginDTO } from '../../types/adminType';
-import { setAccessToken } from '../../redux/slices/authSlice';
-import { AuthService } from '../../services/auth-service';
+import { setAuth} from '../../redux/slices/authSlice';
+import { AdminAuthService } from '../../services/admin/admin.auth';
 import TextInput from '../../components/TextInput';
 import PasswordInput from '../../components/PasswordInput';
 import SubmitButton from '../../components/SubmitButton';
@@ -43,15 +43,16 @@ const AdminLogin: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await AuthService.LoginAdmin({email, password});
-      if (response.success) {
-        dispatch(setAccessToken(response.accessToken));
-        navigate('/admin',{
-          state:{
-            message:response.message
-          }
-        });
-      }
+      const response = await AdminAuthService.login({email, password});
+if (response.success) {
+    dispatch(setAuth({ 
+      accessToken: response.accessToken, 
+      role: response.role,
+      user:response.admin
+    }));
+    
+    navigate('/admin', { state: { message: response.message } });
+  }
     } catch (error: any) {
       const message = error.response?.data?.message || "Unauthorized access attempt.";
       setGeneralError(message);

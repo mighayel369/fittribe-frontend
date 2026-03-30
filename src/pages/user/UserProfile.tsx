@@ -23,10 +23,10 @@ import {type ValidationErrors } from "../../validations/ValidationErrors";
 import { type changePassword } from "../../types/changePasswordType";
 import { validatePasswordChange } from "../../validations/validatePassword";
 import DEFAULT_IMAGE from '../../assets/default image.png'
-import { UserService } from "../../services/user-service";
-import { WalletService } from "../../services/wallet-service";
-import { AuthService } from "../../services/auth-service";
+import { WalletService } from "../../services/shared/wallet.service";
+import { UserProfileService } from "../../services/user/user.profile";
 import type { User } from "../../types/userType";
+import { AuthService } from "../../services/shared/auth.service";
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ const UserProfile: React.FC = () => {
 
   const getUserData = async () => {
     try {
-      const res = await UserService.GetFullProfile();
+      const res = await UserProfileService.getProfile();
       if (res.success) setUser(res.userData);
     } catch (error) {
       console.error("Error fetching user data", error);
@@ -72,7 +72,7 @@ const UserProfile: React.FC = () => {
   const fetchWalletData = async () => {
     try {
       setWalletLoading(true);
-      const res = await WalletService.GetOwnerWallet(page, 5);
+      const res = await WalletService.fetchWalletData('user',page, 5);
       if (res?.success) {
         const {balance,data,total,activeHoldCount}=res.wallet
         setWalletTransactions(data);
@@ -93,7 +93,7 @@ const UserProfile: React.FC = () => {
     try {
       const formData = new FormData();
       formData.append("profilePic", file);
-      const res = await UserService.UpdateProfilePicture(formData);
+      const res = await UserProfileService.updateProfile(formData);
       if (res.success) {
         setUser((prev: any) => ({ ...prev, profilePic: res.data?.imageUrl }));
         setToastType("success");
@@ -117,10 +117,10 @@ const UserProfile: React.FC = () => {
     try {
       setPasswordLoading(true);
 
-      const res = await AuthService.ChangePassword({
+      const res = await AuthService.changePassword('user',{
         oldPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
-      });
+    });
       console.log(res)
       if (res.success) {
         setToastType("success");
@@ -171,6 +171,7 @@ const UserProfile: React.FC = () => {
                 {user?.phone && <span className="flex items-center gap-2"><FaPhone className="text-red-400" /> {user?.phone}</span>}
                 {user?.address && <span className="flex items-center gap-2"><FaMapMarkerAlt className="text-red-400" /> {user?.address}</span>}
               </div>
+              <span className="text-md">{user?.gender}</span>
             </div>
 
             <div className="bg-gray-900 text-white rounded-3xl p-6 min-w-[200px] text-center shadow-2xl shadow-gray-200">

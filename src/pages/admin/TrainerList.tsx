@@ -12,7 +12,7 @@ import Pagination from "../../components/Pagination";
 import SearchInput from "../../components/SearchInput";
 
 import { type Trainer } from "../../types/trainerType";
-import { TrainerService } from "../../services/trainer-service";
+import { AdminTrainerService } from "../../services/admin/admin.trainer.service";
 
 const TrainerList = () => {
   const [trainers, setTrainers] = useState<Trainer[]>([]);
@@ -46,7 +46,7 @@ const TrainerList = () => {
     const fetchTrainers = async () => {
       try {
         setLoading(true);
-        const response = await TrainerService.GetVerifiedTrainers(page, search);
+        const response = await  AdminTrainerService.getVerifiedTrainers(page, search);
         setTrainers(response.data || []);
         setTotalPages(response.totalPages || 1);
       } catch (err: any) {
@@ -65,7 +65,7 @@ const TrainerList = () => {
     if (!selectedTrainer) return;
     try {
       const newStatus = !selectedTrainer.status;
-      const result = await TrainerService.BlockUnblockTrainer(
+      const result = await  AdminTrainerService.updateTrainerStatus(
         selectedTrainer.trainerId,
         newStatus
       );

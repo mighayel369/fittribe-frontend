@@ -6,7 +6,7 @@ import { HiOutlineX } from "react-icons/hi";
 import Toast from "../../components/Toast";
 import { generateTimes } from "../../helperFunctions/generateTimes";
 import TimePicker from "../../components/TimePicker";
-import { SlotService } from "../../services/slot-service";
+import { TrainerScheduleService } from "../../services/trainer/trainer.schedule";
 const daysMap = [
   { label: "Sun", key: "sunday" },
   { label: "Mon", key: "monday" },
@@ -48,10 +48,10 @@ const TrainerAvailability = () => {
   });
 
   useEffect(() => {
-    document.title = "FitTribe | Availability";
+    document.title = "FitTribe | Schedules";
     async function fetchSlot() {
       try {
-        const res = await SlotService.TrainerSchedules()
+        const res = await TrainerScheduleService.getSchedule()
         if (res.data?.weeklyAvailability) {
           setAvailability(res.data.weeklyAvailability);
         }
@@ -71,7 +71,7 @@ const TrainerAvailability = () => {
 
     const timer = setTimeout(async () => {
       try {
-        let res=await SlotService.ModifyTrainerSchedules(availability);
+        let res=await TrainerScheduleService.syncWeeklyTemplate(availability);
         setToastType("success");
         setToastMessage(res.message);
       } catch (err:any) {
@@ -117,7 +117,7 @@ const TrainerAvailability = () => {
       )}
 
       <main className="ml-72 pt-24 px-10">
-        <h1 className="text-4xl font-bold mb-10 text-gray-800">Availability</h1>
+        <h1 className="text-4xl font-bold mb-10 text-gray-800">Schedules</h1>
 
         <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-10 space-y-8">
           <div className="flex items-center gap-3 text-gray-700">

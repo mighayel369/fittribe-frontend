@@ -3,7 +3,6 @@ export type Program = {
   programId: string;
   name: string;
   description: string;
-  duration: number;
   programPic: string;
   isPublished: boolean;
 };
@@ -14,7 +13,6 @@ export interface DiscoveryProgram extends Omit<Program, 'duration' | 'isPublishe
 export type OnboardNewProgramDTO = {
   name: string;
   description: string;
-  duration: number;
   programPic:File;
 };
 
@@ -22,7 +20,6 @@ export type OnboardNewProgramDTO = {
 export type ModifyProgramDTO = {
   name?: string;
   description?: string;
-  duration?: number;
   status?: boolean;
   programPic?:File
 };

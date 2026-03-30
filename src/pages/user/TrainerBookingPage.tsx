@@ -8,10 +8,9 @@ import Modal from "../../components/Modal";
 import Loading from "../../components/Loading";
 import { type TrainerDetails } from "../../types/trainerType";
 import DEFAULT_IMAGE from '../../assets/default image.png'
-import { TrainerService } from "../../services/trainer-service";
-import { SlotService } from "../../services/slot-service";
-import { PaymentService } from "../../services/payment-service";
-import { BookingService } from "../../services/booking-service";
+import { UserPaymentService } from "../../services/user/user.payment";
+import { PublicTrainersService } from "../../services/public/trainers";
+import { UserBookingService } from "../../services/user/user.booking";
 
 type programOption = {
   programId: string,
@@ -28,6 +27,10 @@ const TrainerBookingPage = () => {
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [slots, setSlots] = useState<string[]>([]);
+  const [leaveStatus, setLeaveStatus] = useState<{ isOnLeave: boolean; message: string | null }>({
+    isOnLeave: false,
+    message: null
+  });
   const [selectedTime, setSelectedTime] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -51,7 +54,7 @@ const TrainerBookingPage = () => {
     const fetchTrainer = async () => {
       try {
         setLoading(true);
-        const response = await TrainerService.ExploreTrainerDetails(trainerId);
+        const response = await PublicTrainersService.getTrainerDetails(trainerId);
         setTrainer(response.trainer);
 
       } catch (err: any) {
@@ -64,17 +67,22 @@ const TrainerBookingPage = () => {
     };
     fetchTrainer();
   }, [trainerId]);
-  console.log(trainer)
   useEffect(() => {
     if (!trainer || !selectedDate) return;
 
     const fetchSlots = async () => {
       try {
-        const res = await SlotService.AvailableBookingSlots(
-          new Date(selectedDate),
+        const res = await PublicTrainersService.getTrainerAvailability(
+          selectedDate,
           trainer.trainerId
         );
-        setSlots(res.data || []);
+        if (res.data.status === "ON_LEAVE") {
+          setLeaveStatus({ isOnLeave: true, message: res.data.message });
+          setSlots([]);
+        } else {
+          setLeaveStatus({ isOnLeave: false, message: null });
+          setSlots(res.data.slots || []);
+        }
       } catch (err: any) {
         let errMesg = err.response?.data?.message
         setToastMessage(errMesg);
@@ -95,10 +103,10 @@ const TrainerBookingPage = () => {
       setLoading(true);
       setShowModal(false);
 
-      const orderResponse = await PaymentService.InitiateOnlinePaymentOrder({
+      const orderResponse = await UserPaymentService.initiateCheckout({
         trainerId: trainer.trainerId,
         programId: selectedProgram.programId,
-        date: selectedDate,
+        date: selectedDate.toString(),
         time: selectedTime,
         amount: trainer.pricePerSession,
       });
@@ -113,7 +121,7 @@ const TrainerBookingPage = () => {
         handler: async (paymentRes: any) => {
           try {
             setLoading(true);
-            const verifyRes = await BookingService.BookSessionWithTrainer({
+            const verifyRes = await UserBookingService.checkoutAndBook({
               razorpay_order_id: paymentRes.razorpay_order_id,
               razorpay_payment_id: paymentRes.razorpay_payment_id,
               razorpay_signature: paymentRes.razorpay_signature,
@@ -223,19 +231,51 @@ const TrainerBookingPage = () => {
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border md:col-span-2">
-            <h3 className="text-sm font-bold mb-3 uppercase text-gray-500">Available Slots</h3>
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 md:col-span-2">
+            <h3 className="text-[10px] font-black mb-4 uppercase text-gray-400 tracking-[0.2em]">
+              Schedule Availability
+            </h3>
+
             {!selectedDate ? (
-              <p className="text-xs text-gray-400 italic">Select date to view slots</p>
+              <div className="py-10 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                <p className="text-xs text-gray-400 italic font-medium">Select a date on the calendar to see slots</p>
+              </div>
+            ) : leaveStatus.isOnLeave ? (
+              <div className="flex flex-col items-center justify-center py-12 px-4 bg-slate-50 rounded-3xl border border-slate-100 animate-in fade-in zoom-in-95 duration-500">
+                <div className="relative mb-4">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400 border border-slate-200">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+                </div>
+
+                <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Trainer is Away</h4>
+                <p className="text-[11px] text-slate-500 mt-2 text-center max-w-[200px] leading-relaxed">
+                  {leaveStatus.message || "This trainer is unavailable for the selected date due to a scheduled break."}
+                </p>
+
+                <button
+                  onClick={() => setSelectedDate(new Date())}
+                  className="mt-5 text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors"
+                >
+                  Try Another Date →
+                </button>
+              </div>
             ) : slots.length === 0 ? (
-              <p className="text-xs text-gray-400 italic">No slots available</p>
+              <div className="py-10 text-center bg-gray-50 rounded-xl">
+                <p className="text-xs text-gray-400 font-medium">Fully Booked for this date</p>
+              </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {slots.map((slot) => (
                   <button
                     key={slot}
                     onClick={() => setSelectedTime(slot)}
-                    className={`py-2 text-xs font-bold rounded-lg border ${selectedTime === slot ? "bg-gray-900 text-white" : "border-gray-300 hover:bg-gray-100"
+                    className={`group py-3 px-4 text-xs font-bold rounded-xl border transition-all duration-200 ${selectedTime === slot
+                      ? "bg-gray-900 text-white border-gray-900 shadow-xl -translate-y-1"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-900 hover:text-gray-900 shadow-sm"
                       }`}
                   >
                     {slot}

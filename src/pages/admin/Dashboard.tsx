@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DashboardService } from "../../services/dashboard-service";
+import { AdminPlatformService } from "../../services/admin/admin.platform.service";
 import AdminSideBar from "../../layout/AdminSideBar";
 import AdminTopBar from "../../layout/AdminTopBar";
 import StatCard from "../../components/StatCard";
@@ -17,7 +17,7 @@ const [toastMessage, setToastMessage] = useState<string | null>(null);
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await DashboardService.AdminDashboardInsights();
+      const response = await AdminPlatformService.DashboardInsights();
       setDashboardData(response.dashboardData);
     } catch (err: any) {
   const errorMsg = err.response?.data?.message || "Failed to load system analytics";

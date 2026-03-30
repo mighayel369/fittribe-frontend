@@ -6,7 +6,7 @@ import SearchInput from "../../components/SearchInput";
 import GenericTable from "../../components/GenericTable";
 import { FaCalendarAlt } from "react-icons/fa";
 import {type Booking } from "../../types/bookingType";
-import { BookingService } from "../../services/booking-service";
+import { UserBookingService } from "../../services/user/user.booking";
 import Toast from "../../components/Toast";
 
 const Bookings = () => {
@@ -27,7 +27,7 @@ const Bookings = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const res = await BookingService.ClientBookingHistory(page,search)
+      const res = await UserBookingService.getBookingHistory(page,search)
       console.log(res)
       setBookings(res.bookingData);
       setTotalPages(res.totalPages);

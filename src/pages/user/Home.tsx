@@ -9,7 +9,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useAppSelector } from "../../redux/hooks";
 import { useLocation } from 'react-router-dom';
 import Toast from "../../components/Toast";
-import { ProgramService } from "../../services/programs-service";
+import { PublicProgramsService } from "../../services/public/programs";
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<Program[]>([])
@@ -29,7 +29,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchServices = async () => {
-      let response = await ProgramService.DiscoverPrograms();
+      let response = await PublicProgramsService.explorePrograms('user');
       setPrograms(response.program.data ?? [])
     }
     fetchServices()

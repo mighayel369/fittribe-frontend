@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import TrainerTopBar from "../../layout/TrainerTopBar";
 import TrainerSideBar from "../../layout/TrainerSideBar";
 import StatCard from "../../components/StatCard";
-import { DashboardService } from "../../services/dashboard-service";
+import { TrainerDashboardService } from "../../services/trainer/trainer.dashboard";
 import { GenericAreaChart } from "../../components/AreaChart";
 import { useNavigate } from "react-router-dom";
 import {
@@ -44,13 +44,13 @@ const loadInitialDashboard = async () => {
   try {
     setLoading(true);
     const [mainResponse, appointmentResponse] = await Promise.all([
-      DashboardService.TrainerDashboardMetrics(),
-      DashboardService.getTrainerDailyAgenda(new Date().toISOString())
+      TrainerDashboardService.getMetrics(),
+      TrainerDashboardService.getDailyAgenda(new Date().toISOString())
     ]);
 
     setDashData(mainResponse.dashboardData); 
-    setAppointments(appointmentResponse.dashboardData);
-    
+    setAppointments(appointmentResponse.dashboardData.upcomingAppointments);
+    console.log(appointments)
   } catch (error) {
     console.error("Dashboard Load Error:", error);
   } finally {
@@ -61,8 +61,8 @@ const loadInitialDashboard = async () => {
   const handleDateChange = async (date: number, fullDate: string) => {
     setSelectedDate(date);
     try {
-      const data = await DashboardService.getTrainerDailyAgenda(fullDate);
-      setAppointments(data);
+      const data = await TrainerDashboardService.getDailyAgenda(fullDate);
+      setAppointments(data.dashboardData.upcomingAppointments);
     } catch (error) {
       console.error("Failed to fetch appointments:", error);
     }

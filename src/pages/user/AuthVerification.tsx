@@ -9,7 +9,7 @@ import LogoHeader from '../../assets/logo.jpg';
 import SubmitButton from '../../components/SubmitButton';
 import BackgroundImageWrapper from '../../components/BackgroundImage';
 import OTPInputGroup from '../../components/OTPInputGroup';
-import { AuthService } from '../../services/auth-service';
+import { AuthService } from '../../services/shared/auth.service';
 
 
 const AuthVerification: React.FC = () => {
@@ -64,6 +64,7 @@ const AuthVerification: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!role) return;
     const otpCode = otp.join('');
     if (otpCode.length !== 6) {
       setError('Verification code must be 6 digits');
@@ -73,11 +74,8 @@ const AuthVerification: React.FC = () => {
     try {
       setIsLoading(true);
       setError('');
-      const verifyMethod = role === 'trainer' 
-      ? AuthService.VerifyTrainerOtp 
-      : AuthService.VerifyUserOtp
 
-    const result = await verifyMethod(email!, otpCode);
+    const result = await AuthService.verifyOtp(email!, otpCode,role);
       
       if (result.success) {
         localStorage.removeItem('startTime');
@@ -99,7 +97,7 @@ const AuthVerification: React.FC = () => {
   const handleResend = async () => {
     if (!email || !role) return;
     try {
-      await AuthService.ReSendOtp(email, role);
+      await AuthService.resendOtp(email, role);
       setOtp(new Array(6).fill(''));
       inputRef.current[0]?.focus();
       localStorage.setItem('startTime', Date.now().toString());

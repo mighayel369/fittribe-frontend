@@ -2,16 +2,16 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import TrainerTopBar from "../../layout/TrainerTopBar";
 import TrainerSideBar from "../../layout/TrainerSideBar";
-import { ProgramService } from "../../services/programs-service";
-import { TrainerService } from "../../services/trainer-service";
-import { reapplyValidation, type ValidationErrors } from "../../validations/reapplyValidation";
+import { PublicProgramsService } from "../../services/public/programs";
+import { TrainerProfileService } from "../../services/trainer/trainer.profile";
+import { reapplyValidation} from "../../validations/reapplyValidation";
+import {type ValidationErrors } from "../../validations/ValidationErrors";
 import { type ReapplyTrainerDTO } from "../../types/trainerType";
 import TextInput from "../../components/TextInput";
 import SelectField from "../../components/SelectField";
 import CheckboxGroup from "../../components/CheckboxGroup";
 import RadioGroup from "../../components/RadioGroup";
 import Toast from "../../components/Toast";
-import { AuthService } from "../../services/auth-service";
 type ProgramOption = {
   programId: string;
   name: string;
@@ -46,8 +46,8 @@ const ReapplyPage = () => {
     const initData = async () => {
       try {
         const [servicesRes, profileRes] = await Promise.all([
-          ProgramService.DiscoverPrograms(),
-          TrainerService.FullProfile()
+          PublicProgramsService.explorePrograms('trainer'),
+          TrainerProfileService.getProfile()
         ]);
         
         setProgramOptions(servicesRes.data);
@@ -119,7 +119,7 @@ const ReapplyPage = () => {
       }
     });
 
-      let res=await AuthService.ReapplyTrainer(data);
+      let res=await TrainerProfileService.reapply(data);
       if(res.success){
         setToast({message:res.message,type:'success'})
         setTimeout(() => navigate("/trainer/trainer-profile"), 2000);

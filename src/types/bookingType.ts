@@ -29,6 +29,7 @@ export interface TrainerBookingDetails {
     rescheduleRequest?: {
         newDate: string;
         newTimeSlot: string;
+        requestedBy:string,
         requestedAt: string;
     };
     rejectReason?:string
@@ -59,6 +60,7 @@ export interface UserBookingDetails{
   rescheduleRequest?: {
     newDate: string;
     newTimeSlot: string;
+    requestedBy:string,
     status: string;
   };
   rejectReason?:string
