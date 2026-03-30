@@ -5,7 +5,7 @@ import TrainerTopBar from "../../layout/TrainerTopBar";
 import TrainerSideBar from "../../layout/TrainerSideBar";
 import Toast from "../../components/Toast";
 import Loading from "../../components/Loading";
-import { BookingService } from "../../services/booking-service";
+import { TrainerBookingService } from "../../services/trainer/trainer.booking";
 import GenericTable from "../../components/GenericTable";
 import Modal from "../../components/Modal";
 import {type TrainerBookingColumnActions } from "../../types/table-types";
@@ -14,11 +14,11 @@ type TabType = "all" | "pending" | "reschedule";
 
 const TRAINER_BOOKING_ACTIONS = {
     booking: {
-        accept: (id: string) => BookingService.PendingRequestAccept(id),
-       reject: (id: string, reason: string) => BookingService.PendingRequestReject(id, reason),    },
+        accept: (id: string) => TrainerBookingService.acceptBooking(id),
+       reject: (id: string, reason: string) => TrainerBookingService.rejectBooking(id, reason),    },
     reschedule: {
-        accept: (id: string) => BookingService.ApproveReschedule(id),
-        reject: (id: string,reason:string) => BookingService.RejectReschedule(id,reason),
+        accept: (id: string) => TrainerBookingService.approveReschedule(id),
+        reject: (id: string,reason:string) => TrainerBookingService.rejectReschedule(id,reason),
     },
 };
 const TrainerBookings = () => {
@@ -57,7 +57,7 @@ const actions: TrainerBookingColumnActions = {
         return allBookingsColumns(actions.onView);
     }
   };
-  const limit = 5;
+
 
   useEffect(() => {
     fetchData();
@@ -69,12 +69,12 @@ const fetchData = async () => {
     try {
       setIsLoading(true);
       const serviceMap = {
-        all: BookingService.TrainerSessionHistory,
-        pending: BookingService.PendingSessionsRequests,
-        reschedule: BookingService.RescheduleSessionsRequests,
+        all: TrainerBookingService.getSessionHistory,
+        pending: TrainerBookingService.getPendingSessions,
+        reschedule: TrainerBookingService.getRescheduleRequests,
       };
 
-      const res = await serviceMap[activeTab](currentPage, searchQuery, limit);
+      const res = await serviceMap[activeTab](currentPage, searchQuery);
       console.log(res)
       if (res.success) {
         setBookings(res.data);
@@ -192,7 +192,7 @@ const handleConfirmAction = async (reason?: string) => {
                   <ChevronLeft size={20} />
                 </button>
                 <button
-                  disabled={currentPage * limit >= total}
+                  disabled={currentPage * 5 >= total}
                   onClick={() => setCurrentPage(p => p + 1)}
                   className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all"
                 >

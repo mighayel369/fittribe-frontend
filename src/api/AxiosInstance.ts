@@ -1,9 +1,24 @@
 import axios from "axios";
 import { store } from "../redux/store";
-import { setAccessToken, clearAccessToken } from "../redux/slices/authSlice";
+import { setAuth, clearAuth } from "../redux/slices/authSlice";
 import { ERROR_MESSAGES } from "../constants/ErrorMessage";
-import { AuthService } from "../services/auth-service";
-import { API_ENDPOINTS } from "./endPoints";
+import { AuthService } from "../services/shared/auth.service";
+
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
@@ -21,58 +36,67 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+
 axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
+    const currentRole = store.getState().auth.role || localStorage.getItem('role');
 
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes(API_ENDPOINTS.AUTH.REFRESH_TOKEN)
+      currentRole &&
+      !originalRequest.url.includes('/refresh-token')
     ) {
+      
+      if (isRefreshing) {
+
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return axiosInstance(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        const res = await AuthService.RefreshAccessToken()
-        const accessToken = res.accessToken
+        const res = await AuthService.refreshAccessToken(currentRole);
+        const accessToken = res.accessToken;
+
         if (accessToken) {
-          store.dispatch(setAccessToken(accessToken));
+          store.dispatch(setAuth({
+            accessToken: accessToken,
+            role: res.role || currentRole,
+            user: store.getState().auth.user
+          }));
+
+          processQueue(null, accessToken);
+          isRefreshing = false;
+
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return axiosInstance(originalRequest);
         }
       } catch (err) {
-        store.dispatch(clearAccessToken());
+        processQueue(err, null);
+        isRefreshing = false;
+        store.dispatch(clearAuth());
         return Promise.reject(err);
       }
     }
 
     if (error.response) {
       const { status, data } = error.response;
-
-      switch (status) {
-        case 400:
-          console.error(data?.message || ERROR_MESSAGES.BAD_REQUEST);
-          break;
-        case 401:
-          console.error(data?.message || ERROR_MESSAGES.UNAUTHORIZED);
-          break;
-        case 403:
-          console.error(data?.message || ERROR_MESSAGES.FORBIDDEN);
-          break;
-        case 404:
-          console.error(data?.message || ERROR_MESSAGES.NOT_FOUND);
-          break;
-        case 500:
-          console.error(data?.message || ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
-          break;
-        default:
-          console.error(data?.message || ERROR_MESSAGES.SOMETHING_WENT_WRONG);
+      if (status !== 401 || originalRequest._retry) {
+        console.error(`[API Error ${status}]:`, data?.message || ERROR_MESSAGES.SOMETHING_WENT_WRONG);
       }
     } else if (error.request) {
       console.error(ERROR_MESSAGES.NETWORK_ERROR);
-    } else {
-      console.error(error.message);
     }
 
     return Promise.reject(error);

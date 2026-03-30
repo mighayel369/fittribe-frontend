@@ -6,7 +6,7 @@ import { HiOutlineX } from "react-icons/hi";
 import Toast from "../../components/Toast";
 import { generateTimes } from "../../helperFunctions/generateTimes";
 import TimePicker from "../../components/TimePicker";
-import { SlotService } from "../../services/slot-service";
+import { TrainerScheduleService } from "../../services/trainer/trainer.schedule";
 const daysMap = [
   { label: "Sun", key: "sunday" },
   { label: "Mon", key: "monday" },
@@ -51,7 +51,7 @@ const TrainerAvailability = () => {
     document.title = "FitTribe | Schedules";
     async function fetchSlot() {
       try {
-        const res = await SlotService.TrainerSchedules()
+        const res = await TrainerScheduleService.getSchedule()
         if (res.data?.weeklyAvailability) {
           setAvailability(res.data.weeklyAvailability);
         }
@@ -71,7 +71,7 @@ const TrainerAvailability = () => {
 
     const timer = setTimeout(async () => {
       try {
-        let res=await SlotService.ModifyTrainerSchedules(availability);
+        let res=await TrainerScheduleService.syncWeeklyTemplate(availability);
         setToastType("success");
         setToastMessage(res.message);
       } catch (err:any) {

@@ -2,8 +2,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import logoPic from '../assets/logo.jpg';
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AuthService } from "../services/auth-service";
-import { clearAccessToken } from "../redux/slices/authSlice";
+import { TrainerProfileService } from "../services/trainer/trainer.profile";
+import { clearAuth } from "../redux/slices/authSlice";
 import { FaLock, FaChevronDown, FaChevronRight } from "react-icons/fa";
 
 const TrainerSideBar = () => {
@@ -46,10 +46,10 @@ const TrainerSideBar = () => {
         return;
       }
       try {
-        const res = await AuthService.VerifyTrainerAccount();
+        const res = await TrainerProfileService.verifySession();
 
         if (!res.success || res.trainer.status === false) {
-          dispatch(clearAccessToken());
+          dispatch(clearAuth());
           navigate('/trainer/login');
           return;
         }
@@ -64,7 +64,7 @@ const TrainerSideBar = () => {
 
       } catch (error: any) {
         let errMesg = error.response?.data?.message;
-        dispatch(clearAccessToken());
+        dispatch(clearAuth());
         navigate('/trainer/login', {
           state: { message: errMesg }
         });

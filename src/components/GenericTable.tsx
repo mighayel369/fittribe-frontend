@@ -1,11 +1,13 @@
 import React from "react";
 import Loading from "./Loading";
 
+
 type Column<T> = {
-  header: string;
+  header: React.ReactNode; 
   accessor: keyof T | string;
   render?: (row: T) => React.ReactNode;
   className?: string;
+  headerClassName?: string;
 };
 
 type GenericTableProps<T> = {
@@ -29,7 +31,10 @@ function GenericTable<T>({
         <tr>
           <th className="py-3 px-4 w-16">ID</th>
           {columns.map((col, idx) => (
-            <th key={idx} className={`py-3 px-4 ${col.className || ""}`}>
+            <th 
+              key={idx} 
+              className={`py-3 px-4 ${col.headerClassName || col.className || ""}`}
+            >
               {col.header}
             </th>
           ))}
@@ -44,8 +49,6 @@ function GenericTable<T>({
           </tr>
         ) : data.length > 0 ? (
           data.map((row, index) => {
-        
-
             return (
               <tr
                 key={index}

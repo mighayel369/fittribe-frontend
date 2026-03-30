@@ -10,9 +10,9 @@ import RadioGroup from "../../components/RadioGroup";
 import Toast from "../../components/Toast";
 import {type ValidationErrors } from "../../validations/ValidationErrors";
 import { trainerProfileValidation} from "../../validations/trainerProfileValidation";
-import { TrainerService } from "../../services/trainer-service";
+import { TrainerProfileService } from "../../services/trainer/trainer.profile";
 import { type UpdateTrainerProfileDTO } from "../../types/trainerType";
-import { ProgramService } from "../../services/programs-service";
+import { PublicProgramsService } from "../../services/public/programs";
 import type { DiscoveryProgram } from "../../types/programType";
 const TrainerEditProfile = () => {
   const navigate = useNavigate();
@@ -39,8 +39,8 @@ const TrainerEditProfile = () => {
     const initData = async () => {
       try {
         const [programRes, profileRes] = await Promise.all([
-          ProgramService.DiscoverPrograms(),
-          TrainerService.FullProfile()
+          PublicProgramsService.explorePrograms(),
+          TrainerProfileService.getProfile()
         ]);
         console.log(programRes,profileRes)
         setProgramOptions(programRes.program.data);
@@ -106,7 +106,7 @@ const TrainerEditProfile = () => {
         }
       });
 
-      const res = await TrainerService.UpdateProfile(data);
+      const res = await TrainerProfileService.updateProfile(data);
       if (res.success) {
         navigate('/trainer/trainer-profile',{
           state:{

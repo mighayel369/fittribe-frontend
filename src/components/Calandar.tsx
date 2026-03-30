@@ -7,7 +7,7 @@ type CalendarProps = {
 
 const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize today for accurate comparison
+  today.setHours(0, 0, 0, 0); 
 
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());

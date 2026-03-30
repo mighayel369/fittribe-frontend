@@ -4,8 +4,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import loginpic from '../../assets/trainer-loginpic.webp';
 import LogoHeader from '../../assets/logo.jpg';
-import { setAccessToken } from '../../redux/slices/authSlice';
-import { AuthService } from '../../services/auth-service';
+import { setAuth } from '../../redux/slices/authSlice';
+import { TrainerAuthService } from '../../services/trainer/trainer.auth';
 import Toast from "../../components/Toast";
 import TextInput from '../../components/TextInput';
 import PasswordInput from '../../components/PasswordInput';
@@ -47,11 +47,15 @@ const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 
   setLoading(true);
   try {
-    const result = await AuthService.LoginTrainer({ email, password });
+    const result = await TrainerAuthService.login({ email, password });
 
     if (result.success) {
 
-      dispatch(setAccessToken(result.accessToken));
+     dispatch(setAuth({ 
+      accessToken: result.accessToken, 
+      role: result.role ,
+      user:result.trainer
+    }));
       navigate('/trainer',{
         state:{
           message:result.message

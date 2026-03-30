@@ -1,7 +1,7 @@
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import GenericForm from "../../components/GenericForm";
-import { ProgramService } from "../../services/programs-service";
+import { AdminProgramService } from "../../services/admin/admin.program.service";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { programValidate } from "../../validations/programValidate";
@@ -24,7 +24,6 @@ const OnboardNewProgram = () => {
     const validationPayload = {
       name: values.name,
       description: values.description,
-      duration: Number(values.duration),
     } as OnboardNewProgramDTO;
 
     const errors = programValidate(validationPayload);
@@ -44,7 +43,7 @@ const OnboardNewProgram = () => {
         formData.append(key, value);
       });
 
-      const response = await ProgramService.OnBoardNewProgram(formData);
+      const response = await AdminProgramService.onboardNewProgram(formData);
       if (response.success) {
         navigate("/admin/programs", { state: { message: response.message } });
       }

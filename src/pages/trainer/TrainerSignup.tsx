@@ -3,7 +3,7 @@ import React, { useEffect, useState,  type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { setEmail, setRole } from "../../redux/slices/otpSlice";
 import { useAppDispatch } from "../../redux/hooks";
-import { ProgramService } from "../../services/programs-service";
+import { PublicProgramsService } from "../../services/public/programs";
 import signuppic from "../../assets/trainer-signup pic.webp";
 import LogoHeader from "../../assets/logo.jpg";
 import TextInput from "../../components/TextInput";
@@ -13,7 +13,7 @@ import SelectField from "../../components/SelectField";
 import CheckboxGroup from "../../components/CheckboxGroup";
 import RadioGroup from "../../components/RadioGroup";
 import BackgroundImageWrapper from "../../components/BackgroundImage";
-import { AuthService } from "../../services/auth-service";
+import { TrainerAuthService } from "../../services/trainer/trainer.auth";
 import { type TrainerSignupDTO } from "../../types/trainerType";
 import { trainerSignupValidate } from "../../validations/trainerSignupValidate";
 import type { ValidationErrors } from "../../validations/ValidationErrors";
@@ -46,7 +46,7 @@ const TrainerSignup: React.FC = () => {
     document.title = "FitTribe | Join as Trainer";
     const fetchServices = async () => {
       try {
-        const response = await ProgramService.DiscoverPrograms();
+        const response = await PublicProgramsService.explorePrograms('trainer');
         console.log(response)
         setProgramOptions(response.program.data);
       } catch (error) { 
@@ -92,7 +92,7 @@ console.log(programs)
     languages.forEach((lang) => formData.append("languages[]", lang));
     if (certificate) formData.append("certificate", certificate);
     try {
-      const response = await AuthService.RegisterTrainer(formData);
+      const response = await TrainerAuthService.register(formData);
       if (response.success) {
         dispatch(setEmail(email));
         dispatch(setRole("trainer"));

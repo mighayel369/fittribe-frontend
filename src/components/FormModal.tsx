@@ -4,16 +4,16 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import SubmitButton from "./SubmitButton";
 import {type FormField } from "../types/formFieldType";
 
-interface Props {
+interface Props<T> {
   heading: string;
   fields: FormField[];
   onClose: () => void;
-  onSubmit: (values: Record<string, any>) => void;
+  onSubmit: (values: T) => void;
   buttonText:string,
   loading?: boolean;
 }
 
-const FormModal = ({ heading, fields, onClose, onSubmit,buttonText, loading }: Props) => {
+const FormModal = <T extends Record<string, any>>({ heading, fields, onClose, onSubmit,buttonText, loading }: Props<T>) => {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initateState: Record<string, any> = {}
     fields.map((f: FormField) => {
@@ -28,7 +28,7 @@ const FormModal = ({ heading, fields, onClose, onSubmit,buttonText, loading }: P
 
   const handleInternalSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
+    onSubmit(formData as T)
   }
 
   return (

@@ -5,7 +5,7 @@ import { FaEnvelope, FaCalendarAlt, FaVenusMars,
 } from "react-icons/fa";
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
-import { UserService } from "../../services/user-service";
+import { AdminUserService } from "../../services/admin/admin.user.service";
 import Loading from "../../components/Loading";
 import NotFound from "../../components/NotFound";
 import Modal from "../../components/Modal";
@@ -32,7 +32,7 @@ const UserDetails: React.FC = () => {
     if (!id) return;
     try {
       setLoading(true);
-      const response = await UserService.GetUserDetails(id);
+      const response = await AdminUserService.getUserDetails(id);
       setUser(response.user);
     } catch (error:any) {
         const errorMsg = error.response?.data?.message || "Failed to fetch user datas";
@@ -49,7 +49,7 @@ const UserDetails: React.FC = () => {
     setShowStatusModal(false);
 
     try {
-      const result = await UserService.UpdateUserStatus(user.userId, !user.status);
+      const result = await AdminUserService.updateUserStatus(user.userId, !user.status);
 
       if (result.success) {
         setUser((prev: any) => ({ ...prev, status: result.newStatus }));

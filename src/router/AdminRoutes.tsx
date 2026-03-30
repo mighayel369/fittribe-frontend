@@ -12,6 +12,7 @@ import ProgramsList from '../pages/admin/ProgramsList';
 import ModifyProgram from '../pages/admin/ModifyProgram';
 import AdminWallet from '../pages/admin/AdminWallet'
 import OnboardNewProgram from '../pages/admin/OnboardNewProgram';
+import LeaveManagemnt from '../pages/admin/LeaveManagement';
 const AdminRoutes = () => (
   <Routes>
     <Route path="login" element={<AdminPublicRoute><AdminLogin /></AdminPublicRoute>} />
@@ -25,6 +26,7 @@ const AdminRoutes = () => (
     <Route path="programs/onboard-new" element={<AdminPrivateRoute><OnboardNewProgram /></AdminPrivateRoute>} />
    <Route path="programs/modify/:id" element={<AdminPrivateRoute><ModifyProgram /></AdminPrivateRoute>} />  
     <Route path="wallet" element={<AdminPrivateRoute><AdminWallet /></AdminPrivateRoute>} />
+    <Route path="trainer-leaves" element={<AdminPrivateRoute><LeaveManagemnt /></AdminPrivateRoute>} />
   </Routes>
 );
 

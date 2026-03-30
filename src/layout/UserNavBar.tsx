@@ -1,45 +1,41 @@
 import { FaSearch, FaBell, FaChevronDown } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAppDispatch } from "../redux/hooks";
-import { clearAccessToken } from "../redux/slices/authSlice";
-import { AuthService } from "../services/auth-service";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { clearAuth } from "../redux/slices/authSlice";
+import { AuthService } from "../services/shared/auth.service";
 import logo from "../assets/logo.jpg";
+import NotificationDropdown from "../components/NotificationDropdown";
 import "./UserNavbar.css";
-
+import { useNotification } from "../hooks/useNotification";
 const UserNavBar = () => {
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [user, setUser] = useState<any>("");
   const [scrolled, setScrolled] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const location = useLocation();
-
+  const [showNotif, setShowNotif] = useState(false);
+  const { notifications, unreadCount, clearUnread,markAllAsRead,markAsRead } = useNotification();
+  const { user, role, accessToken } = useAppSelector((state) => state.auth);
+  const handleToggleNotif = () => {
+    setShowNotif(!showNotif);
+    if (!showNotif) {
+      clearUnread();
+    }
+  };
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
-    
-    const verifyUser = async () => {
-      try {
-        const res = await AuthService.VerifyUserAccount();
-        if (res.success) setUser(res.user);
-        else dispatch(clearAccessToken());
-      } catch (error:any) {
-        let errMesg=error.response?.data?.message
-        dispatch(clearAccessToken());
-        setUser("");
-      }
-    };
-    verifyUser();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [dispatch]);
+  }, []);
 
   const handleLogout = async () => {
-    await AuthService.Logout();
-    dispatch(clearAccessToken());
+    await AuthService.logout(role || 'user');
+    dispatch(clearAuth());
     navigate("/login");
   };
+
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -50,7 +46,6 @@ const UserNavBar = () => {
   return (
     <nav className={`nav-container ${scrolled ? "nav-scrolled" : ""}`}>
       <div className="nav-content">
-
         <div className="nav-logo" onClick={() => navigate("/")}>
           <div className="logo-wrapper">
             <img src={logo} alt="Vitalic Logo" />
@@ -60,9 +55,9 @@ const UserNavBar = () => {
 
         <div className="nav-links">
           {navLinks.map((link) => (
-            <Link 
-              key={link.name} 
-              to={link.path} 
+            <Link
+              key={link.name}
+              to={link.path}
               className={location.pathname === link.path ? "active-link" : ""}
             >
               {link.name}
@@ -77,22 +72,35 @@ const UserNavBar = () => {
           </div>
 
           <div className="action-icons">
-            <div className="notif-trigger" onClick={() => navigate('/notifications')}>
+            <div className="notif-trigger" onClick={handleToggleNotif}>
               <FaBell />
-              <span className="notif-dot animate-pulse"></span>
-            </div>
+              {unreadCount > 0 && (
+                <span className="notif-dot animate-bounce">
+                </span>
+              )}
 
-            {user.name ? (
-              <div 
+              <div className="relative">
+                {showNotif && (
+                  <NotificationDropdown
+                    notifications={notifications}
+                    onMarkAsRead={(id:string)=>markAsRead(id)}
+                    onMarkAllAsRead={() => markAllAsRead()}
+                    onClose={() => setShowNotif(false)}
+                  />
+                )}
+              </div>
+            </div>
+            {accessToken && user ? (
+              <div
                 className="profile-trigger"
                 onMouseEnter={() => setShowDropdown(true)}
                 onMouseLeave={() => setShowDropdown(false)}
               >
                 <div className="user-avatar">
-                   {user.name.charAt(0).toUpperCase()}
+                  {user.name?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <FaChevronDown className={`chevron ${showDropdown ? 'rotate' : ''}`} />
-                
+                <FaChevronDown className={`chevron ${showDropdown ? "rotate" : ""}`} />
+
                 {showDropdown && (
                   <div className="nav-dropdown">
                     <Link to="/profile">My Account</Link>

@@ -1,7 +1,7 @@
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import GenericForm from "../../components/GenericForm";
-import { ProgramService } from "../../services/programs-service";
+import { AdminProgramService } from "../../services/admin/admin.program.service";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
@@ -32,13 +32,12 @@ const ModifyProgram = () => {
 
     const fetchProgramDetails = async () => {
       try {
-        const response = await ProgramService.ProgramDetails(id);
+        const response = await AdminProgramService.getProgramDetails(id);
         const programData = response.data || response.program;
 
         setInitialValues({
           name: programData.name,
           description: programData.description,
-          duration: programData.duration,
           programPic: undefined
         });
 
@@ -88,7 +87,7 @@ const ModifyProgram = () => {
         formData.append("programPic", values.programPic);
       }
 
-      const response = await ProgramService.ModifyProgram(id!, formData);
+      const response = await AdminProgramService.modifyProgram(id!, formData);
 
       if (response.success) {
         navigate("/admin/programs",{

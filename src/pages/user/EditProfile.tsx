@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { validateUserProfile } from "../../validations/userProfileValidation";
 import {type ValidationErrors } from "../../validations/ValidationErrors";
 import {type UpdateUserProfileDTO } from "../../types/userType";
-import { UserService } from "../../services/user-service";
+import { UserProfileService } from "../../services/user/user.profile";
 import Toast from "../../components/Toast";
 const EditProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const EditProfile: React.FC = () => {
     document.title = "FitTribe | Edit Profile";
     const fetchUserProfile = async () => {
       try {
-        const res = await UserService.GetFullProfile();
+        const res = await UserProfileService.getProfile();
         setFormData(res.userData);
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -58,7 +58,7 @@ const EditProfile: React.FC = () => {
     if (Object.keys(validationErrors).length > 0) return;
 
     try {
-      const res = await UserService.UpdateProfile(formData);
+      const res = await UserProfileService.updateProfile(formData);
       if (res.success) {
         navigate('/profile',{
           state:{

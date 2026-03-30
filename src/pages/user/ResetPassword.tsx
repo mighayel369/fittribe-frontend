@@ -5,7 +5,7 @@ import LogoHeader from "../../assets/logo.jpg";
 import PasswordInput from "../../components/PasswordInput";
 import SubmitButton from "../../components/SubmitButton";
 import BackgroundImageWrapper from "../../components/BackgroundImage";
-import { AuthService } from "../../services/auth-service";
+import { UserAuthService } from "../../services/user/user.auth";
 
 
 const ResetPassword: React.FC = () => {
@@ -37,7 +37,7 @@ const ResetPassword: React.FC = () => {
         return;
       }
 
-      const response = await AuthService.ResetPassword(token, password);
+      const response = await UserAuthService.resetPassword(token, password);
 
       if (response.success) {
         const role = response.role;

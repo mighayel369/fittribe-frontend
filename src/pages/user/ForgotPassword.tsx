@@ -9,7 +9,7 @@ import TextInput from "../../components/TextInput";
 import SubmitButton from "../../components/SubmitButton";
 import BackgroundImageWrapper from '../../components/BackgroundImage';
 import { FaArrowLeft, FaEnvelopeOpenText } from 'react-icons/fa';
-import { AuthService } from '../../services/auth-service';
+import { UserAuthService } from '../../services/user/user.auth';
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -33,7 +33,7 @@ const ForgotPassword: React.FC = () => {
 
     setLoading(true);
     try {
-      const data = await AuthService.ForgotPassword(email);
+      const data = await UserAuthService.forgotPassword(email);
       if (data.success) {
         setMsg(data.message||'Check your inbox! A reset link is on its way.');
       }

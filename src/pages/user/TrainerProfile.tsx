@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import UserNavBar from "../../layout/UserNavBar";
 import { FaRegCommentDots, FaMapMarkerAlt, FaGlobe, FaAward, FaBolt, FaCalendarCheck, FaBriefcase } from "react-icons/fa";
 import DEFAULT_IMAGE from '../../assets/default image.png'
-import { TrainerService } from "../../services/trainer-service";
+import { PublicTrainersService } from "../../services/public/trainers";
 import { useLocation } from 'react-router-dom';
 import Toast from "../../components/Toast";
 const TrainerProfile = () => {
@@ -29,7 +29,7 @@ const TrainerProfile = () => {
       try {
         if(!id) return
         setLoading(true);
-        const response = await TrainerService.ExploreTrainerDetails(id)
+        const response = await PublicTrainersService.getTrainerDetails(id)
         setTrainer(response.trainer);
       } catch (err:any) {
         let errMesg=err.response?.data?.message

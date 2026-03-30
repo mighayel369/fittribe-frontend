@@ -11,20 +11,31 @@ import {
   ArrowLeft, RefreshCw, Timer, Activity,
   ShieldCheck, Info, MapPin
 } from "lucide-react";
-import { BookingService } from "../../services/booking-service";
-import { SlotService } from "../../services/slot-service";
+import { UserBookingService } from "../../services/user/user.booking";
+import { PublicTrainersService } from "../../services/public/trainers";
 import DEFAULT_IMAGE from '../../assets/default image.png'
 const BookingDetails = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-  const [booking, setBooking] = useState<UserBookingDetails|null>(null);
+  const [booking, setBooking] = useState<UserBookingDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
   const [slots, setSlots] = useState<string[]>([]);
-  const [showModal,setShowModal]=useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [modalConfig, setModalConfig] = useState<{
+    type: 'cancel' | 'accept' | 'decline' | null;
+    title: string;
+    confirmText: string;
+    theme: 'red' | 'indigo' | 'emerald';
+  }>({
+    type: null,
+    title: "",
+    confirmText: "",
+    theme: 'indigo'
+  })
   useEffect(() => {
     if (bookingId) {
       fetchBookingDetails(bookingId);
@@ -34,7 +45,7 @@ const BookingDetails = () => {
   const fetchBookingDetails = async (id: string) => {
     try {
       setLoading(true);
-      const res = await BookingService.SessionDetails(id);
+      const res = await UserBookingService.getBookingDetails(id);
       setBooking(res.data);
       document.title = `FitTribe | Session Details`;
     } catch (error) {
@@ -50,7 +61,7 @@ const BookingDetails = () => {
     console.log(booking?.trainerId)
     const fetchSlots = async () => {
       try {
-        const res = await SlotService.AvailableBookingSlots(
+        const res = await PublicTrainersService.getTrainerAvailability(
           new Date(newDate),
           booking.trainerId
         );
@@ -63,34 +74,70 @@ const BookingDetails = () => {
     fetchSlots();
   }, [newDate]);
 
-const handleRescheduleSubmit = async () => {
+  const openConfirmation = (type: 'cancel' | 'accept' | 'decline') => {
+    const configs = {
+      cancel: {
+        title: "Cancel Session",
+        confirmText: "Yes, Cancel Booking",
+        theme: 'red' as const
+      },
+      accept: {
+        title: "Accept New Schedule",
+        confirmText: "Accept Proposal",
+        theme: 'emerald' as const
+      },
+      decline: {
+        title: "Decline Proposal",
+        confirmText: "Decline and Keep Original",
+        theme: 'red' as const
+      }
+    };
+
+    setModalConfig({ type, ...configs[type] });
+    setShowModal(true);
+  };
+
+  const handleModalConfirm = async () => {
+  if (!modalConfig.type) return;
+
+  setShowModal(false); 
+  
+  if (modalConfig.type === 'cancel') {
+    await handleCancelBooking();
+  } else if (modalConfig.type === 'accept') {
+    await handleAcceptTrainerProposal();
+  } else if (modalConfig.type === 'decline') {
+    await handleDeclineTrainerProposal();
+  }
+};
+  const handleRescheduleSubmit = async () => {
     if (!newDate || !newTime) {
       setToast({ message: "Please select both date and time", type: "error" });
       return;
     }
 
     try {
-      const res = await BookingService.RescheduleSession({
+      const res = await UserBookingService.requestReschedule({
         bookingId,
         newDate,
         newTimeSlot: newTime
       });
       console.log(res)
-      if(res.success) {
+      if (res.success) {
         setBooking((prev: any) => ({
           ...prev,
           bookingStatus: 'reschedule_requested'
         }));
 
-        setToast({ 
-          message: res.message || "Reschedule request sent! Waiting for trainer approval.", 
-          type: "success" 
+        setToast({
+          message: res.message || "Reschedule request sent! Waiting for trainer approval.",
+          type: "success"
         });
       }
     } catch (error: any) {
-      setToast({ 
-        message: error.response?.data?.message || "Failed to request reschedule", 
-        type: "error" 
+      setToast({
+        message: error.response?.data?.message || "Failed to request reschedule",
+        type: "error"
       });
     } finally {
       setShowRescheduleModal(false);
@@ -100,29 +147,61 @@ const handleRescheduleSubmit = async () => {
   };
 
   const handleCancelBooking = async () => {
-  
-  try {
-    if(!booking) return
-    setLoading(true);
-    const res = await BookingService.CancelSession(booking.bookingId);
-    
-    if (res.success) {
-      setBooking((prev: any) => ({ ...prev, bookingStatus: "cancelled" }));
-      setToast({ 
-        message: res.message||"Booking cancelled successfully. Refund processed to wallet.", 
-        type: "success" 
+
+    try {
+      if (!booking) return
+      setLoading(true);
+      const res = await UserBookingService.cancelSession(booking.bookingId);
+
+      if (res.success) {
+        setBooking((prev: any) => ({ ...prev, bookingStatus: "cancelled" }));
+        setToast({
+          message: res.message || "Booking cancelled successfully. Refund processed to wallet.",
+          type: "success"
+        });
+      }
+    } catch (error: any) {
+      setToast({
+        message: error.response?.data?.message || "Failed to cancel booking",
+        type: "error"
       });
+    } finally {
+      setLoading(false);
+      setShowModal(false)
     }
-  } catch (error: any) {
-    setToast({ 
-      message: error.response?.data?.message || "Failed to cancel booking", 
-      type: "error" 
-    });
-  } finally {
-    setLoading(false);
-    setShowModal(false)
-  }
-};
+  };
+
+  const handleAcceptTrainerProposal = async () => {
+    if (!booking) return
+    try {
+      setLoading(true);
+      const res = await UserBookingService.acceptReschedule(booking.bookingId);
+      if (res.success) {
+        setToast({ message: "Reschedule accepted! Session updated.", type: "success" });
+        fetchBookingDetails(booking.bookingId);
+      }
+    } catch (error: any) {
+      setToast({ message: "Failed to accept reschedule", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeclineTrainerProposal = async () => {
+    if (!booking) return
+    try {
+      setLoading(true);
+      const res = await UserBookingService.declineReschedule(booking.bookingId);
+      if (res.success) {
+        setToast({ message: "Proposal declined. Original time kept.", type: "success" });
+        fetchBookingDetails(booking.bookingId);
+      }
+    } catch (error: any) {
+      setToast({ message: "Failed to decline", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) return <Loading message="Loading booking details..." />;
   if (!booking) return <div className="text-center py-20">Booking not found.</div>;
@@ -133,12 +212,12 @@ const handleRescheduleSubmit = async () => {
 
       <main className="pt-32 pb-20 max-w-5xl mx-auto px-6">
         {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <button
           onClick={() => navigate(-1)}
           className="flex items-center text-gray-500 hover:text-indigo-600 mb-6 transition-colors group"
@@ -160,8 +239,8 @@ const handleRescheduleSubmit = async () => {
               </h1>
             </div>
             <div className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest border-2 ${booking.bookingStatus === 'confirmed'
-                ? 'bg-green-500/20 text-green-100 border-green-400/30'
-                : 'bg-orange-500/20 text-orange-100 border-orange-400/30'
+              ? 'bg-green-500/20 text-green-100 border-green-400/30'
+              : 'bg-orange-500/20 text-orange-100 border-orange-400/30'
               }`}>
               {booking.bookingStatus}
             </div>
@@ -169,7 +248,63 @@ const handleRescheduleSubmit = async () => {
 
           <div className="p-8 grid lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-10">
+              {booking.rescheduleRequest && (
+                <div className={`mb-8 p-6 rounded-[2rem] border-2 animate-in slide-in-from-top-4 duration-500 ${booking.rescheduleRequest.requestedBy === 'trainer'
+                    ? "bg-amber-50 border-amber-200 shadow-lg shadow-amber-100/50"
+                    : "bg-indigo-50 border-indigo-100"
+                  }`}>
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-start gap-4">
+                      <div className={`p-4 rounded-2xl ${booking.rescheduleRequest.requestedBy === 'trainer' ? "bg-amber-500 text-white" : "bg-indigo-500 text-white"}`}>
+                        <RefreshCw size={24} className="animate-spin-slow" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-black text-gray-900">
+                          {booking.rescheduleRequest.requestedBy === 'trainer' ? "Trainer Proposed a New Time" : "Reschedule Request Sent"}
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {booking.rescheduleRequest.requestedBy === 'trainer'
+                            ? `${booking.trainerName} is busy at the original time and proposed:`
+                            : `You have requested to move this session to:`}
+                        </p>
 
+                        <div className="flex items-center gap-4 mt-4 bg-white/60 p-3 rounded-xl border border-white w-fit">
+                          <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+                            <Calendar size={16} className="text-indigo-500" />
+                            {new Date(booking.rescheduleRequest.newDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                          </div>
+                          <div className="w-px h-4 bg-gray-300" />
+                          <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+                            <Clock size={16} className="text-indigo-500" />
+                            {booking.rescheduleRequest.newTimeSlot}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {booking.rescheduleRequest.requestedBy === 'trainer' ? (
+                      <div className="flex gap-3 w-full md:w-auto">
+                        <button
+                         onClick={() => openConfirmation('accept')}
+                          className="p-2 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                        >
+                          Accept New Time
+                        </button>
+                        <button
+                          onClick={() => openConfirmation('decline')}
+                          className="p-3 bg-white text-rose-600 border border-rose-200 rounded-xl font-bold text-sm hover:bg-rose-50 transition-all"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="px-6 py-3 bg-indigo-100 text-indigo-700 rounded-xl font-bold text-sm border border-indigo-200">
+                        Waiting for Trainer Approval...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
                   <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Date</p>
@@ -227,11 +362,11 @@ const handleRescheduleSubmit = async () => {
                 </p>
               </section>
               {booking.bookingStatus === 'rejected' && (
-                  <section className="bg-red-50 p-6 rounded-2xl border border-red-100">
-                    <h3 className="text-red-900/40 text-[10px] font-black uppercase mb-2 tracking-[0.2em]">Cancellation Reason</h3>
-                    <p className="text-red-700 font-medium italic">"{booking.rejectReason || 'No reason provided by trainer.'}"</p>
-                  </section>
-                )}
+                <section className="bg-red-50 p-6 rounded-2xl border border-red-100">
+                  <h3 className="text-red-900/40 text-[10px] font-black uppercase mb-2 tracking-[0.2em]">Cancellation Reason</h3>
+                  <p className="text-red-700 font-medium italic">"{booking.rejectReason || 'No reason provided by trainer.'}"</p>
+                </section>
+              )}
             </div>
 
             <div className="lg:col-span-1 space-y-6">
@@ -281,33 +416,33 @@ const handleRescheduleSubmit = async () => {
                   <p className="text-[10px] text-center text-gray-400 uppercase tracking-tighter">
                     Policy: Rescheduling is subject to trainer approval
                   </p></>)}
-                  <div className="space-y-3 mt-4">
-                {(booking.bookingStatus === "confirmed" || booking.bookingStatus === "pending") && (
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="w-full flex items-center justify-center gap-3 bg-red-50 border-2 border-red-200 text-red-600 py-4 rounded-2xl font-black hover:bg-red-100 hover:border-red-300 transition-all group"
-                  >
-                    <Activity size={20} className="group-hover:scale-110 transition-transform" />
-                    Cancel Session
-                  </button>
-                )}
-                <p className="text-[10px] text-center text-gray-400 uppercase tracking-tighter">
-                  Note: Full refund is only applicable 24h prior to session.
-                </p>
-              </div>
+                <div className="space-y-3 mt-4">
+                  {(booking.bookingStatus === "confirmed" || booking.bookingStatus === "pending") && (
+                    <button
+                      onClick={() => openConfirmation('cancel')}
+                      className="w-full flex items-center justify-center gap-3 bg-red-50 border-2 border-red-200 text-red-600 py-4 rounded-2xl font-black hover:bg-red-100 hover:border-red-300 transition-all group"
+                    >
+                      <Activity size={20} className="group-hover:scale-110 transition-transform" />
+                      Cancel Session
+                    </button>
+                  )}
+                  <p className="text-[10px] text-center text-gray-400 uppercase tracking-tighter">
+                    Note: Full refund is only applicable 24h prior to session.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
-      <Modal 
-      isVisible={showModal}
-      title="Cancel Session"
-      onConfirm={handleCancelBooking}
-      onCancel={()=>{
-        setShowModal(false)
-      }}
-      />
+<Modal 
+  isVisible={showModal}
+  title={modalConfig.title}
+  message={modalConfig.confirmText}
+  onConfirm={handleModalConfirm}
+  onCancel={() => setShowModal(false)}
+>
+</Modal>
 
       <Modal
         isVisible={showRescheduleModal}
@@ -373,8 +508,8 @@ const handleRescheduleSubmit = async () => {
                         type="button"
                         onClick={() => setNewTime(slotString)}
                         className={`py-3 px-4 text-[11px] font-bold rounded-xl border transition-all ${newTime === slotString
-                            ? "bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-[1.02]"
-                            : "bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-[1.02]"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
                           }`}
                       >
                         {slotString}

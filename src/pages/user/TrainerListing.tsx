@@ -6,8 +6,8 @@ import Pagination from "../../components/Pagination";
 import SearchInput from "../../components/SearchInput";
 import { type Program } from "../../types/programType";
 import {type UserSideTrainer } from "../../types/trainerType";
-import { ProgramService } from "../../services/programs-service";
-import { TrainerService } from "../../services/trainer-service";
+import { PublicTrainersService } from "../../services/public/trainers";
+import { PublicProgramsService } from "../../services/public/programs";
 type ProgramOption = {
   programId: string;
   name: string;
@@ -31,10 +31,10 @@ const TrainerListing = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-       let response = await ProgramService.DiscoverPrograms();
+       let response = await PublicProgramsService.explorePrograms();
     
-        if (response.data) {
-          const programData: ProgramOption[] = response.data.map(
+        if (response.program.data) {
+          const programData: ProgramOption[] = response.program.data.map(
             (curr: Program): ProgramOption => ({
              programId: curr.programId,
               name: curr.name,
@@ -57,7 +57,7 @@ const TrainerListing = () => {
     const fetchTrainers = async () => {
       try {
         setLoading(true);
-        const response = await TrainerService.ExploreTrainers(page, search, filters);
+        const response = await PublicTrainersService.exploreTrainers(page, search, filters);
         setTrainers(response.data || []);
         setTotalPages(response.total || 1);
       } catch (err) {

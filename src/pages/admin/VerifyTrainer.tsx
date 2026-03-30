@@ -1,7 +1,7 @@
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import { useEffect, useState } from "react";
-import { TrainerService } from "../../services/trainer-service";
+import { AdminTrainerService } from "../../services/admin/admin.trainer.service";
 import { useNavigate } from "react-router-dom";
 import GenericTable from "../../components/GenericTable";
 import Pagination from "../../components/Pagination";
@@ -22,7 +22,7 @@ const VerifyTrainer = () => {
 const fetchTrainers = async () => {
   setLoading(true);
   try {
-    const response = await TrainerService.GetPendingTrainers(page, search);
+    const response = await AdminTrainerService.getPendingTrainers(page, search);
 
     if (response.success) {
       setTrainers(response.data);
