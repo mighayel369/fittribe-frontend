@@ -16,6 +16,7 @@ import PrivateRoute from "../components/PrivateRoute";
 import TrainerBookingPage from "../pages/user/TrainerBookingPage";
 import Bookings from "../pages/user/Bookings";
 import BookingDetails from "../pages/user/BookingDetails";
+import ChatPage from "../pages/user/ChatPage";
 export default function UserRoutes() {
   return (
     <Routes>
@@ -37,7 +38,7 @@ export default function UserRoutes() {
       <Route path="reset-password/:token" element={<ResetPassword />} />
       <Route path="trainer-booking/:trainerId" element={<PrivateRoute><TrainerBookingPage /></PrivateRoute>} />
       <Route path="bookings" element={<PrivateRoute><Bookings /></PrivateRoute>} />
-       <Route path="bookings/:bookingId" element={<PrivateRoute><BookingDetails /></PrivateRoute>} />
-    </Routes>
+      <Route path="bookings/:bookingId" element={<PrivateRoute><BookingDetails /></PrivateRoute>} />
+      <Route path="chat/:trainerId/:chatId?" element={<PrivateRoute><ChatPage /></PrivateRoute>} />    </Routes>
   );
 }

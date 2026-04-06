@@ -19,7 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import Toast from "../../components/Toast";
-import {type ValidationErrors } from "../../validations/ValidationErrors";
+import { type ValidationErrors } from "../../validations/ValidationErrors";
 import { type changePassword } from "../../types/changePasswordType";
 import { validatePasswordChange } from "../../validations/validatePassword";
 import DEFAULT_IMAGE from '../../assets/default image.png'
@@ -27,16 +27,18 @@ import { WalletService } from "../../services/shared/wallet.service";
 import { UserProfileService } from "../../services/user/user.profile";
 import type { User } from "../../types/userType";
 import { AuthService } from "../../services/shared/auth.service";
-
+import { useChat } from "../../hooks/useChat";
+import { formatChatTime } from "../../helperFunctions/formatdate";
+import { ChatService } from "../../services/shared/chat.service";
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [user, setUser] = useState<User|null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<string>("wallet");
   const [walletBalance, setWalletBalance] = useState<number>(0);
-   const [walletTransaction, setWalletTransactions] = useState<any[]>([]);
-   const [activeHoldCount, setActiveHoldCount] = useState<number>(0);
+  const [walletTransaction, setWalletTransactions] = useState<any[]>([]);
+  const [activeHoldCount, setActiveHoldCount] = useState<number>(0);
   const [walletLoading, setWalletLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<"success" | "error">("success");
@@ -48,6 +50,8 @@ const UserProfile: React.FC = () => {
   });
   const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
   const [isPasswordOpen, setIsPasswordOpen] = useState<boolean>(false);
+
+  const { chatList, loading } = useChat();
   const walletCoulmns = UserWalletColumns(navigate)
   useEffect(() => {
     document.title = "FitTribe | My Account";
@@ -72,9 +76,9 @@ const UserProfile: React.FC = () => {
   const fetchWalletData = async () => {
     try {
       setWalletLoading(true);
-      const res = await WalletService.fetchWalletData('user',page, 5);
+      const res = await WalletService.fetchWalletData('user', page, 5);
       if (res?.success) {
-        const {balance,data,total,activeHoldCount}=res.wallet
+        const { balance, data, total, activeHoldCount } = res.wallet
         setWalletTransactions(data);
         setTotalPages(total);
         setWalletBalance(balance)
@@ -87,6 +91,17 @@ const UserProfile: React.FC = () => {
     }
   };
 
+const handleChatClick = async (chat: any) => {
+  try {
+    if (chat.unReadCount > 0) {
+      await ChatService.markAsRead('user', chat.chatId);
+    }
+    
+    navigate(`/chat/${chat.id}/${chat.chatId}`);
+  } catch (error) {
+    navigate(`/chat/${chat.id}/${chat.chatId}`);
+  }
+};
   const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,9 +113,9 @@ const UserProfile: React.FC = () => {
         setUser((prev: any) => ({ ...prev, profilePic: res.data?.imageUrl }));
         setToastType("success");
         setToastMessage(res.message);
-      } 
-    } catch (err:any) {
-      let errMesg=err.response?.data?.message
+      }
+    } catch (err: any) {
+      let errMesg = err.response?.data?.message
       setToastMessage(errMesg)
       setToastType('error')
     }
@@ -117,10 +132,10 @@ const UserProfile: React.FC = () => {
     try {
       setPasswordLoading(true);
 
-      const res = await AuthService.changePassword('user',{
+      const res = await AuthService.changePassword('user', {
         oldPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
-    });
+      });
       console.log(res)
       if (res.success) {
         setToastType("success");
@@ -140,6 +155,7 @@ const UserProfile: React.FC = () => {
   const tabs = [
     { id: "schedule", label: "My Schedule", icon: <FaCalendarAlt /> },
     { id: "wallet", label: "Wallet", icon: <FaWallet /> },
+    { id: "chat", label: "Chat History", icon: <FaEnvelope /> },
     { id: "history", label: "Booking History", icon: <FaHistory /> },
     { id: "settings", label: "Settings", icon: <FaCog /> },
   ];
@@ -256,6 +272,84 @@ const UserProfile: React.FC = () => {
               <h3 className="text-xl font-bold">Coming Up Next</h3>
               <p className="text-gray-500 mt-2">No training sessions scheduled for today.</p>
               <button onClick={() => navigate('/trainers')} className="mt-6 text-red-600 font-bold hover:underline">Find a Trainer</button>
+            </div>
+          )}
+          {activeTab === "chat" && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="mb-6">
+                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Messages</h3>
+                <p className="text-gray-500 text-sm font-medium">Recent conversations with your trainers</p>
+              </div>
+
+              <div className="grid gap-3">
+                {chatList.length > 0 ? (
+                  chatList.map((chat) => (
+                    <div
+                      key={chat.id}
+                      onClick={() => handleChatClick(chat)}
+                      className="group flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-[1.5rem] hover:border-red-100 hover:shadow-md transition-all cursor-pointer relative overflow-hidden"
+                    >
+                      <div className="relative shrink-0">
+                        {chat.profilePic ? (
+                          <img
+                            src={chat.profilePic}
+                            alt={chat.name}
+                            className="w-14 h-14 rounded-full object-cover border border-gray-100 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center font-bold text-red-600 text-lg border border-red-100">
+                            {chat.name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
+                      </div>
+
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-baseline mb-1">
+                          <h4 className="font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors">
+                            {chat.name}
+                          </h4>
+
+                          <span className="text-[10px] font-medium text-gray-400 whitespace-nowrap ml-2">
+                            {formatChatTime(chat.lastMessageTime)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center gap-4">
+                          <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
+                            {chat.lastMessage || "No messages yet"}
+                          </p>
+
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {chat.unReadCount > 0 && (
+                              <span className="bg-green-500 text-white text-[8px] font-bold  rounded-full min-w-[14px] h-[14px] flex items-center justify-center">
+                                {chat.unReadCount}
+                              </span>
+                            )}
+                            <FaArrowRight size={10} className="text-gray-300 group-hover:text-red-400 group-hover:translate-x-1 transition-all" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+
+                  <div className="text-center py-20 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
+                    <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                      <FaEnvelope className="text-2xl text-gray-300" />
+                    </div>
+                    <p className="text-gray-400 font-medium">No conversations yet.</p>
+                    <button
+                      onClick={() => navigate('/trainers')}
+                      className="mt-4 text-sm font-bold text-red-600 hover:text-red-700 underline-offset-4 hover:underline"
+                    >
+                      Browse Trainers
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

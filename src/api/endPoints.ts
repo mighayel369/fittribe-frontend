@@ -117,7 +117,6 @@ export const API_ENDPOINTS = {
     PROGRAMS: {
       EXPLORE: (role: string) => `${role}/discovery/explore`,
     },
-
     TRAINERS: {
       EXPLORE: 'user/discovery/trainers/explore',
       DETAILS: (id: string) => `user/discovery/trainers/explore/${id}`,
@@ -135,5 +134,13 @@ export const API_ENDPOINTS = {
     GET_ALL:(role:string)=>`/${role}/notification/get`,
     MARK_AS_READ:(role:string,id:string)=>`/${role}/notification/mark-as-read/${id}`,
     MARK_ALL_READ:(role:string)=>`/${role}/notification/mark-all-as-read`
+  },
+  CHAT:{
+    CHAT_LIST:(role:string)=>`${role}/chats/chat-list`,
+    NON_CHAT_LIST:(role:string)=>`${role}/chats/non-chat-list`,
+
+    FETCH_MESSAGES:(role:string,chatId:string)=>`${role}/chats/messages/${chatId}`,
+    GET_CHAT_ID:(role:string,id:string)=>`${role}/chats/chat-id/${id}`,
+    MARK_AS_READ:(role:string,chatId:string)=>`${role}/chats/mark-as-read/${chatId}`
   }
 };
