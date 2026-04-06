@@ -11,6 +11,7 @@ import TrainerAvailability from '../pages/trainer/TrainerAvailability';
 import TrainerBookings from '../pages/trainer/TrainerBookings';
 import BookingDetails from '../pages/trainer/BookingDetails';
 import TrainerLeaveManagement from '../pages/trainer/TrainerLeaveManagment';
+import ChatPage from '../pages/trainer/ChatPage';
 const TrainerRoutes = () => (
   <Routes>
     <Route path="login" element={<TrainerPublicRoute><TrainerLogin /></TrainerPublicRoute>} />
@@ -23,6 +24,7 @@ const TrainerRoutes = () => (
     <Route path="/leaves" element={<TrainerPrivateRoute><TrainerLeaveManagement /></TrainerPrivateRoute>} />
     <Route path="/bookings" element={<TrainerPrivateRoute><TrainerBookings /></TrainerPrivateRoute>} />
     <Route path="/bookings/:id" element={<TrainerPrivateRoute><BookingDetails /></TrainerPrivateRoute>} />
+        <Route path="/chats" element={<TrainerPrivateRoute><ChatPage /></TrainerPrivateRoute>} />
   </Routes>
 );
 

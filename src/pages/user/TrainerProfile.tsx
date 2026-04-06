@@ -8,32 +8,33 @@ import DEFAULT_IMAGE from '../../assets/default image.png'
 import { PublicTrainersService } from "../../services/public/trainers";
 import { useLocation } from 'react-router-dom';
 import Toast from "../../components/Toast";
+import { ChatService } from "../../services/shared/chat.service";
 const TrainerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [trainer, setTrainer] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-  let location=useLocation()
+  let location = useLocation()
   useEffect(() => {
-            if (location.state?.message) {
-          setToast({message:location.state.message,type:'success'});
-    
-          window.history.replaceState({}, document.title);
-        }
+    if (location.state?.message) {
+      setToast({ message: location.state.message, type: 'success' });
+
+      window.history.replaceState({}, document.title);
+    }
     document.title = trainer ? `FitTribe | ${trainer.name}` : "FitTribe | Trainer Profile";
-  }, [trainer,location]);
+  }, [trainer, location]);
 
   useEffect(() => {
     const fetchTrainer = async () => {
       try {
-        if(!id) return
+        if (!id) return
         setLoading(true);
         const response = await PublicTrainersService.getTrainerDetails(id)
         setTrainer(response.trainer);
-      } catch (err:any) {
-        let errMesg=err.response?.data?.message
-         setToast({message:errMesg,type:'error'});
+      } catch (err: any) {
+        let errMesg = err.response?.data?.message
+        setToast({ message: errMesg, type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -46,6 +47,22 @@ const TrainerProfile = () => {
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-red-600"></div>
     </div>
   );
+const handleMessageClick = async () => {
+  if (!id || !trainer) return;
+
+  try {
+    const response = await ChatService.checkExistingChat(id, 'user');
+    
+    if (response.exists && response.chatId) {
+      navigate(`/chat/${trainer.trainerId}/${response.chatId}`);
+    } else {
+      navigate(`/chat/${trainer.trainerId}`);
+    }
+  } catch (error) {
+    console.error("Error fetching chat ID:", error);
+    navigate(`/chat/${trainer.trainerId}`);
+  }
+};
 
   if (!trainer) return <p className="text-center mt-20 text-gray-500 font-bold">Trainer not found</p>;
 
@@ -53,15 +70,15 @@ const TrainerProfile = () => {
     <div className="min-h-screen bg-[#F8FAFC]">
       <UserNavBar />
       {toast && (
-        <Toast 
-          message={toast.message} 
-          type="success" 
-          onClose={() => setToast(null)} 
+        <Toast
+          message={toast.message}
+          type="success"
+          onClose={() => setToast(null)}
         />
       )}
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-10">
-          
+
 
           <div className="lg:w-1/3 space-y-6">
             <div className="relative group overflow-hidden rounded-[2.5rem] bg-white p-2 shadow-2xl shadow-gray-200">
@@ -71,16 +88,15 @@ const TrainerProfile = () => {
                 className="w-full h-[450px] object-cover rounded-[2.3rem] transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute top-6 left-6">
-                <span className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg ${
-                  trainer.status ? "bg-green-500 text-white" : "bg-gray-500 text-white"
-                }`}>
+                <span className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg ${trainer.status ? "bg-green-500 text-white" : "bg-gray-500 text-white"
+                  }`}>
                   {trainer.status ? "● Active Now" : "Currently Offline"}
                 </span>
               </div>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-3 px-6 py-5 bg-white border border-gray-200 text-gray-800 rounded-2xl font-black shadow-sm hover:bg-gray-50 hover:border-red-200 transition-all group">
-              <FaRegCommentDots className="text-red-500 text-xl group-hover:scale-110 transition-transform" /> 
+            <button className="w-full flex items-center justify-center gap-3 px-6 py-5 bg-white border border-gray-200 text-gray-800 rounded-2xl font-black shadow-sm hover:bg-gray-50 hover:border-red-200 transition-all group" onClick={handleMessageClick}>
+              <FaRegCommentDots className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
               MESSAGE TRAINER
             </button>
           </div>
@@ -96,7 +112,7 @@ const TrainerProfile = () => {
                     <FaMapMarkerAlt className="text-red-500" /> {trainer.address || "Global Remote Coaching"}
                   </p>
                 </div>
-                
+
                 <div className="flex gap-4">
                   <div className="text-center bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100">
                     <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Experience</p>
@@ -156,7 +172,7 @@ const TrainerProfile = () => {
                   <h4 className="text-red-900 font-black text-xl">Ready to start?</h4>
                   <p className="text-red-700/70 text-sm">Secure your slot for the upcoming week.</p>
                 </div>
-                <button 
+                <button
                   onClick={() => navigate(`/trainer-booking/${trainer.trainerId}`)}
                   className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-red-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-red-200 hover:bg-red-700 transition-all"
                 >
