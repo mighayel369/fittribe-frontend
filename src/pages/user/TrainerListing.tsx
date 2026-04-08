@@ -40,7 +40,6 @@ const TrainerListing = () => {
               name: curr.name,
             })
           );
-          console.log(programData)
           setPrograms(programData)
         }
       } catch (error) {

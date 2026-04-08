@@ -9,15 +9,16 @@ import {
   DollarSign, Star, Clock, TrendingUp,
   AlertCircle, MessageSquare, Calendar, ChevronRight
 } from "lucide-react";
-import {type PendingActionDTO, type RecentChatDTO, type TrainerDashboardMainData } from "../../types/dashboardType";
-import {type UpcomingAppointmentDTO } from "../../types/dashboardType";
+import { type PendingActionDTO, type RecentChatDTO, type TrainerDashboardMainData } from "../../types/dashboardType";
+import { type UpcomingAppointmentDTO } from "../../types/dashboardType";
 import DEFAULT_IMAGE from '../../assets/default image.png'
+import { TrainerBookingService } from "../../services/trainer/trainer.booking";
 const TrainerHome = () => {
-  const [dashData, setDashData] = useState<TrainerDashboardMainData|null>(null);
+  const [dashData, setDashData] = useState<TrainerDashboardMainData | null>(null);
   const [appointments, setAppointments] = useState<UpcomingAppointmentDTO[]>([]);
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
   const [loading, setLoading] = useState(true);
-  const navigate=useNavigate()
+  const navigate = useNavigate()
   const weekDays = useMemo(() => {
     const days = [];
     const startOfWeek = new Date();
@@ -40,21 +41,33 @@ const TrainerHome = () => {
     loadInitialDashboard();
   }, []);
 
-const loadInitialDashboard = async () => {
-  try {
-    setLoading(true);
-    const [mainResponse, appointmentResponse] = await Promise.all([
-      TrainerDashboardService.getMetrics(),
-      TrainerDashboardService.getDailyAgenda(new Date().toISOString())
-    ]);
+  const loadInitialDashboard = async () => {
+    try {
+      setLoading(true);
+      const [mainResponse, appointmentResponse] = await Promise.all([
+        TrainerDashboardService.getMetrics(),
+        TrainerDashboardService.getDailyAgenda(new Date().toISOString())
+      ]);
 
-    setDashData(mainResponse.dashboardData); 
-    setAppointments(appointmentResponse.dashboardData.upcomingAppointments);
-    console.log(appointments)
+      setDashData(mainResponse.dashboardData);
+      setAppointments(appointmentResponse.dashboardData.upcomingAppointments);
+      console.log(appointments)
+    } catch (error) {
+      console.error("Dashboard Load Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const handleStartSession = async (bookingId: string) => {
+  try {
+    const response = await TrainerBookingService.getBookingLink(bookingId);
+    
+    if (response.success && response.data) {
+      navigate(`/trainer/session/${bookingId}?link=${encodeURIComponent(response.data)}`);
+    }
   } catch (error) {
-    console.error("Dashboard Load Error:", error);
-  } finally {
-    setLoading(false);
+    console.error("Failed to handle session action:", error);
   }
 };
 
@@ -110,7 +123,7 @@ const loadInitialDashboard = async () => {
 
               <div className="flex flex-wrap gap-3">
                 {dashData.pendingActions.map((action: PendingActionDTO, index: number) => (
-                  <div key={index} className="w-[260px] bg-slate-50 border border-slate-100 p-3 rounded-2xl flex flex-col justify-between transition-all hover:border-rose-200" onClick={()=>navigate(`/trainer/bookings/${action.bookingId}`)}>
+                  <div key={index} className="w-[260px] bg-slate-50 border border-slate-100 p-3 rounded-2xl flex flex-col justify-between transition-all hover:border-rose-200" onClick={() => navigate(`/trainer/bookings/${action.bookingId}`)}>
                     <div className="flex items-start gap-3">
                       <div className="p-2 bg-white text-rose-500 rounded-xl shadow-sm flex-shrink-0">
                         <Clock size={14} />
@@ -151,27 +164,71 @@ const loadInitialDashboard = async () => {
               </div>
 
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {appointments.length > 0 ? (
                   appointments.map((app: UpcomingAppointmentDTO, idx: number) => (
-                    <div key={idx} className="group flex items-center justify-between p-3 bg-white border border-slate-100 rounded-2xl hover:border-indigo-200" onClick={()=>navigate(`/trainer/bookings/${app.bookingId}`)}>
-                      <div className="flex items-center gap-3">
-                        <img src={app.profilePic || DEFAULT_IMAGE} className="w-10 h-10 rounded-full object-cover" alt="" />
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-xs">{app.clientName}</h4>
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded-md">{app.program}</span>
-                            <span className="text-[9px] text-slate-400 font-medium">{app.timeSlot}</span>
-                          </div>
+                    <div
+                      key={idx}
+                      className="group grid grid-cols-12 items-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer"
+                      onClick={() => navigate(`/trainer/bookings/${app.bookingId}`)}
+                    >
+      
+                      <div className="col-span-5 flex items-center gap-3">
+                        <img
+                          src={app.profilePic || DEFAULT_IMAGE}
+                          className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-50"
+                          alt=""
+                        />
+                        <div className="truncate">
+                          <h4 className="font-bold text-slate-900 text-sm truncate">
+                            {app.clientName}
+                          </h4>
+                          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
+                            Client
+                          </p>
                         </div>
                       </div>
-                      <span className={`px-3 py-1 text-[10px] font-bold rounded-lg uppercase ${app.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                        {app.status}
-                      </span>
+
+                      <div className="col-span-3 flex flex-col justify-center">
+                        <span className="text-[10px] font-bold text-indigo-600 uppercase truncate">
+                          {app.program}
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          {app.timeSlot}
+                        </span>
+                      </div>
+
+                      <div className="col-span-2 flex justify-center">
+                        <span
+                          className={`px-2.5 py-1 text-[9px] font-black rounded-lg uppercase tracking-wider border ${app.status === "confirmed"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              : "bg-amber-50 text-amber-600 border-amber-100"
+                            }`}
+                        >
+                          {app.status}
+                        </span>
+                      </div>
+
+
+                      <div className="col-span-2 flex justify-end">
+                        {app.status === "confirmed" &&(
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartSession(app.bookingId)
+                            }}
+                            className="flex items-center justify-center gap-2 w-full max-w-[100px] py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-sm"
+                          >
+                            {app.meetLink ? "Join Now" : "Start"} <ChevronRight size={12} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-slate-400 text-xs py-10">No appointments for this day.</p>
+                  <div className="py-12 flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                    <p className="text-slate-400 font-bold text-xs">No appointments for this day.</p>
+                  </div>
                 )}
               </div>
             </section>
@@ -190,7 +247,7 @@ const loadInitialDashboard = async () => {
                     <div key={index} className="flex items-center gap-3 group cursor-pointer hover:bg-slate-50 p-1 rounded-xl transition-all">
                       <div className="relative flex-shrink-0">
                         <img
-                          src={chat.profilePic ||DEFAULT_IMAGE}
+                          src={chat.profilePic || DEFAULT_IMAGE}
                           className="w-8 h-8 rounded-full object-cover border border-slate-100"
                           alt=""
                         />
@@ -211,7 +268,7 @@ const loadInitialDashboard = async () => {
                     </div>
                   ))
                 ) : (
-               
+
                   <div className="py-8 text-center">
                     <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 mb-3">
                       <MessageSquare size={16} className="text-slate-300" />
@@ -234,9 +291,9 @@ const loadInitialDashboard = async () => {
                 <GenericAreaChart
                   data={dashData.performanceData}
                   xKey="month"
-                        series={[
-                      { key: "sessionCount", color: "#4F46E5", name: "Sessions Completed" }
-                    ]} 
+                  series={[
+                    { key: "sessionCount", color: "#4F46E5", name: "Sessions Completed" }
+                  ]}
                 />
               </div>
             </div>

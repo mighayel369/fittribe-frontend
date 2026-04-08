@@ -68,5 +68,10 @@ rescheduleByTrainer: async (bookingId: string, newDate: string, newTimeSlot: str
         }
     );
     return data;
+},
+
+getBookingLink:async (bookingId:string)=>{
+  const {data}=await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.GET_MEET_LINK(bookingId))
+  return data
 }
 };
