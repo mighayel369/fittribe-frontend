@@ -5,7 +5,7 @@ import Pagination from "../../components/Pagination";
 import SearchInput from "../../components/SearchInput";
 import GenericTable from "../../components/GenericTable";
 import { FaCalendarAlt } from "react-icons/fa";
-import {type Booking } from "../../types/bookingType";
+import { type Booking } from "../../types/bookingType";
 import { UserBookingService } from "../../services/user/user.booking";
 import Toast from "../../components/Toast";
 
@@ -16,8 +16,8 @@ const Bookings = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
-   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
- 
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
 
   useEffect(() => {
     document.title = "FitTribe | My Bookings";
@@ -27,13 +27,11 @@ const Bookings = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const res = await UserBookingService.getBookingHistory(page,search)
-      console.log(res)
+      const res = await UserBookingService.getBookingHistory(page, search, "upcoming");
       setBookings(res.bookingData);
       setTotalPages(res.totalPages);
-    } catch (err:any) {
-            let errMesg=err.response?.data?.message
-      setToast({message:errMesg,type:'error'})
+    } catch (err: any) {
+      setToast({ message: err.response?.data?.message, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -54,13 +52,13 @@ const Bookings = () => {
       <UserNavBar />
 
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
-                      {toast && (
-                <Toast
-                  message={toast.message}
-                  type={toast.type}
-                  onClose={() => setToast(null)}
-                />
-              )}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
           <div>
             <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">
@@ -119,12 +117,12 @@ const Bookings = () => {
               {
                 header: "Date",
                 accessor: "date",
-                render: (row) =>{
+                render: (row) => {
                   const dateObj = row.bookedDate ? new Date(row.bookedDate) : null;
                   return (
                     <div className="flex flex-col">
                       <span className="text-gray-900 font-bold">
-                        {dateObj 
+                        {dateObj
                           ? dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                           : 'N/A'}
                       </span>

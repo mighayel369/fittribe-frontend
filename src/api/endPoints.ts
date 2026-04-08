@@ -99,7 +99,8 @@ export const API_ENDPOINTS = {
     REJECT: 'trainer/bookings/reject',
     APPROVE_RESCHEDULE: 'trainer/bookings/reschedule/approve',
     REJECT_RESCHEDULE: 'trainer/bookings/reschedule/reject',
-    RESCHEDULE_BY_TRAINER:'trainer/bookings/reschedule'
+    RESCHEDULE_BY_TRAINER:'trainer/bookings/reschedule',
+    GET_MEET_LINK:(bookingId:string)=>`trainer/bookings/get-meetlink/${bookingId}`
   },
 
   USER_BOOKINGS: {

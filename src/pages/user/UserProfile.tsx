@@ -17,7 +17,7 @@ import {
   FaLock
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
+import { UserBookingService } from "../../services/user/user.booking";
 import Toast from "../../components/Toast";
 import { type ValidationErrors } from "../../validations/ValidationErrors";
 import { type changePassword } from "../../types/changePasswordType";
@@ -30,6 +30,7 @@ import { AuthService } from "../../services/shared/auth.service";
 import { useChat } from "../../hooks/useChat";
 import { formatChatTime } from "../../helperFunctions/formatdate";
 import { ChatService } from "../../services/shared/chat.service";
+import { userBookingHistoryColumns } from "../../constants/TableColumns/UserBookingColumns";
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState<number>(1);
@@ -50,8 +51,9 @@ const UserProfile: React.FC = () => {
   });
   const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
   const [isPasswordOpen, setIsPasswordOpen] = useState<boolean>(false);
-
-  const { chatList, loading } = useChat();
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const { chatList } = useChat();
   const walletCoulmns = UserWalletColumns(navigate)
   useEffect(() => {
     document.title = "FitTribe | My Account";
@@ -63,6 +65,36 @@ const UserProfile: React.FC = () => {
       fetchWalletData();
     }
   }, [page, activeTab]);
+
+
+  useEffect(() => {
+    if (activeTab === "schedule" || activeTab === "history") {
+      setPage(1);
+      fetchBookings(activeTab === "schedule" ? "today" : "history");
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === "schedule" || activeTab === "history") {
+      fetchBookings(activeTab === "schedule" ? "today" : "history");
+    }
+  }, [page]);
+
+  const fetchBookings = async (filterType: "today" | "history") => {
+    try {
+      setBookingLoading(true);
+      const res = await UserBookingService.getBookingHistory(page, "", filterType);
+      if (res) {
+        setBookings(res.bookingData);
+        console.log(res)
+        setTotalPages(res.totalPages);
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    } finally {
+      setBookingLoading(false);
+    }
+  };
 
   const getUserData = async () => {
     try {
@@ -91,17 +123,17 @@ const UserProfile: React.FC = () => {
     }
   };
 
-const handleChatClick = async (chat: any) => {
-  try {
-    if (chat.unReadCount > 0) {
-      await ChatService.markAsRead('user', chat.chatId);
+  const handleChatClick = async (chat: any) => {
+    try {
+      if (chat.unReadCount > 0) {
+        await ChatService.markAsRead('user', chat.chatId);
+      }
+
+      navigate(`/chat/${chat.id}/${chat.chatId}`);
+    } catch (error) {
+      navigate(`/chat/${chat.id}/${chat.chatId}`);
     }
-    
-    navigate(`/chat/${chat.id}/${chat.chatId}`);
-  } catch (error) {
-    navigate(`/chat/${chat.id}/${chat.chatId}`);
-  }
-};
+  };
   const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -151,6 +183,8 @@ const handleChatClick = async (chat: any) => {
       setPasswordLoading(false);
     }
   };
+
+  const bookingColumns = userBookingHistoryColumns((id) => navigate(`/bookings/${id}`));
 
   const tabs = [
     { id: "schedule", label: "My Schedule", icon: <FaCalendarAlt /> },
@@ -265,13 +299,83 @@ const handleChatClick = async (chat: any) => {
           )}
 
           {activeTab === "schedule" && (
-            <div className="text-center py-20">
-              <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaCalendarAlt className="text-3xl text-blue-500" />
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="flex justify-between items-center px-2">
+                <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                  <div className="p-2 bg-blue-600 text-white rounded-lg text-sm"><FaCalendarAlt /></div>
+                  Today's Sessions
+                </h3>
               </div>
-              <h3 className="text-xl font-bold">Coming Up Next</h3>
-              <p className="text-gray-500 mt-2">No training sessions scheduled for today.</p>
-              <button onClick={() => navigate('/trainers')} className="mt-6 text-red-600 font-bold hover:underline">Find a Trainer</button>
+
+              {bookingLoading ? (
+                <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div></div>
+              ) : bookings.length > 0 ? (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {bookings.map((booking) => (
+                    <div
+                      key={booking.bookingId}
+                      className="group p-5 bg-white border border-gray-100 rounded-[2rem] hover:shadow-xl hover:border-red-100 transition-all flex items-center gap-5"
+                    >
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-gray-50">
+                        <img
+                          src={booking.trainerProfilePic || DEFAULT_IMAGE}
+                          className="w-full h-full object-cover"
+                          alt="Trainer"
+                        />
+                      </div>
+
+                      <div className="flex-1">
+                        <h4 className="font-black text-gray-900 group-hover:text-red-600 transition-colors">
+                          {booking.trainerName}
+                        </h4>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          {booking.bookedProgram}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="px-3 py-1 bg-gray-900 text-white text-[10px] font-black rounded-full uppercase tracking-tighter">
+                            {booking.bookedTime}
+                          </span>
+                          <span className="text-[10px] font-bold text-green-500 uppercase">
+                            {booking.bookingStatus}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {booking.meetLink && (
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/session/${booking.bookingId}?link=${encodeURIComponent(
+                                  booking.meetLink
+                                )}`
+                              )
+                            }
+                            className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 animate-pulse"
+                          >
+                            Join Now
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => navigate(`/bookings/${booking.bookingId}`)}
+                          className="p-3 bg-gray-50 text-gray-400 rounded-xl group-hover:bg-red-600 group-hover:text-white transition-all"
+                        >
+                          <FaArrowRight />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
+                  <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <FaCalendarAlt className="text-2xl text-gray-300" />
+                  </div>
+                  <p className="text-gray-400 font-medium">No training sessions scheduled for today.</p>
+                  <button onClick={() => navigate('/trainers')} className="mt-4 text-sm font-bold text-red-600 hover:text-red-700 underline">Find a Trainer</button>
+                </div>
+              )}
             </div>
           )}
           {activeTab === "chat" && (
@@ -353,8 +457,36 @@ const handleChatClick = async (chat: any) => {
             </div>
           )}
 
-          {activeTab === "history" && <p className="text-gray-500 italic">No previous booking history found.</p>}
+          {activeTab === "history" && (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="flex justify-between items-center px-2">
+                <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                  <div className="p-2 bg-red-600 text-white rounded-lg text-sm"><FaHistory /></div>
+                  Previous Sessions
+                </h3>
+              </div>
 
+              <div className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
+                <GenericTable
+                  data={bookings}
+                  columns={bookingColumns}
+                  page={page}
+                  loading={bookingLoading}
+                  emptyMessage="No previous booking history found."
+                />
+
+                {totalPages >= 1 && (
+                  <div className="p-6 border-t border-gray-50">
+                    <Pagination
+                      page={page}
+                      totalPages={totalPages}
+                      onPageChange={(newPage) => setPage(newPage)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {activeTab === "settings" && (
             <div className="max-w-2xl space-y-4">
               <div className="mb-6">
