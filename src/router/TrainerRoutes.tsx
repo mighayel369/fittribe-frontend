@@ -13,6 +13,8 @@ import BookingDetails from '../pages/trainer/BookingDetails';
 import TrainerLeaveManagement from '../pages/trainer/TrainerLeaveManagment';
 import ChatPage from '../pages/trainer/ChatPage';
 import VideoSession from '../pages/shared/VideoSession';
+import ReviewsPage from '../pages/trainer/ReviewsPage';
+import NotFoundPage from '../components/NotFound';
 const TrainerRoutes = () => (
   <Routes>
     <Route path="login" element={<TrainerPublicRoute><TrainerLogin /></TrainerPublicRoute>} />
@@ -27,6 +29,8 @@ const TrainerRoutes = () => (
     <Route path="/bookings/:id" element={<TrainerPrivateRoute><BookingDetails /></TrainerPrivateRoute>} />
     <Route path="/chats" element={<TrainerPrivateRoute><ChatPage /></TrainerPrivateRoute>} />
     <Route path="/session/:bookingId" element={<TrainerPrivateRoute><VideoSession /></TrainerPrivateRoute>} />
+    <Route path="/reviews" element={<TrainerPrivateRoute><ReviewsPage /></TrainerPrivateRoute>} />
+    <Route path="*" element={<NotFoundPage />} />
   </Routes>
 );
 

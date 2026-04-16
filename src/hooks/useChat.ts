@@ -4,34 +4,41 @@ import { getSocket } from '../utils/socket';
 import { ChatService } from '../services/shared/chat.service';
 
 
-export const useChat = (chatId?: string, receiverId?: string) => {
+export const useChat = (chatId?: string, receiverId?: string, search: string = "") => {
     const [messages, setMessages] = useState<any[]>([]);
     const [chatList, setChatList] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const { user, accessToken,role } = useAppSelector((state) => state.auth);
+    const { user, accessToken, role } = useAppSelector((state) => state.auth);
 
-    useEffect(() => {
-        const fetchChatData = async () => {
-          if (!user?.id || !role) return;
-            setLoading(true);
-            console.log(role)
-            try {
-                if (chatId) {
-                    const response = await ChatService.getMessage(chatId,role)
-                    setMessages(response.data);
-                } else {
-                    const response = await ChatService.getChatLists(role)
-                    setChatList(response.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch chat data:", error);
-            } finally {
-                setLoading(false);
+useEffect(() => {
+    const fetchChatData = async () => {
+        if (!user?.id || !role) return;
+        setLoading(true);
+        
+        try {
+            const listResponse = await ChatService.getChatLists(role, search);
+            setChatList(listResponse.data);
+
+            if (chatId) {
+                const messageResponse = await ChatService.getMessage(chatId, role);
+                setMessages(messageResponse.data);
+            } else {
+                setMessages([]);
             }
-        };
+        } catch (error) {
+            console.error("Failed to fetch chat data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const delayDebounceFn = setTimeout(() => {
         fetchChatData();
-    }, [user?.id, chatId,role]);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+}, [user?.id, chatId, role, search]);
 
     useEffect(() => {
         if (user?.id && accessToken) {
@@ -68,7 +75,7 @@ export const useChat = (chatId?: string, receiverId?: string) => {
         const socket = getSocket(user.id);
         const newMessage = {
             senderId: user.id,
-            chatId: chatId || null, 
+            chatId: chatId || null,
             receiverId: receiverId,
             content: text,
             type: "text",

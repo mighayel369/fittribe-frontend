@@ -25,29 +25,29 @@ export const TrainerBookingService = {
   },
 
   acceptBooking: async (bookingId: string) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.ACCEPT, { 
-      bookingId 
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.ACCEPT, {
+      bookingId
     });
     return data;
   },
 
   rejectBooking: async (bookingId: string, reason: string) => {
     const { data } = await axiosInstance.patch(
-      API_ENDPOINTS.TRAINER_BOOKINGS.REJECT, 
+      API_ENDPOINTS.TRAINER_BOOKINGS.REJECT,
       { reason, bookingId }
     );
     return data;
   },
 
   approveReschedule: async (bookingId: string) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.APPROVE_RESCHEDULE, { 
-      bookingId 
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.APPROVE_RESCHEDULE, {
+      bookingId
     });
     return data;
   },
 
   rejectReschedule: async (bookingId: string, reason: string) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.REJECT_RESCHEDULE, { 
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.REJECT_RESCHEDULE, {
       bookingId,
       reason
     });
@@ -59,19 +59,24 @@ export const TrainerBookingService = {
     return data;
   },
 
-rescheduleByTrainer: async (bookingId: string, newDate: string, newTimeSlot: string) => {
-    const { data } = await axiosInstance.put(API_ENDPOINTS.TRAINER_BOOKINGS.RESCHEDULE_BY_TRAINER, 
-        { 
-            bookingId,
-            newDate, 
-            newTimeSlot
-        }
+  rescheduleByTrainer: async (bookingId: string, newDate: string, newTimeSlot: string) => {
+    const { data } = await axiosInstance.put(API_ENDPOINTS.TRAINER_BOOKINGS.RESCHEDULE_BY_TRAINER,
+      {
+        bookingId,
+        newDate,
+        newTimeSlot
+      }
     );
     return data;
-},
+  },
 
-getBookingLink:async (bookingId:string)=>{
-  const {data}=await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.GET_MEET_LINK(bookingId))
-  return data
-}
+  getBookingLink: async (bookingId: string) => {
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.GET_MEET_LINK(bookingId))
+    return data
+  },
+
+  completeSession: async (bookingId: string) => {
+    const response = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.MARK_AS_COMPLETE(bookingId));
+    return response.data;
+  }
 };

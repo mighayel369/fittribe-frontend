@@ -1,15 +1,10 @@
-import {type ColumnDefinition } from "../../types/table-types";
+import { type ColumnDefinition } from "../../types/table-types";
+import { FaStar, FaCheckCircle } from "react-icons/fa";
 
-const statusStyles: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  confirmed: "bg-emerald-500 text-white border-emerald-200",
-  completed: "bg-blue-50 text-blue-700 border-blue-200",
-  cancelled: "bg-rose-50 text-rose-700 border-rose-200",
-  reschedule_requested: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  rejected: "bg-red-500 text-white border-red-200"
-};
-
-export const userBookingHistoryColumns = (onView: (id: string) => void): ColumnDefinition<any>[] => [
+export const userBookingHistoryColumns = (
+  onView: (id: string) => void,
+  onReview: (booking: any) => void 
+): ColumnDefinition<any>[] => [
   {
     header: "Trainer",
     accessor: "trainer",
@@ -51,14 +46,26 @@ export const userBookingHistoryColumns = (onView: (id: string) => void): ColumnD
     )
   },
   {
-    header: "Status",
-    accessor: "status",
+    header: "Feedback",
+    accessor: "isReviewed",
     render: (b: any) => {
-      const style = statusStyles[b.bookingStatus] || "bg-gray-50 text-gray-600 border-gray-200";
+      if (b.isReviewed) {
+        return (
+          <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
+            <FaCheckCircle size={10} />
+            <span className="text-[9px] font-black uppercase tracking-widest">Reviewed</span>
+          </div>
+        );
+      }
+
       return (
-        <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase border tracking-widest ${style}`}>
-          {b.bookingStatus}
-        </span>
+        <button
+          onClick={() => onReview(b)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[9px] font-black uppercase rounded-lg transition-all shadow-sm border border-amber-600/20 group"
+        >
+          <FaStar className="group-hover:rotate-12 transition-transform" size={10} />
+          Add Review
+        </button>
       );
     }
   },

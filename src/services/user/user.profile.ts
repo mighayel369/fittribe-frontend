@@ -22,7 +22,10 @@ export const UserProfileService = {
     });
     return data;
   },
-
+    changePassword: async (payload: any) => {
+    const { data } = await axiosInstance.post(API_ENDPOINTS.USER_ACCOUNT.CHANGE_PASSWORD,payload);
+    return data;
+  },
 
   verifySession: async () => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.USER_ACCOUNT.VERIFY_SESSION);

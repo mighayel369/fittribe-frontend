@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
 import GenericTable from "../../components/GenericTable";
 import { TrainerWalletColumns } from "../../constants/TableColumns/TrainerWalletColumn";
+import { FaLock, FaArrowRight, FaHistory, FaCog } from "react-icons/fa";
 import {
   FaMapMarkerAlt,
   FaDumbbell,
@@ -14,12 +15,14 @@ import {
   FaCamera,
   FaWallet
 } from "react-icons/fa";
+import Toast from "../../components/Toast";
 import { MdWork } from "react-icons/md";
 import { WalletService } from "../../services/shared/wallet.service";
 import { TrainerProfileService } from "../../services/trainer/trainer.profile";
 import DEFAULT_IMAGE from '../../assets/default image.png'
-
-
+import { type ValidationErrors } from "../../validations/ValidationErrors";
+import { type changePassword } from "../../types/changePasswordType";
+import { validatePasswordChange } from "../../validations/validatePassword";
 const TrainerProfile = () => {
   const navigate = useNavigate()
   const [trainer, setTrainer] = useState<any>(null);
@@ -31,6 +34,16 @@ const TrainerProfile = () => {
   const [activeHoldCount, setActiveHoldCount] = useState<number>(0);
   const [walletLoading, setWalletLoading] = useState(false);
   const walletColumns = TrainerWalletColumns(navigate);
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordErrors, setPasswordErrors] = useState<any>({});
   useEffect(() => {
     document.title = "FitTribe | Profile";
   }, []);
@@ -41,6 +54,38 @@ const TrainerProfile = () => {
   const handleEditProfile = () => {
     navigate("/trainer/trainer-profile/edit-profile");
   };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validationErrors: ValidationErrors<changePassword> = validatePasswordChange(passwordData);
+    console.log(passwordData)
+    setPasswordErrors(validationErrors);
+    console.log(validationErrors)
+    console.log(passwordErrors)
+    if (Object.keys(validationErrors).length > 0) return;
+    try {
+      setPasswordLoading(true);
+
+      const res = await TrainerProfileService.changePassword({
+        oldPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      console.log(res)
+      if (res.success) {
+        setToastType("success");
+        setToastMessage(res.message ?? "Password updated successfully!");
+        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setIsPasswordOpen(false);
+      }
+    } catch (error: any) {
+      console.log(error)
+      setToastType("error");
+      setToastMessage(error.response.data.message ?? "An error occurred. Please try again.");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchTrainerProfile = async () => {
       try {
@@ -63,9 +108,9 @@ const TrainerProfile = () => {
   const fetchWallet = async () => {
     try {
       setWalletLoading(true);
-      const res = await WalletService.fetchWalletData('trainer',page,5);
+      const res = await WalletService.fetchWalletData('trainer', page, 5);
       if (res?.success) {
-        const {balance,data,total,activeHoldCount}=res.wallet
+        const { balance, data, total, activeHoldCount } = res.wallet
         setWalletTransactions(data);
         setTotalPages(total);
         setWalletBalance(balance)
@@ -105,6 +150,9 @@ const TrainerProfile = () => {
       <TrainerSideBar />
 
       <main className="ml-72 pt-24 px-10">
+              {toastMessage && (
+        <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
+      )}
         <h1 className="text-4xl font-bold mb-10 text-gray-800">Profile</h1>
 
         {trainer ? (
@@ -315,10 +363,90 @@ const TrainerProfile = () => {
           )}
 
           {activeTab === "settings" && (
-            <div className="bg-white rounded-xl shadow p-6">
-              <p className="text-gray-600">
-                Settings will be available soon.
-              </p>
+            <div className="max-w-2xl space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-[420px]">
+              <div className="mb-6">
+                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Account Settings</h3>
+                <p className="text-gray-500 text-sm font-medium">Manage your security and preferences</p>
+              </div>
+
+              <div className="border border-gray-100 rounded-[1.5rem] overflow-hidden bg-gray-50/50 shadow-sm">
+                <button
+                  onClick={() => setIsPasswordOpen(!isPasswordOpen)}
+                  className="w-full flex items-center justify-between p-5 bg-white hover:bg-gray-50 transition-colors border-b border-gray-50"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+                      <FaLock className="text-sm" />
+                    </div>
+                    <span className="font-bold text-gray-800">Password & Security</span>
+                  </div>
+                  <FaArrowRight className={`text-gray-300 text-xs transition-transform duration-300 ${isPasswordOpen ? 'rotate-90' : ''}`} />
+                </button>
+
+                {isPasswordOpen && (
+                  <div className="p-6 bg-white animate-in slide-in-from-top-2 duration-300">
+                    <form onSubmit={handleChangePassword} className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Current Password</label>
+                        <input
+                          type="password"
+                          required
+                          value={passwordData.currentPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-red-500/10 focus:outline-none"
+                          placeholder="••••••••"
+                        />
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">New Password</label>
+                          <input
+                            type="password"
+                            required
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-red-500/10 focus:outline-none"
+                            placeholder="••••••••"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Confirm New</label>
+                          <input
+                            type="password"
+                            required
+                            value={passwordData.confirmPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-red-500/10 focus:outline-none"
+                            placeholder="••••••••"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={passwordLoading}
+                        className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-600 transition-all disabled:opacity-50"
+                      >
+                        {passwordLoading ? "Updating..." : "Save New Password"}
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
+
+              <div className="border border-gray-100 rounded-[1.5rem] overflow-hidden bg-white shadow-sm">
+                <div className="flex items-center justify-between p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                      <FaCog className="text-sm" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-gray-800 text-sm">Email Notifications</span>
+                      <span className="text-[10px] text-gray-400 font-medium tracking-tight">Receive updates about your sessions</span>
+                    </div>
+                  </div>
+                  <input type="checkbox" className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-red-600 transition-all cursor-pointer relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-3 after:h-3 after:rounded-full after:transition-all checked:after:translate-x-5 shadow-inner" />
+                </div>
+              </div>
             </div>
           )}
         </div>

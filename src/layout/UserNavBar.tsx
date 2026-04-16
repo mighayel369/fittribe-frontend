@@ -102,7 +102,7 @@ const UserNavBar = () => {
                 <FaChevronDown className={`chevron ${showDropdown ? "rotate" : ""}`} />
 
                 {showDropdown && (
-                  <div className="nav-dropdown">
+                  <div className="nav-dropdown mt-0">
                     <Link to="/profile">My Account</Link>
                     <Link to="/bookings">My Bookings</Link>
                     <div className="nav-divider"></div>

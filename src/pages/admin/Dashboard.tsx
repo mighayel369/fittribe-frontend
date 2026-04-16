@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdminPlatformService } from "../../services/admin/admin.platform.service";
+import { FileDownIcon } from "lucide-react";
 import AdminSideBar from "../../layout/AdminSideBar";
 import AdminTopBar from "../../layout/AdminTopBar";
 import StatCard from "../../components/StatCard";
@@ -9,44 +10,63 @@ import { DollarSign, Star, TrendingUp, Users, PieChart, Calendar } from "lucide-
 import { GenericPieChart } from "../../components/PieChart";
 import Toast from "../../components/Toast";
 import { useLocation } from 'react-router-dom';
-import {type AdminDashbardResponseDTO, type TopTrainersDTO } from "../../types/dashboardType";
+import { type AdminDashbardResponseDTO, type TopTrainersDTO } from "../../types/dashboardType";
 const Dashboard = () => {
-  const [dashboardData, setDashboardData] = useState<AdminDashbardResponseDTO|null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState<AdminDashbardResponseDTO | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
       const response = await AdminPlatformService.DashboardInsights();
       setDashboardData(response.dashboardData);
     } catch (err: any) {
-  const errorMsg = err.response?.data?.message || "Failed to load system analytics";
-  setToastMessage(errorMsg);
-} finally {
-  setLoading(false);
-}
+      const errorMsg = err.response?.data?.message || "Failed to load system analytics";
+      setToastMessage(errorMsg);
+    }
   }
-  let location=useLocation()
-useEffect(() => {
-  if (location.state?.message) {
-    setToastMessage(location.state.message);
-    window.history.replaceState({}, document.title);
-  }
-  fetchDashboardData();
-}, []);
+  let location = useLocation()
+  useEffect(() => {
+    if (location.state?.message) {
+      setToastMessage(location.state.message);
+      window.history.replaceState({}, document.title);
+    }
+    fetchDashboardData();
+  }, []);
+const handleExportReport = async () => {
+  try {
+    const res = await AdminPlatformService.ExportSystemReport();
+    
+    const blob = new Blob([res.data], { type: 'application/pdf' });
 
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center">Loading Analytics...</div>;
+    const url = window.URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    
+    const date = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `FitTribe-Dashboard-Report-${date}.pdf`);
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    setToastMessage("Report downloaded successfully!");
+  } catch (error) {
+    console.error("Export failed:", error);
+    setToastMessage("Failed to download report.");
   }
+};
+
 
   if (!dashboardData) {
-  return (
-    <div className="flex h-screen items-center justify-center flex-col gap-4">
-      <p className="text-slate-500 font-medium">Unable to load dashboard.</p>
-      <button onClick={fetchDashboardData} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Retry</button>
-    </div>
-  );
-}
+    return (
+      <div className="flex h-screen items-center justify-center flex-col gap-4">
+        <p className="text-slate-500 font-medium">Unable to load dashboard.</p>
+        <button onClick={fetchDashboardData} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Retry</button>
+      </div>
+    );
+  }
 
   const { metrics, performanceData, topTrainers, bookingStatus, peakHoursData } = dashboardData;
 
@@ -56,23 +76,30 @@ useEffect(() => {
       <AdminTopBar />
 
       <main className="ml-72 pt-28 px-10 pb-12">
-              {toastMessage && (
-                <Toast 
-                  message={toastMessage} 
-                  type="success" 
-                  onClose={() => setToastMessage(null)} 
-                />
-              )}
+        {toastMessage && (
+          <Toast
+            message={toastMessage}
+            type="success"
+            onClose={() => setToastMessage(null)}
+          />
+        )}
         <header className="flex justify-between items-end mb-10">
           <div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">System Analytics</h1>
             <p className="text-slate-500 font-medium">Monitoring platform growth and trainer performance.</p>
           </div>
           <div className="flex gap-3">
-            <button onClick={fetchDashboardData} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-indigo-700">
-              Refresh Data
-            </button>
-          </div>
+              <button
+                onClick={handleExportReport}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all"
+              >
+                <FileDownIcon size={16} />
+                Export CSV
+              </button>
+              <button onClick={fetchDashboardData} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-indigo-700">
+                Refresh Data
+              </button>
+            </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -163,7 +190,7 @@ useEffect(() => {
               <GenericPieChart data={bookingStatus} />
             </section>
 
-            <section className="bg-indigo-600 rounded-[2.5rem] p-8 shadow-xl text-white relative">
+            <section className="bg-indigo-600 rounded-[2.5rem] pt-3 pl-5 shadow-xl text-white relative">
               <div className="relative z-10">
                 <h3 className="text-xl font-black">Peak Hours</h3>
                 <p className="text-indigo-100 text-xs mb-6">Top 4 high-traffic slots</p>

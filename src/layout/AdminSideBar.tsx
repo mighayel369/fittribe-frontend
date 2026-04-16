@@ -4,12 +4,12 @@ import {
   LayoutDashboard, 
   Users, 
   UserSquare2, 
-  MessageSquare, 
   Wallet, 
   ChevronDown, 
   ChevronRight, 
   LogOut,
-  Layers
+  Layers,
+  Star
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -32,7 +32,8 @@ const AdminSidebar = () => {
     },
     { label: "User Directory", to: "/admin/users", icon: <Users size={18} /> },
     { label: "Programs", to: "/admin/programs", icon: <Layers size={18} /> },
-    { label: "Messages", to: "/admin/chats", icon: <MessageSquare size={18} /> },
+    { label: "Bookings", to: "/admin/bookings", icon: <LayoutDashboard size={18} /> },
+    { label: "Reviews", to: "/admin/reviews", icon: <Star size={18} /> },
     { label: "Wallet & Revenue", to: "/admin/wallet", icon: <Wallet size={18} /> },
   ];
 

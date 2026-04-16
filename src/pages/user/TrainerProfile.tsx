@@ -9,6 +9,7 @@ import { PublicTrainersService } from "../../services/public/trainers";
 import { useLocation } from 'react-router-dom';
 import Toast from "../../components/Toast";
 import { ChatService } from "../../services/shared/chat.service";
+import { FaStar, FaClock } from "react-icons/fa";
 const TrainerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const TrainerProfile = () => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   let location = useLocation()
+  const [reviewsData, setReviewsData] = useState<any>(null);
   useEffect(() => {
     if (location.state?.message) {
       setToast({ message: location.state.message, type: 'success' });
@@ -42,27 +44,41 @@ const TrainerProfile = () => {
     if (id) fetchTrainer();
   }, [id]);
 
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        if (!id) return;
+        const response = await PublicTrainersService.getTrainerReviews(id);
+        setReviewsData(response.data);
+        console.log(response.data)
+      } catch (err) {
+        console.error("Failed to fetch reviews");
+      }
+    };
+    fetchReviews();
+  }, [id]);
+
   if (loading) return (
     <div className="flex justify-center items-center h-screen bg-[#F8FAFC]">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-red-600"></div>
     </div>
   );
-const handleMessageClick = async () => {
-  if (!id || !trainer) return;
+  const handleMessageClick = async () => {
+    if (!id || !trainer) return;
 
-  try {
-    const response = await ChatService.checkExistingChat(id, 'user');
-    
-    if (response.exists && response.chatId) {
-      navigate(`/chat/${trainer.trainerId}/${response.chatId}`);
-    } else {
+    try {
+      const response = await ChatService.checkExistingChat(id, 'user');
+
+      if (response.exists && response.chatId) {
+        navigate(`/chat/${trainer.trainerId}/${response.chatId}`);
+      } else {
+        navigate(`/chat/${trainer.trainerId}`);
+      }
+    } catch (error) {
+      console.error("Error fetching chat ID:", error);
       navigate(`/chat/${trainer.trainerId}`);
     }
-  } catch (error) {
-    console.error("Error fetching chat ID:", error);
-    navigate(`/chat/${trainer.trainerId}`);
-  }
-};
+  };
 
   if (!trainer) return <p className="text-center mt-20 text-gray-500 font-bold">Trainer not found</p>;
 
@@ -87,12 +103,12 @@ const handleMessageClick = async () => {
                 alt={trainer.name}
                 className="w-full h-[450px] object-cover rounded-[2.3rem] transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute top-6 left-6">
+              {/* <div className="absolute top-6 left-6">
                 <span className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg ${trainer.status ? "bg-green-500 text-white" : "bg-gray-500 text-white"
                   }`}>
                   {trainer.status ? "● Active Now" : "Currently Offline"}
                 </span>
-              </div>
+              </div> */}
             </div>
 
             <button className="w-full flex items-center justify-center gap-3 px-6 py-5 bg-white border border-gray-200 text-gray-800 rounded-2xl font-black shadow-sm hover:bg-gray-50 hover:border-red-200 transition-all group" onClick={handleMessageClick}>
@@ -182,6 +198,78 @@ const handleMessageClick = async () => {
             </div>
           </div>
 
+        </div>
+        <div className="mt-16 border-t border-gray-100 pt-16">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-3xl font-semibold text-gray-900">
+                Client Reviews
+              </h2>
+              <p className="text-gray-500 font-medium">What the tribe says about {trainer.name}</p>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-2 text-2xl font-black text-gray-900">
+                <FaStar className="text-yellow-400" />
+                {reviewsData?.rating?.toFixed(1) || "0.0"}
+              </div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                {reviewsData?.totalReviewCount || 0} REVIEWS
+              </p>
+            </div>
+          </div>
+
+    <div className="relative">
+  <div className="grid md:grid-cols-2 gap-6 overflow-y-auto max-h-[400px] pb-24 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    {reviewsData?.reviews && reviewsData.reviews.length > 0 ? (
+      reviewsData.reviews.map((review: any, index: number) => (
+        <div 
+          key={index} 
+          className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"
+        >
+          <div className="absolute top-0 right-0 bg-indigo-50 text-indigo-600 px-4 py-1 text-[9px] font-black uppercase rounded-bl-2xl border-l border-b border-indigo-100">
+            {review.program}
+          </div>
+
+          <div className="flex items-center gap-4 mb-5">
+            <img
+              src={review.profilePic || DEFAULT_IMAGE}
+              alt={review.name}
+              className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm"
+            />
+            <div>
+              <h4 className="font-black text-slate-900 uppercase text-xs leading-tight">
+                {review.name}
+              </h4>
+              <div className="flex text-amber-400 text-[10px] mt-1">
+                {[...Array(5)].map((_, i) => (
+                  <FaStar key={i} className={i < review.rating ? "fill-current" : "text-slate-200"} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-slate-600 font-medium text-sm leading-relaxed mb-4 line-clamp-3 italic">
+            "{review.comment}"
+          </p>
+
+          <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+            <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-1">
+              <FaClock size={10} /> {review.time}
+            </span>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="col-span-2 text-center py-16 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No coach feedback found</p>
+      </div>
+    )}
+  </div>
+
+  {reviewsData?.reviews && reviewsData.reviews.length > 0 && (
+    <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/80 to-transparent pointer-events-none rounded-b-[3rem]"></div>
+  )}
+</div>
         </div>
       </main>
     </div>

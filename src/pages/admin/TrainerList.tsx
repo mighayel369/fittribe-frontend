@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCheckCircle,  FaSearch } from "react-icons/fa";
+import { FaCheckCircle, FaSearch } from "react-icons/fa";
 import { UserMinus, UserCheck, Eye } from "lucide-react";
 
 import AdminTopBar from "../../layout/AdminTopBar";
@@ -21,7 +21,7 @@ const TrainerList = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-  
+
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -36,7 +36,7 @@ const TrainerList = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearch(searchTerm);
-      setPage(1); 
+      setPage(1);
     }, 500);
 
     return () => clearTimeout(handler);
@@ -46,7 +46,7 @@ const TrainerList = () => {
     const fetchTrainers = async () => {
       try {
         setLoading(true);
-        const response = await  AdminTrainerService.getVerifiedTrainers(page, search);
+        const response = await AdminTrainerService.getVerifiedTrainers(page, search);
         setTrainers(response.data || []);
         setTotalPages(response.totalPages || 1);
       } catch (err: any) {
@@ -65,7 +65,7 @@ const TrainerList = () => {
     if (!selectedTrainer) return;
     try {
       const newStatus = !selectedTrainer.status;
-      const result = await  AdminTrainerService.updateTrainerStatus(
+      const result = await AdminTrainerService.updateTrainerStatus(
         selectedTrainer.trainerId,
         newStatus
       );
@@ -103,7 +103,7 @@ const TrainerList = () => {
       )}
 
       <main className="ml-72 pt-28 px-10 pb-12">
-    
+
         <header className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Trainer Directory</h1>
@@ -111,10 +111,10 @@ const TrainerList = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <SearchInput 
-              value={searchTerm} 
-              onChange={setSearchTerm} 
-              placeholder="Search by name or email..." 
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search by name or email..."
             />
             <button
               onClick={() => navigate("/admin/verify-trainer")}
@@ -157,26 +157,24 @@ const TrainerList = () => {
                 ),
                 className: "text-center",
               },
-{
-  header: "Status",
-  accessor: "status",
-  className: "text-center", 
-  render: (trainer) => (
-    <div className="flex justify-center items-center w-full">
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border ${
-        trainer.status 
-          ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
-          : "bg-rose-50 text-rose-600 border-rose-100"
-      }`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${
-          trainer.status ? 'bg-emerald-500' : 'bg-rose-500'
-        }`} />
-        
-        {trainer.status ? "Active" : "Blocked"}
-      </span>
-    </div>
-  ),
-},
+              {
+                header: "Status",
+                accessor: "status",
+                className: "text-center",
+                render: (trainer) => (
+                  <div className="flex justify-center items-center w-full">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border ${trainer.status
+                        ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                        : "bg-rose-50 text-rose-600 border-rose-100"
+                      }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${trainer.status ? 'bg-emerald-500' : 'bg-rose-500'
+                        }`} />
+
+                      {trainer.status ? "Active" : "Blocked"}
+                    </span>
+                  </div>
+                ),
+              },
               {
                 header: "Management",
                 accessor: "action",
@@ -191,11 +189,10 @@ const TrainerList = () => {
                     </button>
                     <button
                       title={trainer.status ? "Block Trainer" : "Unblock Trainer"}
-                      className={`p-2 rounded-lg transition-colors ${
-                        trainer.status 
-                        ? "text-slate-400 hover:text-rose-600 hover:bg-rose-50" 
-                        : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
-                      }`}
+                      className={`p-2 rounded-lg transition-colors ${trainer.status
+                          ? "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                          : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                        }`}
                       onClick={() => {
                         setSelectedTrainer(trainer);
                         setShowModal(true);
@@ -210,7 +207,7 @@ const TrainerList = () => {
             ]}
           />
 
-  
+
           {!loading && trainers.length === 0 && (
             <div className="py-24 flex flex-col items-center justify-center text-center">
               <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">

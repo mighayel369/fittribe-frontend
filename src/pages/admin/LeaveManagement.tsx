@@ -9,7 +9,7 @@ import { getAdminLeaveColumns } from "../../constants/TableColumns/LeaveColumns"
 import { ChevronLeft, ChevronRight, FileDown, Calendar as CalendarIcon } from "lucide-react";
 import Modal from "../../components/Modal";
 import Toast from "../../components/Toast";
-
+import { AdminPlatformService } from "../../services/admin/admin.platform.service";
 const LeaveManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [metrics, setMetrics] = useState<any>(null);
@@ -57,28 +57,57 @@ const LeaveManagement = () => {
     setShowModal(true);
   };
 
-const handleConfirmAction = async () => {
+  const handleConfirmAction = async () => {
     if (!selectedLeave || !actionType) return;
 
     try {
-        const status = actionType === 'approve' ? 'APPROVED' : 'REJECTED';
-        console.log(selectedLeave)
-        const result = await LeaveService.updateLeaveStatus(
-            selectedLeave, 
-            status, 
-            adminComment
-        );
+      const status = actionType === 'approve' ? 'APPROVED' : 'REJECTED';
+      console.log(selectedLeave)
+      const result = await LeaveService.updateLeaveStatus(
+        selectedLeave,
+        status,
+        adminComment
+      );
 
-        setToastType("success");
-        setToastMessage(result.message); 
-        setShowModal(false);
-        setAdminComment("");
-        fetchData(); 
+      setToastType("success");
+      setToastMessage(result.message);
+      setShowModal(false);
+      setAdminComment("");
+      fetchData();
     } catch (error: any) {
-        const errMesg = error.response?.data?.message || "Update failed";
-        setToastType("error");
-        setToastMessage(errMesg);
+      const errMesg = error.response?.data?.message || "Update failed";
+      setToastType("error");
+      setToastMessage(errMesg);
     }
+  };
+
+const handleExportLeaveReport = async () => {
+  try {
+    const res = await AdminPlatformService.ExportLeaveReport();
+    
+    const blob = new Blob([res.data], { type: 'application/pdf' });
+
+    const url = window.URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    
+    const date = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `FitTribe-Leave-Report-${date}.pdf`);
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    setToastType("success");
+    setToastMessage("Report downloaded successfully!");
+  } catch (error) {
+    console.error("Export failed:", error);
+    setToastType("error");
+    setToastMessage("Failed to download report.");
+  }
 };
 
   const handleSearch = (val: string) => {
@@ -108,7 +137,9 @@ const handleConfirmAction = async () => {
             <p className="text-slate-500 font-medium">Manage trainer availability and time-off metrics.</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center font-bold gap-2 bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-2.5 text-xs uppercase tracking-widest hover:bg-gray-50 transition-all">
+            <button className="flex items-center font-bold gap-2 bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-2.5 text-xs uppercase tracking-widest hover:bg-gray-50 transition-all"
+              onClick={handleExportLeaveReport}
+            >
               <FileDown size={14} /> Export
             </button>
             <div className="flex bg-white rounded-2xl border border-slate-200 shadow-sm px-4 py-2.5 gap-2 items-center">

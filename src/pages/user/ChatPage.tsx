@@ -6,7 +6,6 @@ import { useChat } from "../../hooks/useChat";
 import { FormatDate } from '../../helperFunctions/formatdate';
 import { PublicTrainersService } from '../../services/public/trainers';
 import defaultImage from './../../assets/default image.png'
-import { ChatService } from '../../services/shared/chat.service';
 const ChatPage = () => {
   const navigate = useNavigate();
   const { trainerId, chatId } = useParams();
@@ -87,9 +86,9 @@ const ChatPage = () => {
             </div>
 
             <div className="flex gap-3">
-              <button className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Video size={20} /></button>
+              {/* <button className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Video size={20} /></button>
               <button className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Info size={20} /></button>
-              <button className="p-2.5 text-slate-400 hover:bg-slate-100 rounded-xl transition-all"><MoreHorizontal size={20} /></button>
+              <button className="p-2.5 text-slate-400 hover:bg-slate-100 rounded-xl transition-all"><MoreHorizontal size={20} /></button> */}
             </div>
           </header>
 

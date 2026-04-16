@@ -30,6 +30,7 @@ const TrainerSideBar = () => {
     },
     { label: "Bookings", to: "/trainer/bookings" },
     { label: "Chats", to: "/trainer/chats" },
+    { label: "Reviews", to: "/trainer/reviews" },
     { label: "Profile", to: "/trainer/trainer-profile" },
   ];
 

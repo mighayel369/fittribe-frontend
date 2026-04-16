@@ -4,8 +4,7 @@ export const API_ENDPOINTS = {
   SHARED_AUTH: {
     RESEND_OTP: (role: string) => `${role}/auth/resend-otp`,
     REFRESH: (role: string) => `${role}/auth/refresh-token`,
-    LOGOUT: (role: string) => `${role}/auth/security/logout`,
-    CHANGE_PASSWORD: (role: string) => `${role}/auth/security/change-password`,
+    LOGOUT: (role: string) => `${role}/auth/logout`,
     VERIFY_OTP:(role:string) =>`${role}/auth/verify-otp`,
   },
 
@@ -32,7 +31,9 @@ export const API_ENDPOINTS = {
       OVERVIEW: 'admin/platform/platform-overview',
       METRICS:'/admin/platform/leave-metrics',
       LEAVE_REQUEST_HISTORY:'/admin/platform/history',
-      LEAVE_STATUS:(id:string)=>`/admin/platform/update-status/${id}`
+      LEAVE_STATUS:(id:string)=>`/admin/platform/update-status/${id}`,
+      EXPORT_REPORT:'/admin/platform/export-report',
+      EXPORT_LEAVE_REPORT:'/admin/platform/export-leave-report'
     },
 
     USERS: {
@@ -71,20 +72,17 @@ export const API_ENDPOINTS = {
     UPDATE_PROFILE: 'trainer/account/profile',
     UPDATE_AVATAR: 'trainer/account/avatar',   
     REAPPLY: 'trainer/account/re-apply',  
-
-
     METRICS: 'trainer/dashboard/metrics',
     AGENDA: 'trainer/dashboard/agenda',
-
- 
     GET_CONFIG: 'trainer/schedule/config',
     SYNC_TEMPLATE: 'trainer/schedule/weekly-template',
+    CHANGE_PASSWORD:'trainer/account/change-password'
   },
 
 
   USER_ACCOUNT: {
-  
     GET_ME: 'user/account/me',
+    CHANGE_PASSWORD:'user/account/change-password',
     VERIFY_SESSION: 'user/account/verify',
     UPDATE_PROFILE: 'user/account/update',
     UPDATE_AVATAR: 'user/account/avatar', 
@@ -100,7 +98,8 @@ export const API_ENDPOINTS = {
     APPROVE_RESCHEDULE: 'trainer/bookings/reschedule/approve',
     REJECT_RESCHEDULE: 'trainer/bookings/reschedule/reject',
     RESCHEDULE_BY_TRAINER:'trainer/bookings/reschedule',
-    GET_MEET_LINK:(bookingId:string)=>`trainer/bookings/get-meetlink/${bookingId}`
+    GET_MEET_LINK:(bookingId:string)=>`trainer/bookings/get-meetlink/${bookingId}`,
+    MARK_AS_COMPLETE:(bookingId:string)=>`trainer/bookings/mark-as-complete/${bookingId}`
   },
 
   USER_BOOKINGS: {
@@ -114,6 +113,11 @@ export const API_ENDPOINTS = {
     ACCEPT_RESCHEDULE: (id: string) => `user/bookings/${id}/reschedule/accept`,
     DECLINE_RESCHEDULE: (id: string) => `user/bookings/${id}/reschedule/decline`,
   },
+    ADMIN_BOOKINGS: {
+    DETAILS: (id: string) => `admin/bookings/details/${id}`,
+    GET_ALL_BOOKINGS:'admin/bookings/all',
+    BOOKING_METRICS:'admin/bookings/booking-metrics'
+  },
   DISCOVERY: {
     PROGRAMS: {
       EXPLORE: (role: string) => `${role}/discovery/explore`,
@@ -122,6 +126,7 @@ export const API_ENDPOINTS = {
       EXPLORE: 'user/discovery/trainers/explore',
       DETAILS: (id: string) => `user/discovery/trainers/explore/${id}`,
       AVAILABILITY: 'user/discovery/trainers/availability',
+      REVIEW_LIST:(trainerId:string)=>`user/discovery/trainers/review-list/${trainerId}`
     },
   },
   TRAINER_LEAVES: {
@@ -143,5 +148,10 @@ export const API_ENDPOINTS = {
     FETCH_MESSAGES:(role:string,chatId:string)=>`${role}/chats/messages/${chatId}`,
     GET_CHAT_ID:(role:string,id:string)=>`${role}/chats/chat-id/${id}`,
     MARK_AS_READ:(role:string,chatId:string)=>`${role}/chats/mark-as-read/${chatId}`
+  },
+  REVIEW:{
+    ADD_REVIEW:'/user/review/add-review',
+    GET_REVIEWS:(role:string)=>`/${role}/review/get-list`,
+    FLAG_REVIEW:(id:string)=>`admin/review/flag-review/${id}`
   }
 };

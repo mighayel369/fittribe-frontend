@@ -13,6 +13,10 @@ import ModifyProgram from '../pages/admin/ModifyProgram';
 import AdminWallet from '../pages/admin/AdminWallet'
 import OnboardNewProgram from '../pages/admin/OnboardNewProgram';
 import LeaveManagemnt from '../pages/admin/LeaveManagement';
+import AdminReviewsPage from '../pages/admin/ReviewPage';
+import NotFoundPage from '../components/NotFound';
+import BookingList from '../pages/admin/BookingList';
+import BookingDetails from '../pages/admin/BookingDetails';
 const AdminRoutes = () => (
   <Routes>
     <Route path="login" element={<AdminPublicRoute><AdminLogin /></AdminPublicRoute>} />
@@ -24,9 +28,13 @@ const AdminRoutes = () => (
     <Route path="verify-trainer" element={<AdminPrivateRoute><VerifyTrainer /></AdminPrivateRoute>} />
     <Route path="programs" element={<AdminPrivateRoute><ProgramsList /></AdminPrivateRoute>} />
     <Route path="programs/onboard-new" element={<AdminPrivateRoute><OnboardNewProgram /></AdminPrivateRoute>} />
-   <Route path="programs/modify/:id" element={<AdminPrivateRoute><ModifyProgram /></AdminPrivateRoute>} />  
+    <Route path="programs/modify/:id" element={<AdminPrivateRoute><ModifyProgram /></AdminPrivateRoute>} />
     <Route path="wallet" element={<AdminPrivateRoute><AdminWallet /></AdminPrivateRoute>} />
     <Route path="trainer-leaves" element={<AdminPrivateRoute><LeaveManagemnt /></AdminPrivateRoute>} />
+    <Route path="reviews" element={<AdminPrivateRoute><AdminReviewsPage /></AdminPrivateRoute>} />
+    <Route path="bookings" element={<AdminPrivateRoute><BookingList /></AdminPrivateRoute>} />
+    <Route path="bookings/:id" element={<AdminPrivateRoute><BookingDetails /></AdminPrivateRoute>} />
+    <Route path="*" element={<NotFoundPage />} />
   </Routes>
 );
 

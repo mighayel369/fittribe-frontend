@@ -24,5 +24,9 @@ export const PublicTrainersService = {
             params: { trainerId, date }
         });
         return data;
+    },
+    getTrainerReviews:async(trainerId:string)=>{
+        const {data}=await axiosInstance.get(API_ENDPOINTS.DISCOVERY.TRAINERS.REVIEW_LIST(trainerId))
+        return data
     }
 };

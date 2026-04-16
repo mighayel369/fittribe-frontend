@@ -7,25 +7,27 @@ import { useChat } from "../../hooks/useChat";
 import { ChatService } from '../../services/shared/chat.service';
 import { type NonChatList } from '../../types/chatType';
 import { FormatDate, formatChatTime } from '../../helperFunctions/formatdate';
-
+import { useLocation } from 'react-router-dom';
 interface SelectedReceiver {
   id: string;
   name: string;
   profilePic: string;
-  unReadCount?:number,
+  unReadCount?: number,
   chatId?: string;
   email?: string;
 }
 
 const ChatPage = () => {
+  const location = useLocation();
   const [currentTab, setCurrentTab] = useState<'chats' | 'clients'>('chats');
   const [selectedReceiver, setSelectedReceiver] = useState<SelectedReceiver | null>(null);
   const [inputText, setInputText] = useState("");
   const [discoveryClients, setDiscoveryClients] = useState<NonChatList[]>([]);
-
+  const [searchQuery, setSearchQuery] = useState("");
   const { messages, chatList, sendMessage, loading } = useChat(
     selectedReceiver?.chatId,
-    selectedReceiver?.id
+    selectedReceiver?.id,
+    searchQuery
   );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -38,21 +40,38 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-  const markMessagesAsRead = async () => {
-    if (selectedReceiver?.chatId && (selectedReceiver.unReadCount ?? 0) > 0) {
-      try {
-        await ChatService.markAsRead('trainer',selectedReceiver.chatId);
-      } catch (error) {
-        console.error("Failed to mark messages as read:", error);
-      }
-    }
-  };
+useEffect(() => {
+    if (location.state?.receiverId) {
+      const { receiverId, name, profilePic, activeChatId } = location.state;
+      
+      setSelectedReceiver({
+        id: receiverId,
+        name: name,
+        profilePic: profilePic,
+        chatId: activeChatId || undefined,
+      });
 
-  markMessagesAsRead();
-}, [selectedReceiver?.chatId])
-  
+      setCurrentTab(activeChatId ? 'chats' : 'clients');
+
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   useEffect(() => {
+    const markMessagesAsRead = async () => {
+      if (selectedReceiver?.chatId && (selectedReceiver.unReadCount ?? 0) > 0) {
+        try {
+          await ChatService.markAsRead('trainer', selectedReceiver.chatId);
+        } catch (error) {
+          console.error("Failed to mark messages as read:", error);
+        }
+      }
+    };
+
+    markMessagesAsRead();
+  }, [selectedReceiver?.chatId])
+
+useEffect(() => {
     const fetchSidebarData = async () => {
       try {
         const response = await ChatService.getNonChatLists('trainer');
@@ -84,8 +103,8 @@ const ChatPage = () => {
         </header>
 
         <section className="grid grid-cols-4 bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 h-[75vh]">
-          
-  
+
+
           <div className="col-span-1 border-r border-slate-100 flex flex-col bg-white">
             <div className="p-4 space-y-4">
               <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -108,6 +127,8 @@ const ChatPage = () => {
                 <input
                   type="text"
                   placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e)=>setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all text-xs"
                 />
               </div>
@@ -124,7 +145,7 @@ const ChatPage = () => {
                         name: chat.name,
                         chatId: chat.chatId,
                         profilePic: chat.profilePic,
-                        unReadCount:chat.unReadCount
+                        unReadCount: chat.unReadCount
                       })}
                       className={`group flex items-center gap-4 p-4 cursor-pointer transition-all border-b border-slate-50 relative
                         ${selectedReceiver?.chatId === chat.chatId ? 'bg-indigo-50/60' : 'hover:bg-slate-50'}`}
@@ -139,7 +160,7 @@ const ChatPage = () => {
                           className="w-12 h-12 rounded-full border border-slate-200 object-cover shadow-sm"
                           alt={chat.name}
                         />
-                       
+
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                       </div>
 
@@ -181,7 +202,7 @@ const ChatPage = () => {
                       name: client.name,
                       email: client.email,
                       profilePic: client.profilePic,
-                      
+
                     })}
                     className={`flex items-center gap-4 p-4 cursor-pointer hover:bg-slate-50 transition-all border-b border-slate-50
                       ${selectedReceiver?.id === client.id ? 'bg-indigo-50/60' : ''}`}
@@ -223,7 +244,7 @@ const ChatPage = () => {
                       {messages.map((msg, index) => {
                         const isMe = msg.sender !== selectedReceiver.id;
                         const currentDate = FormatDate(msg.time || msg.date);
-                        const previousDate = index > 0 ? FormatDate(messages[index - 1].date || messages[index-1].time) : null;
+                        const previousDate = index > 0 ? FormatDate(messages[index - 1].date || messages[index - 1].time) : null;
                         const showDateBadge = currentDate !== previousDate;
 
                         return (
@@ -241,7 +262,7 @@ const ChatPage = () => {
                                 <div className={`px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${isMe
                                   ? 'bg-indigo-600 text-white rounded-tr-none'
                                   : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
-                                }`}>
+                                  }`}>
                                   {msg.text || msg.content}
                                 </div>
                                 <span className="text-[10px] mt-1.5 font-medium text-slate-400 px-1">

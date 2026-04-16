@@ -26,7 +26,6 @@ export const GenericBarChart = ({ data, categoryKey, valueKey }: GenericBarChart
           />
           <Bar 
             dataKey={valueKey} 
-            radius={[6, 6, 0, 0]} 
             barSize={18}
           />
         </BarChart>
