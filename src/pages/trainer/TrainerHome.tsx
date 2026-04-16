@@ -5,18 +5,23 @@ import StatCard from "../../components/StatCard";
 import { TrainerDashboardService } from "../../services/trainer/trainer.dashboard";
 import { GenericAreaChart } from "../../components/AreaChart";
 import { useNavigate } from "react-router-dom";
+import { formatChatTime } from "../../helperFunctions/formatdate";
 import {
   DollarSign, Star, Clock, TrendingUp,
-  AlertCircle, MessageSquare, Calendar, ChevronRight
+  AlertCircle, MessageSquare, Calendar, ChevronRight, Check
 } from "lucide-react";
-import { type PendingActionDTO, type RecentChatDTO, type TrainerDashboardMainData } from "../../types/dashboardType";
+import { type PendingActionDTO, type TrainerDashboardMainData } from "../../types/dashboardType";
+import { type ChatList } from "../../types/chatType";
 import { type UpcomingAppointmentDTO } from "../../types/dashboardType";
 import DEFAULT_IMAGE from '../../assets/default image.png'
 import { TrainerBookingService } from "../../services/trainer/trainer.booking";
+import Modal from "../../components/Modal";
 const TrainerHome = () => {
   const [dashData, setDashData] = useState<TrainerDashboardMainData | null>(null);
   const [appointments, setAppointments] = useState<UpcomingAppointmentDTO[]>([]);
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
+  const [showModal, setShowModal] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate()
   const weekDays = useMemo(() => {
@@ -36,6 +41,7 @@ const TrainerHome = () => {
     }
     return days;
   }, []);
+
 
   useEffect(() => {
     loadInitialDashboard();
@@ -58,18 +64,48 @@ const TrainerHome = () => {
       setLoading(false);
     }
   };
+  const handleOpenCompleteModal = (bookingId: string) => {
+    setSelectedBookingId(bookingId);
+    setShowModal(true);
+  };
 
-const handleStartSession = async (bookingId: string) => {
-  try {
-    const response = await TrainerBookingService.getBookingLink(bookingId);
-    
-    if (response.success && response.data) {
-      navigate(`/trainer/session/${bookingId}?link=${encodeURIComponent(response.data)}`);
+  const handleConfirmComplete = async () => {
+    if (!selectedBookingId) return;
+
+    try {
+      const response = await TrainerBookingService.completeSession(selectedBookingId);
+      if (response.success) {
+        loadInitialDashboard();
+        setShowModal(false);
+        setSelectedBookingId(null);
+      }
+    } catch (error) {
+      console.error("Failed to complete session:", error);
     }
-  } catch (error) {
-    console.error("Failed to handle session action:", error);
-  }
-};
+  };
+  const handleStartSession = async (bookingId: string) => {
+    try {
+      const response = await TrainerBookingService.getBookingLink(bookingId);
+
+      if (response.success && response.data) {
+        navigate(`/trainer/session/${bookingId}?link=${encodeURIComponent(response.data)}`);
+      }
+    } catch (error) {
+      console.error("Failed to handle session action:", error);
+    }
+  };
+
+
+  const handleChatClick = (chatId: string, receiverId: string, name: string, pic: string) => {
+    navigate('/trainer/chats', {
+      state: {
+        activeChatId: chatId,
+        receiverId: receiverId,
+        name: name,
+        profilePic: pic
+      }
+    });
+  };
 
   const handleDateChange = async (date: number, fullDate: string) => {
     setSelectedDate(date);
@@ -163,44 +199,46 @@ const handleStartSession = async (bookingId: string) => {
                 ))}
               </div>
 
-
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {appointments.length > 0 ? (
                   appointments.map((app: UpcomingAppointmentDTO, idx: number) => (
                     <div
                       key={idx}
-                      className="group grid grid-cols-12 items-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer"
+                      className="group grid grid-cols-12 items-center p-5 bg-white border border-slate-100 rounded-3xl hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-50/20 transition-all cursor-pointer"
                       onClick={() => navigate(`/trainer/bookings/${app.bookingId}`)}
                     >
-      
-                      <div className="col-span-5 flex items-center gap-3">
-                        <img
-                          src={app.profilePic || DEFAULT_IMAGE}
-                          className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-50"
-                          alt=""
-                        />
-                        <div className="truncate">
-                          <h4 className="font-bold text-slate-900 text-sm truncate">
+                      <div className="col-span-4 flex items-center gap-4">
+                        <div className="relative">
+                          <img
+                            src={app.profilePic || DEFAULT_IMAGE}
+                            className="w-12 h-12 rounded-2xl object-cover ring-4 ring-slate-50"
+                            alt=""
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-slate-900 text-sm truncate group-hover:text-indigo-600 transition-colors">
                             {app.clientName}
                           </h4>
-                          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
-                            Client
-                          </p>
                         </div>
                       </div>
 
-                      <div className="col-span-3 flex flex-col justify-center">
-                        <span className="text-[10px] font-bold text-indigo-600 uppercase truncate">
-                          {app.program}
-                        </span>
-                        <span className="text-[11px] text-slate-500 font-medium">
-                          {app.timeSlot}
-                        </span>
+                      <div className="col-span-3">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black text-indigo-600 uppercase tracking-tight">
+                            {app.program}
+                          </span>
+                          <div className="flex items-center gap-1.5 text-slate-500 mt-1">
+                            <Clock size={12} className="text-slate-300" />
+                            <span className="text-xs font-semibold">{app.timeSlot}</span>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="col-span-2 flex justify-center">
                         <span
-                          className={`px-2.5 py-1 text-[9px] font-black rounded-lg uppercase tracking-wider border ${app.status === "confirmed"
+                          className={`px-3 py-1 text-[9px] font-black rounded-full uppercase tracking-widest border-2 ${app.status === "confirmed"
+                            ? "bg-indigo-50 text-indigo-600 border-indigo-100"
+                            : app.status === "completed"
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                               : "bg-amber-50 text-amber-600 border-amber-100"
                             }`}
@@ -210,24 +248,50 @@ const handleStartSession = async (bookingId: string) => {
                       </div>
 
 
-                      <div className="col-span-2 flex justify-end">
-                        {app.status === "confirmed" &&(
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleStartSession(app.bookingId)
-                            }}
-                            className="flex items-center justify-center gap-2 w-full max-w-[100px] py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-sm"
-                          >
-                            {app.meetLink ? "Join Now" : "Start"} <ChevronRight size={12} />
+                      <div className="col-span-3 flex justify-end items-center gap-2">
+                        {app.status === "confirmed" ? (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartSession(app.bookingId);
+                              }}
+                              className="flex-1 max-w-[80px] py-2 bg-slate-900 text-white rounded-xl text-[9px] font-bold uppercase tracking-tight hover:bg-indigo-600 transition-all shadow-sm"
+                            >
+                              {app.meetLink ? "Join" : "Start"}
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenCompleteModal(app.bookingId);
+                              }}
+                              className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                              title="Mark as Complete"
+                            >
+                              <Check size={16} />
+                            </button>
+                          </>
+                        ) : app.status === "completed" ? (
+                          <div className="flex items-center gap-2 text-emerald-500 px-4">
+                            <span className="text-[10px] font-black uppercase tracking-widest">Finalized</span>
+                            <Check size={14} strokeWidth={3} />
+                          </div>
+                        ) : (
+                          <button className="text-slate-400 p-2 hover:text-slate-600">
+                            <ChevronRight size={18} />
                           </button>
                         )}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="py-12 flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                    <p className="text-slate-400 font-bold text-xs">No appointments for this day.</p>
+                  <div className="py-16 flex flex-col items-center justify-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                    <div className="p-4 bg-white rounded-2xl shadow-sm mb-4">
+                      <Calendar size={24} className="text-slate-300" />
+                    </div>
+                    <p className="text-slate-500 font-bold text-sm">No scheduled sessions</p>
+                    <p className="text-slate-400 text-xs mt-1">Your agenda is clear for today.</p>
                   </div>
                 )}
               </div>
@@ -241,44 +305,58 @@ const handleStartSession = async (bookingId: string) => {
                 </h3>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-1"> 
                 {dashData.recentChats && dashData.recentChats.length > 0 ? (
-                  dashData.recentChats.map((chat: RecentChatDTO, index: number) => (
-                    <div key={index} className="flex items-center gap-3 group cursor-pointer hover:bg-slate-50 p-1 rounded-xl transition-all">
-                      <div className="relative flex-shrink-0">
+                  dashData.recentChats.map((chat: ChatList, index: number) => (
+                    <div
+                      key={index}
+                      onClick={() => handleChatClick(chat.chatId, chat.id, chat.name, chat.profilePic)}
+                      className="group flex items-center gap-4 p-3 cursor-pointer transition-all border-b border-slate-50 hover:bg-slate-50 rounded-xl"
+                    >
+                      <div className="relative shrink-0">
                         <img
                           src={chat.profilePic || DEFAULT_IMAGE}
-                          className="w-8 h-8 rounded-full object-cover border border-slate-100"
-                          alt=""
+                          className="w-10 h-10 rounded-full border border-slate-200 object-cover shadow-sm"
+                          alt={chat.name}
                         />
-                        {chat.unread && (
-                          <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-indigo-600 border-2 border-white rounded-full"></div>
-                        )}
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-baseline">
-                          <span className="text-xs font-bold text-slate-900 truncate">{chat.clientName}</span>
-                          <span className="text-[8px] font-bold text-slate-400 uppercase ml-2">{chat.time}</span>
+                        <div className="flex justify-between items-baseline mb-0.5">
+                          <h4 className="font-bold text-sm text-slate-900 truncate pr-2">
+                            {chat.name}
+                          </h4>
+                          <span className={`text-[9px] shrink-0 ${chat.unReadCount > 0 ? 'text-indigo-600 font-bold' : 'text-slate-400 font-medium'}`}>
+                            {formatChatTime(chat.lastMessageTime)}
+                          </span>
                         </div>
-                        <p className={`text-[10px] truncate leading-tight mt-0.5 ${chat.unread ? 'text-slate-900 font-bold' : 'text-slate-400 font-medium'}`}>
-                          {chat.lastMesg}
-                        </p>
+
+                        <div className="flex justify-between items-center gap-2">
+                          <p className={`text-[11px] truncate leading-tight ${chat.unReadCount > 0 ? 'text-slate-900 font-semibold' : 'text-slate-500 font-medium'
+                            }`}>
+                            {chat.lastMessage || "No messages yet"}
+                          </p>
+
+                          {chat.unReadCount > 0 && (
+                            <span className="bg-indigo-600 text-white text-[8px] font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center shadow-sm shadow-indigo-100">
+                              {chat.unReadCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
                 ) : (
-
-                  <div className="py-8 text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 mb-3">
-                      <MessageSquare size={16} className="text-slate-300" />
+                  <div className="py-12 text-center">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 mb-3">
+                      <MessageSquare size={20} className="text-slate-300" />
                     </div>
-                    <p className="text-[11px] font-medium text-slate-400">No recent conversations</p>
+                    <p className="text-xs font-medium text-slate-400">No recent conversations</p>
                   </div>
                 )}
               </div>
-
-              <button className="w-full mt-6 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold text-[10px] hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2 group">
+              <button className="w-full mt-6 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold text-[10px] hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2 group" onClick={()=>navigate('/trainer/chats')}>
                 View All Messages <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </section>
@@ -299,6 +377,16 @@ const handleStartSession = async (bookingId: string) => {
             </div>
           </div>
         </div>
+        <Modal
+          isVisible={showModal}
+          onCancel={() => {
+            setShowModal(false);
+            setSelectedBookingId(null);
+          }}
+          onConfirm={handleConfirmComplete}
+          title="Complete Session"
+          message="Are you sure this training session is finished? This will update the client's record and finalize your session earnings."
+        />
       </main>
     </div>
   );

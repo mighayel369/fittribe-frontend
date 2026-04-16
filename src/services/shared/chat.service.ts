@@ -2,10 +2,13 @@ import axiosInstance from "../../api/AxiosInstance"
 import { API_ENDPOINTS } from "../../api/endPoints"
 
 export const ChatService = {
-  getChatLists: async (role:string) => {
-    console.log(role,'chatlist role')
-    const { data } = await axiosInstance.get(API_ENDPOINTS.CHAT.CHAT_LIST(role));
-    return data; 
+getChatLists: async (role: string, search: string = "") => {
+    const { data } = await axiosInstance.get(API_ENDPOINTS.CHAT.CHAT_LIST(role),{
+      params:{
+        search:search
+      }
+    });
+    return data;
   },
     getNonChatLists: async (role:string) => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.CHAT.NON_CHAT_LIST(role));

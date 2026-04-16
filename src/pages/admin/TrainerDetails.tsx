@@ -95,7 +95,7 @@ const TrainerDetails = () => {
   };
 
   if (loading) return <Loading message="Fetching profile..." />;
-  if (!trainer) return <NotFound message="Trainer not found" />;
+  if (!trainer) return <NotFound/>;
 
   return (
     <>

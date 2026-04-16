@@ -1,4 +1,5 @@
 export interface ChatList{
+    id:string;
     name: string;
     profilePic: string;
     lastMessage: string;

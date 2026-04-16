@@ -10,6 +10,8 @@ export type Booking={
 
 export interface TrainerBookingDetails {
     bookingId: string;
+    chatId:string,
+    clientId:string,
     clientName: string;
     clientEmail: string;
     clientPhone?: string;

@@ -45,6 +45,16 @@ const BookingDetails = () => {
     };
 
 
+    const handleChatClick = (chatId: string | null, receiverId: string, name: string, pic: string) => {
+        navigate('/trainer/chats', {
+            state: {
+                activeChatId: chatId,
+                receiverId: receiverId,
+                name: name,
+                profilePic: pic
+            }
+        });
+    };
     const handleConfirmAction = async (reason?: string) => {
         if (!pendingAction || !id) return;
 
@@ -156,7 +166,15 @@ const BookingDetails = () => {
                                     <p className="text-gray-500 text-sm">{booking.clientEmail}</p>
                                     <p className="text-gray-500 text-sm">{booking.clientPhone || "No phone provided"}</p>
                                 </div>
-                                <button className="ml-auto flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-all">
+                                <button
+                                    className="ml-auto flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-all"
+                                    onClick={() => handleChatClick(
+                                        booking.chatId,
+                                        booking.clientId,
+                                        booking.clientName,
+                                        booking.clientProfilePic || ''
+                                    )}
+                                >
                                     <MessageSquare size={16} /> Chat
                                 </button>
                             </div>
@@ -272,7 +290,7 @@ const BookingDetails = () => {
                                 )}
                             </div>
                         )}
-                        {!booking.rescheduleRequest && booking.rejectReason && booking.bookingStatus==='pending' &&(
+                        {!booking.rescheduleRequest && booking.rejectReason && booking.bookingStatus === 'pending' && (
                             <div className="mb-6 animate-in fade-in slide-in-from-top-2">
                                 <div className="bg-rose-50 border border-rose-100 rounded-3xl p-5 flex items-start gap-4">
                                     <div className="bg-rose-100 p-2 rounded-2xl">

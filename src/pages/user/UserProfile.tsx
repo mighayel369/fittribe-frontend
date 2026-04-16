@@ -14,8 +14,9 @@ import {
   FaCog,
   FaCamera,
   FaArrowRight,
-  FaLock
+  FaLock,
 } from "react-icons/fa";
+import {Check} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserBookingService } from "../../services/user/user.booking";
 import Toast from "../../components/Toast";
@@ -26,11 +27,12 @@ import DEFAULT_IMAGE from '../../assets/default image.png'
 import { WalletService } from "../../services/shared/wallet.service";
 import { UserProfileService } from "../../services/user/user.profile";
 import type { User } from "../../types/userType";
-import { AuthService } from "../../services/shared/auth.service";
 import { useChat } from "../../hooks/useChat";
 import { formatChatTime } from "../../helperFunctions/formatdate";
 import { ChatService } from "../../services/shared/chat.service";
 import { userBookingHistoryColumns } from "../../constants/TableColumns/UserBookingColumns";
+import ReviewModal from "../../components/Reviewmodal";
+import { userReviewService } from "../../services/user/user.review";
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState<number>(1);
@@ -54,6 +56,10 @@ const UserProfile: React.FC = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const { chatList } = useChat();
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState<any>(null);
+   const [selectedType, setSelectedType] = useState<any>("history");
+  const [reviewLoading, setReviewLoading] = useState(false);
   const walletCoulmns = UserWalletColumns(navigate)
   useEffect(() => {
     document.title = "FitTribe | My Account";
@@ -66,7 +72,30 @@ const UserProfile: React.FC = () => {
     }
   }, [page, activeTab]);
 
+  const handleReviewSubmit = async (reviewData: { rating: number; comment: string }) => {
+    try {
+      setReviewLoading(true);
 
+      const res = await userReviewService.addReview({
+        bookingId: selectedBookingForReview.bookingId,
+        trainerId: selectedBookingForReview.trainerId,
+        ...reviewData
+      });
+
+      if (res.success) {
+        setToastType("success");
+        setToastMessage("Review submitted successfully!");
+        setIsReviewModalOpen(false);
+
+        fetchBookings(selectedType);
+      }
+    } catch (error: any) {
+      setToastType("error");
+      setToastMessage(error.response?.data?.message || "Failed to submit review");
+    } finally {
+      setReviewLoading(false);
+    }
+  };
   useEffect(() => {
     if (activeTab === "schedule" || activeTab === "history") {
       setPage(1);
@@ -140,7 +169,7 @@ const UserProfile: React.FC = () => {
     try {
       const formData = new FormData();
       formData.append("profilePic", file);
-      const res = await UserProfileService.updateProfile(formData);
+      const res = await UserProfileService.updateAvatar(formData);
       if (res.success) {
         setUser((prev: any) => ({ ...prev, profilePic: res.data?.imageUrl }));
         setToastType("success");
@@ -164,7 +193,7 @@ const UserProfile: React.FC = () => {
     try {
       setPasswordLoading(true);
 
-      const res = await AuthService.changePassword('user', {
+      const res = await UserProfileService.changePassword({
         oldPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
@@ -184,7 +213,17 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const bookingColumns = userBookingHistoryColumns((id) => navigate(`/bookings/${id}`));
+  const handleOpenReviewModal = (booking: any,type:string) => {
+    setSelectedBookingForReview(booking);
+    setSelectedType(type)
+    console.log(booking)
+    setIsReviewModalOpen(true);
+  };
+
+  const bookingColumns = userBookingHistoryColumns(
+    (id) => navigate(`/bookings/${id}`),
+    (booking) => handleOpenReviewModal(booking,'history')
+  );
 
   const tabs = [
     { id: "schedule", label: "My Schedule", icon: <FaCalendarAlt /> },
@@ -221,7 +260,6 @@ const UserProfile: React.FC = () => {
                 {user?.phone && <span className="flex items-center gap-2"><FaPhone className="text-red-400" /> {user?.phone}</span>}
                 {user?.address && <span className="flex items-center gap-2"><FaMapMarkerAlt className="text-red-400" /> {user?.address}</span>}
               </div>
-              <span className="text-md">{user?.gender}</span>
             </div>
 
             <div className="bg-gray-900 text-white rounded-3xl p-6 min-w-[200px] text-center shadow-2xl shadow-gray-200">
@@ -312,6 +350,7 @@ const UserProfile: React.FC = () => {
               ) : bookings.length > 0 ? (
                 <div className="grid md:grid-cols-2 gap-4">
                   {bookings.map((booking) => (
+
                     <div
                       key={booking.bookingId}
                       className="group p-5 bg-white border border-gray-100 rounded-[2rem] hover:shadow-xl hover:border-red-100 transition-all flex items-center gap-5"
@@ -355,6 +394,24 @@ const UserProfile: React.FC = () => {
                           >
                             Join Now
                           </button>
+                        )}
+
+                        {booking.bookingStatus === "completed" && !booking.isReviewed && (
+                          <button
+                            onClick={() => handleOpenReviewModal(booking,'today')}
+                            className="px-4 py-2 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center gap-2"
+                          >
+                            Leave Review
+                          </button>
+                        )}
+
+                        {booking.bookingStatus === "completed" && booking.isReviewed && (
+                          <div className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+                            <Check size={12} strokeWidth={3} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">
+                              Reviewed
+                            </span>
+                          </div>
                         )}
 
                         <button
@@ -587,24 +644,17 @@ const UserProfile: React.FC = () => {
                   <input type="checkbox" className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-red-600 transition-all cursor-pointer relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-3 after:h-3 after:rounded-full after:transition-all checked:after:translate-x-5 shadow-inner" />
                 </div>
               </div>
-
-              <div className="border border-gray-100 rounded-[1.5rem] overflow-hidden bg-white">
-                <div className="flex items-center justify-between p-5">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 bg-gray-100 text-gray-600 rounded-lg">
-                      <FaHistory className="text-sm" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-gray-800 text-sm">Privacy Mode</span>
-                      <span className="text-[10px] text-gray-400 font-medium tracking-tight">Hide profile from public search</span>
-                    </div>
-                  </div>
-                  <input type="checkbox" className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-red-600 transition-all cursor-pointer relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-3 after:h-3 after:rounded-full after:transition-all checked:after:translate-x-5 shadow-inner" />
-                </div>
-              </div>
             </div>
           )}
         </div>
+        {isReviewModalOpen && (
+          <ReviewModal
+            booking={selectedBookingForReview}
+            loading={reviewLoading}
+            onClose={() => setIsReviewModalOpen(false)}
+            onSubmit={handleReviewSubmit}
+          />
+        )}
       </main>
     </div>
   );

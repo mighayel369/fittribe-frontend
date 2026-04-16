@@ -1,19 +1,27 @@
 import logoPic from '../assets/logo.jpg'
 import { IoIosNotifications } from "react-icons/io"
-import { ChevronDown, LogOut, Settings, User } from "lucide-react" 
+import { ChevronDown, LogOut, Settings } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useState, useRef, useEffect } from "react"
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { AuthService } from '../services/shared/auth.service'
 import { clearAuth } from "../redux/slices/authSlice";
-
+import NotificationDropdown from "../components/NotificationDropdown";
+import { useNotification } from "../hooks/useNotification";
 const AdminTopBar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate()
   const dispatch = useAppDispatch();
-  
+  const [showNotif, setShowNotif] = useState(false);
   const { role, user } = useAppSelector((state: any) => state.auth);
+  const {
+    notifications,
+    unreadCount,
+    clearUnread,
+    markAsRead,
+    markAllAsRead
+  } = useNotification();
 
   const handleLogout = async () => {
     await AuthService.logout(role)
@@ -31,9 +39,17 @@ const AdminTopBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+    const handleToggleNotif = () => {
+    setShowNotif(!showNotif);
+    if (!showNotif) {
+      clearUnread();
+    }
+  };
+
+
   return (
     <nav className="bg-gray-900 border-b border-gray-800 text-white w-full h-16 px-8 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-2xl">
-      
+
       <div className="flex items-center gap-4 group cursor-pointer" onClick={() => navigate('/admin')}>
         <div className="relative">
           <img src={logoPic} alt="logo" className="w-9 h-9 object-cover rounded-xl ring-2 ring-red-500/20 group-hover:ring-red-500 transition-all" />
@@ -46,14 +62,34 @@ const AdminTopBar = () => {
       </div>
 
       <div className="flex gap-6 items-center">
-        
-        <button className="relative p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-all">
-          <IoIosNotifications size={24} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full border-2 border-gray-900"></span>
-        </button>
+
+        <div className="relative cursor-pointer group" onClick={handleToggleNotif}>
+          <IoIosNotifications className={`transition-colors ${unreadCount > 0 ? "text-yellow-500" : "text-gray-600 hover:text-yellow-500"}`} size={22} />
+
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold">
+                {unreadCount}
+              </span>
+            </span>
+          )}
+
+
+          {showNotif && (
+            <div className="absolute right-0 top-full mt-2">
+              <NotificationDropdown
+                notifications={notifications}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+                onClose={() => setShowNotif(false)}
+              />
+            </div>
+          )}
+        </div>
 
         <div className="relative" ref={dropdownRef}>
-          <button 
+          <button
             onClick={() => setShowDropdown(!showDropdown)}
             className={`flex items-center gap-3 p-1.5 pr-3 rounded-2xl transition-all ${showDropdown ? 'bg-gray-800' : 'hover:bg-gray-800/50'}`}
           >
@@ -74,12 +110,9 @@ const AdminTopBar = () => {
               </div>
 
               <button className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
-                <User size={16} /> Profile Settings
-              </button>
-              <button className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
                 <Settings size={16} /> System Logs
               </button>
-              
+
               <div className="h-px bg-gray-800 my-2 mx-4"></div>
 
               <button

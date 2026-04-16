@@ -1,3 +1,4 @@
+import {type ChatList } from "./chatType";
 export interface PendingActionDTO {
   bookingId: string;
   type: string;
@@ -16,13 +17,7 @@ export interface UpcomingAppointmentDTO {
   meetLink?:string
 }
 
-export interface RecentChatDTO {
-  clientName: string;
-  lastMesg: string;
-  profilePic: string;
-  unread: boolean;
-  time: string;
-}
+
 
 export interface TrainerMonthlyPerformanceDTO {
   month: string;
@@ -40,7 +35,7 @@ export interface TrainerDashboardMainData {
     metrics:metrics,
     pendingActions:PendingActionDTO[],
     performanceData:TrainerMonthlyPerformanceDTO[],
-    recentChats?:RecentChatDTO[]
+    recentChats:ChatList[]
 }
 
 

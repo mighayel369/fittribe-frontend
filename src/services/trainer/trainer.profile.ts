@@ -22,6 +22,11 @@ export const TrainerProfileService = {
     return data;
   },
 
+    changePassword: async (payload: any) => {
+    const { data } = await axiosInstance.post(API_ENDPOINTS.TRAINER_ACCOUNT.CHANGE_PASSWORD,payload);
+    return data;
+  },
+
   reapply: async (formData: FormData) => {
     const { data } = await axiosInstance.post(
       API_ENDPOINTS.TRAINER_ACCOUNT.REAPPLY, 

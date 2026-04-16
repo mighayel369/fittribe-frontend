@@ -91,12 +91,6 @@ const TrainerTopBar = () => {
             {showDropdown && (
               <div className="absolute right-0 w-32 bg-white text-gray-800 rounded shadow-lg z-20 text-sm border animate-in fade-in slide-in-from-top-1">
                 <button
-                  onClick={() => navigate('/trainer/profile')}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors border-b"
-                >
-                  Profile
-                </button>
-                <button
                   onClick={handleLogout}
                   className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 transition-colors rounded-b"
                 >
