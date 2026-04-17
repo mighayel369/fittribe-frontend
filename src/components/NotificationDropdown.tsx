@@ -16,7 +16,7 @@ interface Props {
   onClose: () => void;
 }
 
-const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }: Props) => {
+const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead}: Props) => {
   return (
     <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
 

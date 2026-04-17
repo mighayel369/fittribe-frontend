@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import UserNavBar from "../../layout/UserNavBar";
-import { Send, Video, Info, ChevronLeft, MoreHorizontal } from "lucide-react";
+import { Send,  ChevronLeft} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useChat } from "../../hooks/useChat";
 import { FormatDate } from '../../helperFunctions/formatdate';

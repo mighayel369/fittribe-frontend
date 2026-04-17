@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  FaArrowLeft, FaCalendarAlt, FaClock, FaUser, FaDumbbell,
-  FaCreditCard, FaCheckCircle, FaTimesCircle, FaVideo, FaInfoCircle, FaStar
+  FaArrowLeft, FaCalendarAlt,
+  FaCreditCard, FaCheckCircle,  FaVideo, FaStar
 } from "react-icons/fa";
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";

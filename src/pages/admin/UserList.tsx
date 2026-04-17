@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaSearch, FaUserFriends } from "react-icons/fa";
+import { FaSearch} from "react-icons/fa";
 import { UserMinus, UserCheck, Eye } from "lucide-react";
 
 import AdminTopBar from "../../layout/AdminTopBar";

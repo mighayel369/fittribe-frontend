@@ -13,7 +13,6 @@ const AdminWallet = () => {
   const navigate = useNavigate();
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [walletTransaction, setWalletTransactions] = useState<any[]>([]);
-  const [activeHoldCount, setActiveHoldCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -26,11 +25,10 @@ const fetchAdminWallet = useCallback(async () => {
     const res = await WalletService.fetchWalletData("admin", page, 5); 
     
     if (res?.success) {
-      const { balance, data, total, activeHoldCount } = res.wallet;
+      const { balance, data, total } = res.wallet;
       setWalletTransactions(data);
       setTotalPages(total);
       setWalletBalance(balance);
-      setActiveHoldCount(activeHoldCount);
     }
   } catch (err: any) {
     const errorMsg = err.response?.data?.message || "Could not load treasury.";

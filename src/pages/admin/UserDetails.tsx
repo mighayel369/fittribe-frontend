@@ -64,7 +64,7 @@ const UserDetails: React.FC = () => {
   };
 
   if (loading) return <Loading message="Loading member profile..." />;
-  if (!user) return <NotFound message="User not found." />;
+  if (!user) return <NotFound/>;
 
   return (
     <>

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
 import GenericTable from "../../components/GenericTable";
 import { TrainerWalletColumns } from "../../constants/TableColumns/TrainerWalletColumn";
-import { FaLock, FaArrowRight, FaHistory, FaCog } from "react-icons/fa";
+import { FaLock, FaArrowRight, FaCog } from "react-icons/fa";
 import {
   FaMapMarkerAlt,
   FaDumbbell,
@@ -31,7 +31,6 @@ const TrainerProfile = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [walletTransaction, setWalletTransactions] = useState<any[]>([]);
-  const [activeHoldCount, setActiveHoldCount] = useState<number>(0);
   const [walletLoading, setWalletLoading] = useState(false);
   const walletColumns = TrainerWalletColumns(navigate);
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
@@ -110,11 +109,10 @@ const TrainerProfile = () => {
       setWalletLoading(true);
       const res = await WalletService.fetchWalletData('trainer', page, 5);
       if (res?.success) {
-        const { balance, data, total, activeHoldCount } = res.wallet
+        const { balance, data, total} = res.wallet
         setWalletTransactions(data);
         setTotalPages(total);
         setWalletBalance(balance)
-        setActiveHoldCount(activeHoldCount)
       }
     } catch (err) {
       console.error("Failed to fetch trainer wallet", err);
