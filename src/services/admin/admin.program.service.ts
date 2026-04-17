@@ -10,8 +10,9 @@ export const AdminProgramService = {
   },
 
   toggleProgramVisibility: async (id: string, newStatus: boolean) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.ADMIN_MGMT.PROGRAMS.TOGGLE_VISIBILITY(id), { 
-      status: newStatus 
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.ADMIN_MGMT.PROGRAMS.TOGGLE_VISIBILITY, { 
+      status: newStatus,
+      programId:id
     });
     return data;
   },
@@ -33,8 +34,8 @@ export const AdminProgramService = {
     return data;
   },
 
-  modifyProgram: async (id: string, formData: FormData) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.ADMIN_MGMT.PROGRAMS.UPDATE_SPECS(id), formData, {
+  modifyProgram: async (formData: FormData) => {
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.ADMIN_MGMT.PROGRAMS.UPDATE_SPECS, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return data;

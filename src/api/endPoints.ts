@@ -12,7 +12,7 @@ export const API_ENDPOINTS = {
     LOGIN: 'user/auth/login',
     REGISTER: 'user/auth/register',
     FORGOT_PW: 'user/auth/forgot-password',
-    RESET_PW: (token: string) => `user/auth/reset-password/${token}`,
+    RESET_PW: 'user/auth/reset-password',
     GOOGLE: 'user/auth/google'
   },
 
@@ -31,7 +31,7 @@ export const API_ENDPOINTS = {
       OVERVIEW: 'admin/platform/platform-overview',
       METRICS:'/admin/platform/leave-metrics',
       LEAVE_REQUEST_HISTORY:'/admin/platform/history',
-      LEAVE_STATUS:(id:string)=>`/admin/platform/update-status/${id}`,
+      LEAVE_STATUS:'/admin/platform/update-status',
       EXPORT_REPORT:'/admin/platform/export-report',
       EXPORT_LEAVE_REPORT:'/admin/platform/export-leave-report'
     },
@@ -39,23 +39,23 @@ export const API_ENDPOINTS = {
     USERS: {
       GET_ALL: 'admin/users',
       GET_DETAILS: (id: string) => `admin/users/${id}`,
-      TOGGLE_STATUS: (id: string) => `admin/users/${id}/status`,
+      TOGGLE_STATUS: 'admin/users/status',
     },
 
     TRAINERS: {
       LIST_VERIFIED: 'admin/trainers/verified',
       LIST_PENDING: 'admin/trainers/pending',
       GET_DETAILS: (id: string) => `admin/trainers/${id}`,
-      UPDATE_STATUS: (id: string) => `admin/trainers/${id}/status`,
-      VERIFY_ACTION: (id: string) => `admin/trainers/${id}/verify`,
+      UPDATE_STATUS: 'admin/trainers/status',
+      VERIFY_ACTION: 'admin/trainers/verify',
     },
 
     PROGRAMS: {
       ONBOARD: 'admin/programs/onboard', 
       INVENTORY: 'admin/programs/inventory',
       GET_DETAILS: (id: string) => `admin/programs/${id}`,
-      UPDATE_SPECS: (id: string) => `admin/programs/${id}/specs`,
-      TOGGLE_VISIBILITY: (id: string) => `admin/programs/${id}/visibility`,
+      UPDATE_SPECS: 'admin/programs/specs',
+      TOGGLE_VISIBILITY:  'admin/programs/visibility',
       DELETE: (id: string) => `admin/programs/${id}`,
     },
   },
@@ -104,14 +104,14 @@ export const API_ENDPOINTS = {
 
   USER_BOOKINGS: {
     HISTORY: 'user/bookings/history',
-    DETAILS: (id: string) => `user/bookings/${id}/details`,
+    DETAILS: (id: string) => `user/bookings/details/${id}`,
     
 
     CHECKOUT: 'user/bookings/checkout',
     RESCHEDULE_REQUEST: 'user/bookings/reschedule',
     CANCEL: (bookingId: string) => `user/bookings/${bookingId}`,
-    ACCEPT_RESCHEDULE: (id: string) => `user/bookings/${id}/reschedule/accept`,
-    DECLINE_RESCHEDULE: (id: string) => `user/bookings/${id}/reschedule/decline`,
+    ACCEPT_RESCHEDULE: (id: string) => `user/bookings/reschedule/accept/${id}`,
+    DECLINE_RESCHEDULE: (id: string) => `user/bookings/reschedule/decline/${id}`,
   },
     ADMIN_BOOKINGS: {
     DETAILS: (id: string) => `admin/bookings/details/${id}`,

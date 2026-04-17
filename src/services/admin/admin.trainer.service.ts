@@ -11,8 +11,8 @@ export const AdminTrainerService = {
 
   updateTrainerStatus: async (trainerId: string, newStatus: boolean) => {
     const { data } = await axiosInstance.patch(
-      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.UPDATE_STATUS(trainerId), 
-      { status: newStatus }
+      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.UPDATE_STATUS, 
+      { status: newStatus,trainerId }
     );
     return data;
   },
@@ -23,8 +23,8 @@ export const AdminTrainerService = {
   },
   handleTrainerApproval: async (id: string, selectedAction: string, reason?: string) => {
     const { data } = await axiosInstance.patch(
-      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.VERIFY_ACTION(id), 
-      { action: selectedAction, reason }
+      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.VERIFY_ACTION, 
+      { action: selectedAction, reason ,traainerId:id}
     );
     return data;
   },

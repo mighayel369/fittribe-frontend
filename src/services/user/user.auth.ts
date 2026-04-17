@@ -19,7 +19,7 @@ export const UserAuthService = {
   },
 
   resetPassword: async (token: string, password: string) => {
-    const { data } = await axiosInstance.post(API_ENDPOINTS.USER_AUTH.RESET_PW(token), { password });
+    const { data } = await axiosInstance.post(API_ENDPOINTS.USER_AUTH.RESET_PW, { password ,token});
     return data;
   },
 

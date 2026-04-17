@@ -56,6 +56,7 @@ const ModifyProgram = () => {
   }, [id]);
 
   const handleSubmit = async (values: Record<string, any>) => {
+    if(!id)return
     setFormErrors({});
     
     const validationPayload = {
@@ -82,12 +83,12 @@ const ModifyProgram = () => {
       formData.append("name", values.name);
       formData.append("description", values.description);
       formData.append("duration", values.duration.toString());
-
+      formData.append("programId",id)
       if (values.programPic instanceof File) {
         formData.append("programPic", values.programPic);
       }
 
-      const response = await AdminProgramService.modifyProgram(id!, formData);
+      const response = await AdminProgramService.modifyProgram(formData);
 
       if (response.success) {
         navigate("/admin/programs",{

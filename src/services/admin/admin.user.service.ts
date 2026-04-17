@@ -11,8 +11,8 @@ export const AdminUserService = {
 
   updateUserStatus: async (id: string, newStatus: boolean) => {
     const { data } = await axiosInstance.patch(
-      API_ENDPOINTS.ADMIN_MGMT.USERS.TOGGLE_STATUS(id), 
-      { status: newStatus }
+      API_ENDPOINTS.ADMIN_MGMT.USERS.TOGGLE_STATUS, 
+      { status: newStatus ,userId:id}
     );
     return data;
   },

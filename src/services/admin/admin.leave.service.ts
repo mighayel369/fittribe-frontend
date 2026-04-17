@@ -12,7 +12,7 @@ export const LeaveService = {
         return data;
     },
     updateLeaveStatus: async (leaveId: string, status: string, adminComment?: string) => {
-        const { data } = await axiosInstance.patch(API_ENDPOINTS.ADMIN_MGMT.PLATFORM.LEAVE_STATUS(leaveId), { status, adminComment });
+        const { data } = await axiosInstance.patch(API_ENDPOINTS.ADMIN_MGMT.PLATFORM.LEAVE_STATUS, { status, adminComment,leaveId });
         return data
     }
 }
