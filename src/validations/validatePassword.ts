@@ -1,5 +1,5 @@
 import { type changePassword } from "../types/changePasswordType";
-import { type ValidationErrors } from "./userProfileValidation";
+import {type ValidationErrors } from "./ValidationErrors";
 export const validatePasswordChange = (data:changePassword): ValidationErrors<changePassword> => {
    const errors: ValidationErrors<changePassword> = {};
   console.log(data)

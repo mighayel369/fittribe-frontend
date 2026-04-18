@@ -15,7 +15,6 @@ const Toast:React.FC<ToastProps>=({message, type = "success", onClose})=>{
     return () => clearTimeout(timer)
   }, [onClose])
    const isSuccess = type === "success";
-   const bgColor = type === "success" ? "bg-green-500" : "bg-red-500"
     return (
     <div
       className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg
