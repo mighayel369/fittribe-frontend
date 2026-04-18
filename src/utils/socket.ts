@@ -11,7 +11,7 @@ export const getSocket = (userId: string) => {
   }
 
   if (!socket) {
-    socket = io("http://localhost:5000", {
+    socket = io(import.meta.env.VITE_API_URL, {
       query: { userId },
       reconnection: true,
       transports: ["websocket"]
