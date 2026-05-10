@@ -10,10 +10,11 @@ import Loading from "../../components/Loading";
 import NotFound from "../../components/NotFound";
 import { AdminBookingService } from "../../services/admin/admin.booking.service";
 import DEFAULT_IMAGE from '../../assets/default image.png';
+import { formatDate } from "../../utils/formatTime";
 
 const BookingDetails = () => {
   const { id } = useParams();
-  console.log(id)
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [booking, setBooking] = useState<any>(null);
@@ -94,7 +95,7 @@ const BookingDetails = () => {
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Session Type</p>
                   <div className="flex items-center gap-2 text-indigo-600 font-bold">
-                    <FaVideo size={14} /> {booking.sssionType}
+                    <FaVideo size={14} /> {booking.sessionType}
                   </div>
                 </div>
                 <div>
@@ -122,7 +123,7 @@ const BookingDetails = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Joined</p>
-                      <p className="font-black text-slate-800 text-sm">{booking.client.joinedOn}</p>
+                      <p className="font-black text-slate-800 text-sm">{formatDate(booking.client.joinedOn)}</p>
                     </div>
                   </div>
                 </div>

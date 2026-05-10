@@ -15,9 +15,9 @@ useEffect(() => {
         try {
           const res = await NotificationService.GETALL(role);
           console.log(res)
-          setNotifications(res);
+          setNotifications(res.notifications);
           
-          const unread = res.filter((n: any) => !n.isRead).length;
+          const unread = res.notifications.filter((n: any) => !n.isRead).length;
           setUnreadCount(unread);
         } catch (err) {
           console.error("Failed to load notification history", err);

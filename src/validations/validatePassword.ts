@@ -2,7 +2,6 @@ import { type changePassword } from "../types/changePasswordType";
 import {type ValidationErrors } from "./ValidationErrors";
 export const validatePasswordChange = (data:changePassword): ValidationErrors<changePassword> => {
    const errors: ValidationErrors<changePassword> = {};
-  console.log(data)
   if (!data.currentPassword.trim()) {
     errors.currentPassword = "Current password is required";
   }

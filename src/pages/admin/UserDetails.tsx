@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaEnvelope, FaCalendarAlt, FaVenusMars,
+import {
+  FaEnvelope, FaCalendarAlt, FaVenusMars,
   FaBirthdayCake, FaArrowLeft, FaShieldAlt, FaPhone, FaMapMarkerAlt
 } from "react-icons/fa";
 import AdminTopBar from "../../layout/AdminTopBar";
@@ -12,12 +13,13 @@ import Modal from "../../components/Modal";
 import Toast from "../../components/Toast";
 import SubmitButton from "../../components/SubmitButton";
 import DEFAULT_IMAGE from '../../assets/default image.png'
-import {type User } from "../../types/userType";
+import { type User } from "../../types/userType";
+import { FormatDate } from "../../helperFunctions/formatdate";
 const UserDetails: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const [user, setUser] = useState<User|null>(null);
+
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [showStatusModal, setShowStatusModal] = useState<boolean>(false);
@@ -34,9 +36,9 @@ const UserDetails: React.FC = () => {
       setLoading(true);
       const response = await AdminUserService.getUserDetails(id);
       setUser(response.user);
-    } catch (error:any) {
-        const errorMsg = error.response?.data?.message || "Failed to fetch user datas";
-      setToast({ message: errorMsg, type: "error" });    
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Failed to fetch user datas";
+      setToast({ message: errorMsg, type: "error" });
     } finally {
       setLoading(false);
     }
@@ -64,7 +66,7 @@ const UserDetails: React.FC = () => {
   };
 
   if (loading) return <Loading message="Loading member profile..." />;
-  if (!user) return <NotFound/>;
+  if (!user) return <NotFound />;
 
   return (
     <>
@@ -73,7 +75,7 @@ const UserDetails: React.FC = () => {
 
       <main className="ml-64 mt-16 p-8 bg-[#F8FAFC] min-h-screen">
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-        
+
         <Modal
           isVisible={showStatusModal}
           onCancel={() => setShowStatusModal(false)}
@@ -89,9 +91,8 @@ const UserDetails: React.FC = () => {
           >
             <FaArrowLeft /> Back to List
           </button>
-          <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
-            user.status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-          }`}>
+          <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${user.status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            }`}>
             {user.status ? "Account Active" : "Account Blocked"}
           </span>
         </div>
@@ -113,7 +114,7 @@ const UserDetails: React.FC = () => {
                     <div className="p-2 bg-gray-50 rounded-lg text-gray-400"><FaCalendarAlt /></div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-gray-400 leading-none">Joined On</p>
-                      <p className="font-semibold">{new Date(user.createdAt).toLocaleDateString()}</p>
+                      <p className="font-semibold">{FormatDate(user.createdAt)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -182,11 +183,11 @@ const UserDetails: React.FC = () => {
 
               <div className="w-full md:w-auto text-center space-y-2">
                 <div className="min-w-[200px]">
-                   <SubmitButton 
+                  <SubmitButton
                     type="button"
-                    text={user.status ? 'Block Account' : 'Unblock Account'} 
+                    text={user.status ? 'Block Account' : 'Unblock Account'}
                     loading={actionLoading}
-                    onClick={() => setShowStatusModal(true)} 
+                    onClick={() => setShowStatusModal(true)}
                   />
                 </div>
                 <p className="text-[10px] text-gray-400 font-medium">

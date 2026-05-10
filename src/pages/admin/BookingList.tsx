@@ -8,6 +8,7 @@ import { GenericAreaChart } from "../../components/AreaChart";
 import { Calendar, CheckCircle, Users, AlertCircle, Eye, RefreshCcw, Search } from "lucide-react";
 import { AdminBookingService } from "../../services/admin/admin.booking.service";
 import { useNavigate } from "react-router-dom";
+import { formatDate } from "../../utils/formatTime";
 const BookingList = () => {
 
   const [statusFilter, setStatusFilter] = useState("all");
@@ -226,7 +227,7 @@ const BookingList = () => {
               {
                 header: "Scheduled For",
                 accessor: "date",
-                render: (row: any) => <span className="text-sm font-bold text-slate-600">{row.date}</span>
+                render: (row: any) => <span className="text-sm font-bold text-slate-600">{formatDate(row.date)}</span>
               },
               {
                 header: "Status",

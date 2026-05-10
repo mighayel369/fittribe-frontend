@@ -62,7 +62,7 @@ const LeaveManagement = () => {
 
     try {
       const status = actionType === 'approve' ? 'APPROVED' : 'REJECTED';
-      console.log(selectedLeave)
+  
       const result = await LeaveService.updateLeaveStatus(
         selectedLeave,
         status,

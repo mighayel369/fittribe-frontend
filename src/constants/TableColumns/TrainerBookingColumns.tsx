@@ -1,7 +1,8 @@
 import { type TrainerBookingColumnActions, type ColumnDefinition } from "../../types/table-types";
+import { formatDate, formatTime } from "../../utils/formatTime";
 
 const ViewButton = ({ id, onClick }: { id: string; onClick: (id: string) => void }) => (
-  <button className="px-4 py-1 text-xs font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors tracking-wider" onClick={()=>onClick(id)}>
+  <button className="px-4 py-1 text-xs font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors tracking-wider" onClick={() => onClick(id)}>
     View
   </button>
 );
@@ -12,10 +13,10 @@ const statusStyles: Record<string, string> = {
   completed: "bg-blue-50 text-blue-700 border-blue-200",
   cancelled: "bg-rose-50 text-rose-700 border-rose-200",
   reschedule_requested: "bg-indigo-50 text-indigo border-indigo-200",
-  rejected:"bg-red-500 text-white border-grey-200"
+  rejected: "bg-red-500 text-white border-grey-200"
 };
 
-export const allBookingsColumns = (onView: (id: string) => void):ColumnDefinition<any>[]=>[
+export const allBookingsColumns = (onView: (id: string) => void): ColumnDefinition<any>[] => [
   {
     header: "Client Name",
     accessor: "clientName",
@@ -40,12 +41,12 @@ export const allBookingsColumns = (onView: (id: string) => void):ColumnDefinitio
     accessor: "date",
     render: (b: any) => (
       <div className="text-sm">
-        <p className="font-medium text-gray-700">{new Date(b.bookedDate).toLocaleDateString()}</p>
-        <p className="text-xs text-gray-400">{b.bookedTime}</p>
+        <p className="font-medium text-gray-700">{formatDate(b.bookedDate)}</p>
+        <p className="text-xs text-gray-400">{formatTime(b.bookedTime)}</p>
       </div>
     )
   },
-{
+  {
     header: "Status",
     accessor: "status",
     render: (b: any) => {
@@ -64,7 +65,7 @@ export const allBookingsColumns = (onView: (id: string) => void):ColumnDefinitio
   }
 ];
 
-export const pendingBookingsColumns = (actions:TrainerBookingColumnActions):ColumnDefinition<any>[] => [
+export const pendingBookingsColumns = (actions: TrainerBookingColumnActions): ColumnDefinition<any>[] => [
   {
     header: "Client Name",
     accessor: "clientName",
@@ -81,7 +82,7 @@ export const pendingBookingsColumns = (actions:TrainerBookingColumnActions):Colu
     render: (b: any) => (
       <div className="text-sm">
         <p className="font-semibold text-amber-700">{b.bookedProgram}</p>
-        <p className="text-xs text-gray-500">{new Date(b.bookedDate).toLocaleDateString()} | {b.timeSlot}</p>
+        <p className="text-xs text-gray-500">{formatDate(b.bookedDate)} | {formatTime(b.bookedTime)}</p>
       </div>
     )
   },
@@ -98,19 +99,20 @@ export const pendingBookingsColumns = (actions:TrainerBookingColumnActions):Colu
   {
     header: "Details",
     accessor: "",
-    render: (b: any) => <ViewButton id={b.bookingId} onClick={actions.onView} />  },
+    render: (b: any) => <ViewButton id={b.bookingId} onClick={actions.onView} />
+  },
   {
     header: "Decision",
     accessor: "",
     render: (b: any) => (
       <div className="flex gap-2">
-        <button 
-          onClick={() => actions.onAction(b.bookingId, 'accept', 'booking')}         
-         className="px-4 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded hover:bg-emerald-700 transition uppercase shadow-sm"
+        <button
+          onClick={() => actions.onAction(b.bookingId, 'accept', 'booking')}
+          className="px-4 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded hover:bg-emerald-700 transition uppercase shadow-sm"
         >
           Accept
         </button>
-        <button 
+        <button
           onClick={() => actions.onAction(b.bookingId, 'reject', 'booking')}
           className="px-4 py-1.5 bg-white text-rose-500 border border-rose-200 text-[10px] font-bold rounded hover:bg-rose-50 transition uppercase"
         >
@@ -121,7 +123,7 @@ export const pendingBookingsColumns = (actions:TrainerBookingColumnActions):Colu
   }
 ];
 
-export const rescheduleColumns = (actions:TrainerBookingColumnActions):ColumnDefinition<any>[] => [
+export const rescheduleColumns = (actions: TrainerBookingColumnActions): ColumnDefinition<any>[] => [
   {
     header: "Client Name",
     accessor: "clientName",
@@ -134,8 +136,8 @@ export const rescheduleColumns = (actions:TrainerBookingColumnActions):ColumnDef
     accessor: "timeSlot",
     render: (b: any) => (
       <div className="text-xs text-gray-600">
-        <p className="">{new Date(b.bookedDate).toLocaleDateString()}</p>
-        <p className="">{b.bookedTime}</p>
+        <p className="">{formatDate(b.bookedDate)}</p>
+        <p className="">{formatTime(b.bookedTime)}</p>
       </div>
     )
   },
@@ -144,28 +146,29 @@ export const rescheduleColumns = (actions:TrainerBookingColumnActions):ColumnDef
     accessor: "requestedNewTime",
     render: (b: any) => (
       <div className="bg-blue-50 border border-blue-100 px-3 py-1.5 rounded">
-        <p className="text-blue-700 font-bold text-xs">{new Date(b.requestedNewDate).toLocaleDateString()}</p>
-        <p className="text-blue-600 font-medium text-[11px]">{b.requestedNewTime}</p>
+        <p className="text-blue-700 font-bold text-xs">{formatDate(b.requestedNewDate)}</p>
+        <p className="text-blue-600 font-medium text-[11px]">{formatTime(b.requestedNewTime)}</p>
       </div>
     )
   },
   {
     header: "Action",
     accessor: "",
-    render: (b: any) => <ViewButton id={b.bookingId} onClick={actions.onView} />  },
+    render: (b: any) => <ViewButton id={b.bookingId} onClick={actions.onView} />
+  },
   {
     header: "Decision",
     accessor: "",
     render: (b: any) => (
       <div className="flex gap-2">
-        <button 
-           onClick={() => actions.onAction(b.bookingId, 'accept', 'reschedule')}         
-           className="px-5 py-2 bg-emerald-500 text-white rounded text-[10px] font-black uppercase hover:bg-emerald-600 transition shadow-sm"
+        <button
+          onClick={() => actions.onAction(b.bookingId, 'accept', 'reschedule')}
+          className="px-5 py-2 bg-emerald-500 text-white rounded text-[10px] font-black uppercase hover:bg-emerald-600 transition shadow-sm"
         >
           Approve
         </button>
-        <button 
-           onClick={() => actions.onAction(b.bookingId, 'reject', 'reschedule')}         
+        <button
+          onClick={() => actions.onAction(b.bookingId, 'reject', 'reschedule')}
           className="px-5 py-2 bg-rose-500 text-white rounded text-[10px] font-black uppercase hover:bg-rose-600 transition shadow-sm"
         >
           Reject

@@ -28,7 +28,8 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchServices = async () => {
       let response = await PublicProgramsService.explorePrograms('user');
-      setPrograms(response.program.data ?? []);
+      console.log(response)
+      setPrograms(response.data.data ?? []);
     };
     fetchServices();
   }, []);

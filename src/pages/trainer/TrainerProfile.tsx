@@ -23,9 +23,10 @@ import DEFAULT_IMAGE from '../../assets/default image.png'
 import { type ValidationErrors } from "../../validations/ValidationErrors";
 import { type changePassword } from "../../types/changePasswordType";
 import { validatePasswordChange } from "../../validations/validatePassword";
+import type { TrainerAccount } from "../../types/trainerType";
 const TrainerProfile = () => {
   const navigate = useNavigate()
-  const [trainer, setTrainer] = useState<any>(null);
+  const [trainer, setTrainer] = useState<TrainerAccount | null>(null);
   const [activeTab, setActiveTab] = useState<"wallet" | "settings">("wallet");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -42,7 +43,9 @@ const TrainerProfile = () => {
     newPassword: "",
     confirmPassword: "",
   });
-  const [passwordErrors, setPasswordErrors] = useState<any>({});
+
+  const [passwordErros, setPasswordErrors] = useState<any>("")
+
   useEffect(() => {
     document.title = "FitTribe | Profile";
   }, []);
@@ -57,10 +60,9 @@ const TrainerProfile = () => {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors: ValidationErrors<changePassword> = validatePasswordChange(passwordData);
-    console.log(passwordData)
+
     setPasswordErrors(validationErrors);
-    console.log(validationErrors)
-    console.log(passwordErrors)
+
     if (Object.keys(validationErrors).length > 0) return;
     try {
       setPasswordLoading(true);
@@ -69,7 +71,7 @@ const TrainerProfile = () => {
         oldPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      console.log(res)
+
       if (res.success) {
         setToastType("success");
         setToastMessage(res.message ?? "Password updated successfully!");
@@ -77,7 +79,7 @@ const TrainerProfile = () => {
         setIsPasswordOpen(false);
       }
     } catch (error: any) {
-      console.log(error)
+
       setToastType("error");
       setToastMessage(error.response.data.message ?? "An error occurred. Please try again.");
     } finally {
@@ -89,10 +91,10 @@ const TrainerProfile = () => {
     const fetchTrainerProfile = async () => {
       try {
         const res = await TrainerProfileService.getProfile();
-        console.log(res);
+
         setTrainer(res?.trainer || null);
       } catch (err) {
-        console.log(err);
+
       }
     };
 
@@ -109,7 +111,7 @@ const TrainerProfile = () => {
       setWalletLoading(true);
       const res = await WalletService.fetchWalletData('trainer', page, 5);
       if (res?.success) {
-        const { balance, data, total} = res.wallet
+        const { balance, data, total } = res.wallet
         setWalletTransactions(data);
         setTotalPages(total);
         setWalletBalance(balance)
@@ -132,13 +134,13 @@ const TrainerProfile = () => {
       formData.append("profilePic", file);
 
       const res = await TrainerProfileService.updateAvatar(formData)
-      console.log(res)
+
       setTrainer((prev: any) => ({
         ...prev,
         profilePic: res.data?.imageUrl
       }))
     } catch (err) {
-      console.log(err)
+
     }
   }
 
@@ -148,9 +150,9 @@ const TrainerProfile = () => {
       <TrainerSideBar />
 
       <main className="ml-72 pt-24 px-10">
-              {toastMessage && (
-        <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
-      )}
+        {toastMessage && (
+          <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
+        )}
         <h1 className="text-4xl font-bold mb-10 text-gray-800">Profile</h1>
 
         {trainer ? (

@@ -1,8 +1,8 @@
 export type Booking={
     bookingId:string,
     trainerName:string,
-    bookedDate:Date,
-    bookedTime:string,
+    bookedDate:string,
+    bookedTime:number,
     bookedProgram:string,
     sessionAmount:number,
     bookingStatus:'pending' | 'confirmed' | 'completed' | 'cancelled' | 'reschedule_requested'|'rejected'
@@ -19,7 +19,7 @@ export interface TrainerBookingDetails {
     
     bookedProgram: string;
     bookedDate: string; 
-    bookedTime: string;
+    bookedTime: number;
     sessionDuration: number;
     bookingStatus:'pending' | 'confirmed' | 'completed' | 'cancelled' | 'reschedule_requested'|'rejected'
 
@@ -30,7 +30,7 @@ export interface TrainerBookingDetails {
 
     rescheduleRequest?: {
         newDate: string;
-        newTimeSlot: string;
+        newTimeSlot: number
         requestedBy:string,
         requestedAt: string;
     };
@@ -42,7 +42,7 @@ export interface UserBookingDetails{
   
   bookedProgram: string;
   bookedDate: string;      
-  bookedTime: string;    
+  bookedTime: number;    
   sessionDuration: number;
   bookingStatus: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'reschedule_requested'|'rejected';
 
@@ -61,7 +61,7 @@ export interface UserBookingDetails{
 
   rescheduleRequest?: {
     newDate: string;
-    newTimeSlot: string;
+    newTimeSlot: number;
     requestedBy:string,
     status: string;
   };

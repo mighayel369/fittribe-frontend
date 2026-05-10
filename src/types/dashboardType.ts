@@ -59,7 +59,7 @@ export interface BookingStatusDTO{
     count:number
 }
 export interface PeakBookingTimeDataDTO{
-    time:string,
+    time:number,
     count:number
 }
 

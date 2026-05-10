@@ -54,10 +54,10 @@ const TrainerHome = () => {
         TrainerDashboardService.getMetrics(),
         TrainerDashboardService.getDailyAgenda(new Date().toISOString())
       ]);
-
+      console.log(mainResponse)
       setDashData(mainResponse.dashboardData);
       setAppointments(appointmentResponse.dashboardData.upcomingAppointments);
-      console.log(appointments)
+
     } catch (error) {
       console.error("Dashboard Load Error:", error);
     } finally {
@@ -305,7 +305,7 @@ const TrainerHome = () => {
                 </h3>
               </div>
 
-              <div className="space-y-1"> 
+              <div className="space-y-1">
                 {dashData.recentChats && dashData.recentChats.length > 0 ? (
                   dashData.recentChats.map((chat: ChatList, index: number) => (
                     <div
@@ -319,7 +319,6 @@ const TrainerHome = () => {
                           className="w-10 h-10 rounded-full border border-slate-200 object-cover shadow-sm"
                           alt={chat.name}
                         />
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -356,7 +355,7 @@ const TrainerHome = () => {
                   </div>
                 )}
               </div>
-              <button className="w-full mt-6 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold text-[10px] hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2 group" onClick={()=>navigate('/trainer/chats')}>
+              <button className="w-full mt-6 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold text-[10px] hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2 group" onClick={() => navigate('/trainer/chats')}>
                 View All Messages <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </section>
@@ -365,7 +364,7 @@ const TrainerHome = () => {
                 <h3 className="text-lg font-black text-gray-800 uppercase">Monthly Growth</h3>
                 <TrendingUp className="text-emerald-500" size={20} />
               </div>
-              <div className="h-[180px] w-full">
+              <div className=" w-full">
                 <GenericAreaChart
                   data={dashData.performanceData}
                   xKey="month"

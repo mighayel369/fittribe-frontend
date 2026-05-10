@@ -19,24 +19,24 @@ const VerifyTrainer = () => {
   useEffect(() => {
     document.title = "FitTribe | Trainer Verification";
   }, []);
-const fetchTrainers = async () => {
-  setLoading(true);
-  try {
-    const response = await AdminTrainerService.getPendingTrainers(page, search);
+  const fetchTrainers = async () => {
+    setLoading(true);
+    try {
+      const response = await AdminTrainerService.getPendingTrainers(page, search);
 
-    if (response.success) {
-      setTrainers(response.data);
-      setTotalPages(response.total);
+      if (response.success) {
+        setTrainers(response.data);
+        setTotalPages(response.total);
+      }
+    } catch (err) {
+      console.error("Failed to fetch trainers", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Failed to fetch trainers", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleVerify = (trainerId: string) => {
-   navigate(`/admin/trainers/${trainerId}`);
+    navigate(`/admin/trainers/${trainerId}`);
   };
 
   useEffect(() => {
@@ -73,15 +73,15 @@ const fetchTrainers = async () => {
                 render: (t) => t.gender ?? "NA",
               },
               {
-                 header: "Programs",
-                 accessor: "programs",
-                 render: (t) => t.programs.length ? t.programs.join(", ") : "NA",
-                },
+                header: "Programs",
+                accessor: "programs",
+                render: (t) => t.programs.length ? t.programs.join(", ") : "NA",
+              },
               {
-                  header: "Price",
-                  accessor: "pricePerSession",
-                  render: (t) => t.pricePerSession ? `₹${t.pricePerSession}` : "NA",
-                },
+                header: "Price",
+                accessor: "pricePerSession",
+                render: (t) => t.pricePerSession ? `₹${t.pricePerSession}` : "NA",
+              },
               {
                 header: "Action",
                 accessor: "action",
@@ -101,11 +101,11 @@ const fetchTrainers = async () => {
             emptyMessage="No Trainers Found."
           />
 
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </div>
       </main>
     </>

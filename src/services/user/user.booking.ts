@@ -2,7 +2,7 @@ import axiosInstance from "../../api/AxiosInstance";
 import { API_ENDPOINTS } from "../../api/endPoints";
 
 export const UserBookingService = {
-  getBookingHistory: async (page: number, search: string, filter: string = "all") => {
+  getBookingHistory: async (page: number, search: string, filter: string = "ALL") => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.USER_BOOKINGS.HISTORY, {
       params: { pageNo: page, search, filter }
     });

@@ -11,6 +11,7 @@ import DEFAULT_IMAGE from '../../assets/default image.png'
 import { UserPaymentService } from "../../services/user/user.payment";
 import { PublicTrainersService } from "../../services/public/trainers";
 import { UserBookingService } from "../../services/user/user.booking";
+import { formatTime } from "../../utils/formatTime";
 
 type programOption = {
   programId: string,
@@ -26,12 +27,12 @@ const TrainerBookingPage = () => {
   const [selectedProgram, setSelectedProgram] = useState<programOption | null>(null);
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [slots, setSlots] = useState<string[]>([]);
+  const [slots, setSlots] = useState<number[]>([]);
   const [leaveStatus, setLeaveStatus] = useState<{ isOnLeave: boolean; message: string | null }>({
     isOnLeave: false,
     message: null
   });
-  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedTime, setSelectedTime] = useState<number|null>(null);
 
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -106,7 +107,7 @@ const TrainerBookingPage = () => {
       const orderResponse = await UserPaymentService.initiateCheckout({
         trainerId: trainer.trainerId,
         programId: selectedProgram.programId,
-        date: selectedDate.toString(),
+        date: selectedDate.toISOString(),
         time: selectedTime,
         amount: trainer.pricePerSession,
       });
@@ -132,7 +133,7 @@ const TrainerBookingPage = () => {
               price: trainer.pricePerSession
             })
 
-            console.log(verifyRes)
+
 
             if (verifyRes.success) {
               const summary = verifyRes.bookingSummary;
@@ -141,13 +142,13 @@ const TrainerBookingPage = () => {
                 trainer: summary.trainerName,
                 program: summary.bookedProgram,
                 date: new Date(summary.bookedDate),
-                time: summary.bookedTime,
+                time: formatTime(summary.bookedTime),
                 id: summary.bookingId,
                 payment: "Razorpay (Online)",
               });
             }
           } catch (err: any) {
-            console.log(err)
+       
             setToastMessage(err.response?.data?.message || "Verification Failed");
             setToastType("error");
           } finally {
@@ -170,7 +171,7 @@ const TrainerBookingPage = () => {
       rzp.open();
 
     } catch (err: any) {
-      console.log(err)
+console.log(err)
       setToastMessage(err.response?.data?.message || "Payment Initialization Failed");
       setToastType("error");
       setLoading(false);
@@ -278,7 +279,7 @@ const TrainerBookingPage = () => {
                       : "bg-white text-gray-600 border-gray-200 hover:border-gray-900 hover:text-gray-900 shadow-sm"
                       }`}
                   >
-                    {slot}
+                    {formatTime(slot)}
                   </button>
                 ))}
               </div>
@@ -302,7 +303,7 @@ const TrainerBookingPage = () => {
                   Finalizing Your Session
                 </p>
                 <h4 className="text-lg font-bold leading-tight">
-                  {selectedProgram.name} <span className="text-gray-500 text-sm font-medium">@ {selectedTime}</span>
+                  {selectedProgram.name} <span className="text-gray-500 text-sm font-medium">@ {formatTime(selectedTime)}</span>
                 </h4>
                 <p className="text-sm text-red-500 font-bold">
                   with {trainer?.name}

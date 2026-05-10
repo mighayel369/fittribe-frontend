@@ -72,17 +72,15 @@ const VideoSession: React.FC = () => {
 
               if (typeof apiAny.on === 'function') {
                 apiAny.on('lobbyPushAccepted', (data: any) => {
-                  console.log(`${data?.participant?.name || 'Participant'} was admitted.`);
+  
                 });
               } else {
                 apiAny.addEventListener('lobbyPushAccepted', (data: any) => {
-                  console.log(`${data?.participant?.name || 'Participant'} was admitted.`);
                 });
               }
             }
 
             (api as any).on('videoConferenceJoined', () => {
-              console.log("Session successfully joined as:", isTrainer ? 'Trainer' : 'Client');
             });
           }}
           onReadyToClose={() => navigate(-1)}

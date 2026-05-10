@@ -75,7 +75,7 @@ const fetchData = async () => {
       };
 
       const res = await serviceMap[activeTab](currentPage, searchQuery);
-      console.log(res)
+
       if (res.success) {
         setBookings(res.data);
         setTotal(res.total);
@@ -102,9 +102,9 @@ const handleConfirmAction = async (reason?: string) => {
     try {
       setIsLoading(true);
       const serviceFn = TRAINER_BOOKING_ACTIONS[action.context][action.type];
-      console.log(serviceFn)
+
       const res = await serviceFn(selectedId, reason || "");
-      console.log(res)
+
       if (res.success) {
         setToast({ message: res.message, type: "success" });
         await fetchData();
@@ -112,7 +112,7 @@ const handleConfirmAction = async (reason?: string) => {
         setSelectedId(null);
       }
     } catch (err: any) {
-      console.log(err)
+
       setToast({ 
         message: err.response?.data?.message || "Action failed.", 
         type: "error" 

@@ -2,7 +2,7 @@ import { type UpdateTrainerProfileDTO } from "../types/trainerType";
 import {type ValidationErrors } from "./ValidationErrors";
 export const trainerProfileValidation = (data: UpdateTrainerProfileDTO): ValidationErrors<UpdateTrainerProfileDTO> => {
   const newErrors: ValidationErrors<UpdateTrainerProfileDTO> = {};
-console.log(data)
+
   if (!data.name?.trim()) {
     newErrors.name = "Full name is required";
   } else if (data.name.length < 3) {

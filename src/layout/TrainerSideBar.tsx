@@ -58,7 +58,7 @@ const TrainerSideBar = () => {
         const status = res.trainer.verified;
         setTrainerStatus(status);
 
-        const isRestricted = status === "pending" || status === "rejected";
+        const isRestricted = status === "pending"
         if (isRestricted && location.pathname !== "/trainer/trainer-profile") {
           navigate("/trainer/trainer-profile", { replace: true });
         }

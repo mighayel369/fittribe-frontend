@@ -48,7 +48,7 @@ const OnboardNewProgram = () => {
         navigate("/admin/programs", { state: { message: response.message } });
       }
     } catch (err: any) {
-      console.log(err)
+
     } finally {
       setIsLoading(false);
     }

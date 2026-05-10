@@ -4,8 +4,8 @@ import TrainerTopBar from "../../layout/TrainerTopBar";
 import TrainerSideBar from "../../layout/TrainerSideBar";
 import { PublicProgramsService } from "../../services/public/programs";
 import { TrainerProfileService } from "../../services/trainer/trainer.profile";
-import { reapplyValidation} from "../../validations/reapplyValidation";
-import {type ValidationErrors } from "../../validations/ValidationErrors";
+import { reapplyValidation } from "../../validations/reapplyValidation";
+import { type ValidationErrors } from "../../validations/ValidationErrors";
 import { type ReapplyTrainerDTO } from "../../types/trainerType";
 import TextInput from "../../components/TextInput";
 import SelectField from "../../components/SelectField";
@@ -31,7 +31,7 @@ const ReapplyPage = () => {
     experience: 0,
     programs: [],
     languages: [],
-    pricePerSession:0,
+    pricePerSession: 0,
     certificate: null,
   });
   const [toast, setToast] = useState<{ message: string, type: "success" | "error" } | null>(null);
@@ -42,30 +42,34 @@ const ReapplyPage = () => {
 
   useEffect(() => {
     document.title = "FitTribe | Reapply";
-    
+
     const initData = async () => {
       try {
         const [servicesRes, profileRes] = await Promise.all([
           PublicProgramsService.explorePrograms('trainer'),
           TrainerProfileService.getProfile()
         ]);
-        
-        setProgramOptions(servicesRes.data);
-        
+
+        console.log(servicesRes)
+        console.log(profileRes)
+        const availablePrograms = servicesRes.data?.data || [];
+        setProgramOptions(availablePrograms);
+
         const t = profileRes.trainer;
+        console.log(t)
         setFormData({
           name: t.name || "",
           gender: t.gender || "",
           experience: t.experience || 0,
-          programs: t.services?.map((s: any) => s.serviceId || s.id) || [],
-          pricePerSession:t.pricePerSession||0,
+          programs: t.programs?.map((s: any) => s.programId || s.id) || [],
+          pricePerSession: t.pricePerSession || 0,
           languages: t.languages || [],
-          certificate: null,
+          certificate: t.certificate,
         });
         setCertificateUrl(t.certificate);
-      } catch (err:any) {
-      const errorMsg = err.response?.data?.message
-      setToast({message:errorMsg,type:'error'})
+      } catch (err: any) {
+        const errorMsg = err.response?.data?.message || "Failed to load data";
+        setToast({ message: errorMsg, type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -76,7 +80,7 @@ const ReapplyPage = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-        setFormData(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: name === "pricePerSession" || name === "experience" ? Number(value) : value
     }));
@@ -103,30 +107,30 @@ const ReapplyPage = () => {
     }
 
     try {
-    const data = new FormData();
-    
-    (Object.keys(formData) as Array<keyof ReapplyTrainerDTO>).forEach((key) => {
-      const value = formData[key];
-      
-      if (value === undefined || value === null) return;
+      const data = new FormData();
 
-      if (Array.isArray(value)) {
-        value.forEach(val => data.append(`${key}[]`, val));
-      } else if (value instanceof File) {
-        data.append(key, value);
-      } else {
-        data.append(key, String(value)); 
-      }
-    });
+      (Object.keys(formData) as Array<keyof ReapplyTrainerDTO>).forEach((key) => {
+        const value = formData[key];
 
-      let res=await TrainerProfileService.reapply(data);
-      if(res.success){
-        setToast({message:res.message,type:'success'})
+        if (value === undefined || value === null) return;
+
+        if (Array.isArray(value)) {
+          value.forEach(val => data.append(`${key}[]`, val));
+        } else if (value instanceof File) {
+          data.append(key, value);
+        } else {
+          data.append(key, String(value));
+        }
+      });
+
+      let res = await TrainerProfileService.reapply(data);
+      if (res.success) {
+        setToast({ message: res.message, type: 'success' })
         setTimeout(() => navigate("/trainer/trainer-profile"), 2000);
       }
-    } catch (err:any) {
-       const errorMsg = err.response?.data?.message
-      setToast({message:errorMsg,type:'error'})
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message
+      setToast({ message: errorMsg, type: 'error' })
     }
   };
 
@@ -138,13 +142,13 @@ const ReapplyPage = () => {
       <TrainerSideBar />
 
       <main className="ml-72 pt-24 px-10 pb-12">
-                {toast && (
-                  <Toast 
-                    message={toast.message} 
-                    type={toast.type} 
-                    onClose={() => setToast(null)} 
-                  />
-                )}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <form
           onSubmit={handleSubmit}
           className="max-w-3xl bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6"
@@ -201,10 +205,10 @@ const ReapplyPage = () => {
             <label className="block text-sm font-bold text-gray-700">Certification</label>
             {certificateUrl && (
               <div className="mb-2">
-                <a 
+                <a
                   id="existing-cert"
-                  href={certificateUrl} 
-                  target="_blank" 
+                  href={certificateUrl}
+                  target="_blank"
                   rel="noreferrer"
                   className="text-sm text-blue-600 hover:underline flex items-center gap-2"
                 >
@@ -212,10 +216,10 @@ const ReapplyPage = () => {
                 </a>
               </div>
             )}
-            <input 
-              type="file" 
+            <input
+              type="file"
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              onChange={(e) => setFormData({ ...formData, certificate: e.target.files ? e.target.files[0] : null })} 
+              onChange={(e) => setFormData({ ...formData, certificate: e.target.files ? e.target.files[0] : null })}
             />
             {errors.certificate && <p className="text-red-500 text-xs">{errors.certificate}</p>}
           </div>

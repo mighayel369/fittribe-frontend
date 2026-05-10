@@ -59,12 +59,13 @@ export const TrainerBookingService = {
     return data;
   },
 
-  rescheduleByTrainer: async (bookingId: string, newDate: string, newTimeSlot: string) => {
+  rescheduleByTrainer: async (bookingId: string, newDate: string, newTimeSlot: string,reason:string) => {
     const { data } = await axiosInstance.put(API_ENDPOINTS.TRAINER_BOOKINGS.RESCHEDULE_BY_TRAINER,
       {
         bookingId,
         newDate,
-        newTimeSlot
+        newTimeSlot,
+        reason
       }
     );
     return data;

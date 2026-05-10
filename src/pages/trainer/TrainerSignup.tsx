@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState,  type FormEvent } from "react";
+import React, { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { setEmail, setRole } from "../../redux/slices/otpSlice";
 import { useAppDispatch } from "../../redux/hooks";
@@ -48,10 +48,10 @@ const TrainerSignup: React.FC = () => {
       try {
         const response = await PublicProgramsService.explorePrograms('trainer');
         console.log(response)
-        setProgramOptions(response.program.data);
-      } catch (error) { 
+        setProgramOptions(response.data.data);
+      } catch (error) {
         console.error(error);
-       }
+      }
     };
     fetchServices();
   }, []);
@@ -60,22 +60,22 @@ const TrainerSignup: React.FC = () => {
     e.preventDefault();
     setGenericErrors('');
     setErrors({});
-    
-const validationData: TrainerSignupDTO = { 
-    name, 
-    email, 
-    password, 
-    confirm, 
-    gender, 
-    experience: Number(experience),
-    certificate, 
-    programs,
-    languages,
-    pricePerSession: Number(pricePerSession) 
-  };
-console.log(programs)
-  const newErrors = trainerSignupValidate(validationData);   
-  if (Object.keys(newErrors).length > 0) {
+
+    const validationData: TrainerSignupDTO = {
+      name,
+      email,
+      password,
+      confirm,
+      gender,
+      experience: Number(experience),
+      certificate,
+      programs,
+      languages,
+      pricePerSession: Number(pricePerSession)
+    };
+
+    const newErrors = trainerSignupValidate(validationData);
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
@@ -109,7 +109,7 @@ console.log(programs)
   return (
     <BackgroundImageWrapper image={signuppic}>
       <div className="flex justify-center md:justify-end w-full min-h-screen items-center p-4 md:pr-12 lg:pr-24 py-10">
-        
+
         <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-10 w-full max-w-[600px] border border-white/40 max-h-[90vh] overflow-y-auto custom-scrollbar">
 
           <header className="mb-8 text-center flex flex-col items-center">
@@ -137,28 +137,28 @@ console.log(programs)
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <PasswordInput 
-                  label="Password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  placeholder="••••••••" 
-                  error={errors.password} 
+                <PasswordInput
+                  label="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  error={errors.password}
                   showButton={true}
                 />
-                <PasswordInput 
-                  label="Confirm" 
-                  value={confirm} 
-                  onChange={(e) => setConfirm(e.target.value)} 
-                  placeholder="••••••••" 
-                  error={errors.confirm} 
-                  showButton={true} 
+                <PasswordInput
+                  label="Confirm"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  placeholder="••••••••"
+                  error={errors.confirm}
+                  showButton={true}
                 />
               </div>
             </div>
 
             <div className="pt-4 border-t border-gray-200/50">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4 text-center">Professional Credentials</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <RadioGroup label="Gender" name="gender" options={["male", "female", "other"]} value={gender} onChange={(e) => setGender(e.target.value)} error={errors.gender} />
                 <SelectField name="experience" label="Experience" value={experience} onChange={(e) => setExperience(e.target.value)} options={experienceOptions} error={errors.experience} />
@@ -169,29 +169,29 @@ console.log(programs)
               </div>
 
               <div className="space-y-6">
-                <CheckboxGroup 
-                  label="Programs" 
-                  options={programOptions.map(s => ({ label: s.name, value: s.programId }))} 
-                  selected={programs} 
-                  onChange={(id) => setPrograms(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])} 
-                  error={errors.programs} 
+                <CheckboxGroup
+                  label="Programs"
+                  options={programOptions.map(s => ({ label: s.name, value: s.programId }))}
+                  selected={programs}
+                  onChange={(id) => setPrograms(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])}
+                  error={errors.programs}
                 />
-                
-                <CheckboxGroup 
-                  label="Languages" 
-                  options={languageOptions} 
-                  selected={languages} 
-                  onChange={(id) => setLanguages(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])} 
-                  error={errors.languages} 
+
+                <CheckboxGroup
+                  label="Languages"
+                  options={languageOptions}
+                  selected={languages}
+                  onChange={(id) => setLanguages(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])}
+                  error={errors.languages}
                 />
               </div>
 
               <div className="mt-6 bg-gray-50/50 p-5 rounded-2xl border-2 border-dashed border-gray-200">
                 <label className="block text-xs font-black uppercase text-gray-500 mb-3 tracking-widest text-center">Certification</label>
-                <input 
-                  type="file" 
-                  onChange={(e) => e.target.files && setCertificate(e.target.files[0])} 
-                  className="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-red-600 file:text-white hover:file:bg-black file:transition-colors cursor-pointer" 
+                <input
+                  type="file"
+                  onChange={(e) => e.target.files && setCertificate(e.target.files[0])}
+                  className="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-red-600 file:text-white hover:file:bg-black file:transition-colors cursor-pointer"
                 />
                 {errors.certificate && <p className="text-red-600 text-[10px] font-bold mt-2 uppercase">{errors.certificate}</p>}
               </div>

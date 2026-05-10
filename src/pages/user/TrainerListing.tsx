@@ -33,8 +33,8 @@ const TrainerListing = () => {
       try {
        let response = await PublicProgramsService.explorePrograms();
     
-        if (response.program.data) {
-          const programData: ProgramOption[] = response.program.data.map(
+        if (response.data.data) {
+          const programData: ProgramOption[] = response.data.data.map(
             (curr: Program): ProgramOption => ({
              programId: curr.programId,
               name: curr.name,

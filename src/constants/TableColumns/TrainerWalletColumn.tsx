@@ -1,6 +1,7 @@
 
 import { FaArrowRight } from "react-icons/fa";
 import { type NavigateFunction } from "react-router-dom";
+import { FormatDate } from "../../helperFunctions/formatdate";
 
 interface TransactionRow {
   _id: string;
@@ -12,32 +13,36 @@ interface TransactionRow {
 }
 
 export const TrainerWalletColumns = (navigate: NavigateFunction) => [
-  { 
-    header: "Date", 
-    accessor: "createdAt", 
+  {
+    header: "Date",
+    accessor: "createdAt",
     render: (row: TransactionRow) => (
       <div className="flex flex-col">
-        <span className="font-bold text-gray-700">
-          {new Date(row.createdAt).toLocaleDateString()}
+        <span className="font-bold text-gray-900">
+          {FormatDate(row.createdAt)}
         </span>
-        <span className="text-[10px] text-gray-400">
-          {new Date(row.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        <span className="text-[10px] text-indigo-500 font-black uppercase tracking-widest">
+          {new Date(row.createdAt).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          })}
         </span>
       </div>
-    ) 
+    )
   },
   {
-    header: "Source", 
-    accessor: "source", 
+    header: "Source",
+    accessor: "source",
     render: (row: TransactionRow) => (
       <span className="px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-[10px] font-black uppercase tracking-tighter">
         {row.source}
       </span>
     )
   },
-  { 
-    header: "Amount", 
-    accessor: "amount", 
+  {
+    header: "Amount",
+    accessor: "amount",
     render: (row: TransactionRow) => (
       <span className={`font-black ${row.type === "credit" ? "text-green-600" : "text-red-600"}`}>
         {row.type === "credit" ? "+" : "-"} ₹{row.amount}
@@ -48,7 +53,7 @@ export const TrainerWalletColumns = (navigate: NavigateFunction) => [
     header: "Details",
     accessor: "bookingId",
     render: (row: TransactionRow) => row.bookingId ? (
-      <button 
+      <button
         onClick={() => navigate(`/trainer/bookings/${row.bookingId}`)}
         className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 transition-colors group"
       >

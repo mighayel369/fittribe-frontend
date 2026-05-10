@@ -11,8 +11,8 @@ export const AdminTrainerService = {
 
   updateTrainerStatus: async (trainerId: string, newStatus: boolean) => {
     const { data } = await axiosInstance.patch(
-      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.UPDATE_STATUS, 
-      { status: newStatus,trainerId }
+      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.UPDATE_STATUS,
+      { status: newStatus, trainerId }
     );
     return data;
   },
@@ -23,12 +23,15 @@ export const AdminTrainerService = {
   },
   handleTrainerApproval: async (id: string, selectedAction: string, reason?: string) => {
     const { data } = await axiosInstance.patch(
-      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.VERIFY_ACTION, 
-      { action: selectedAction, reason ,traainerId:id}
+      API_ENDPOINTS.ADMIN_MGMT.TRAINERS.VERIFY_ACTION,
+      {
+        action: selectedAction,
+        reason,
+        trainerId: id
+      }
     );
     return data;
   },
-
   getPendingTrainers: async (page: number, search: string, filters?: any) => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.ADMIN_MGMT.TRAINERS.LIST_PENDING, {
       params: { pageNO: page, search, ...filters },

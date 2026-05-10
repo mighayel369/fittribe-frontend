@@ -6,9 +6,9 @@ import type { UpdateUserProfileDTO } from "../../types/userType";
 
 export const UserProfileService = {
 
-  updateProfile: async (payload: FormData|UpdateUserProfileDTO) => {
-      const { data } = await axiosInstance.put(API_ENDPOINTS.USER_ACCOUNT.UPDATE_PROFILE, payload);
-      return data;
+  updateProfile: async (payload: FormData | UpdateUserProfileDTO) => {
+    const { data } = await axiosInstance.put(API_ENDPOINTS.USER_ACCOUNT.UPDATE_PROFILE, payload);
+    return data;
   },
 
   getProfile: async () => {
@@ -22,8 +22,8 @@ export const UserProfileService = {
     });
     return data;
   },
-    changePassword: async (payload: any) => {
-    const { data } = await axiosInstance.post(API_ENDPOINTS.USER_ACCOUNT.CHANGE_PASSWORD,payload);
+  changePassword: async (payload: any) => {
+    const { data } = await axiosInstance.post(API_ENDPOINTS.USER_ACCOUNT.CHANGE_PASSWORD, payload);
     return data;
   },
 

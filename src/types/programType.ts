@@ -1,3 +1,7 @@
+export interface ProgramInfo {
+    programId: string;
+    name: string;
+}
 
 export type Program = {
   programId: string;

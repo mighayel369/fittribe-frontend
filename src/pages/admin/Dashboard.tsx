@@ -6,21 +6,27 @@ import AdminTopBar from "../../layout/AdminTopBar";
 import StatCard from "../../components/StatCard";
 import { GenericAreaChart } from "../../components/AreaChart";
 import { GenericBarChart } from "../../components/BarChart";
-import { DollarSign, Star, TrendingUp, Users, PieChart, Calendar } from "lucide-react";
+import { DollarSign, Star, TrendingUp, Users, PieChart, Calendar, RefreshCw } from "lucide-react";
 import { GenericPieChart } from "../../components/PieChart";
 import Toast from "../../components/Toast";
 import { useLocation } from 'react-router-dom';
 import { type AdminDashbardResponseDTO, type TopTrainersDTO } from "../../types/dashboardType";
+import { formatTime } from "../../utils/formatTime";
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState<AdminDashbardResponseDTO | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false)
   const fetchDashboardData = async () => {
     try {
+      setLoading(true)
       const response = await AdminPlatformService.DashboardInsights();
+      console.log(response)
       setDashboardData(response.dashboardData);
+      setLoading(false)
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || "Failed to load system analytics";
       setToastMessage(errorMsg);
+      setLoading(false)
     }
   }
   let location = useLocation()
@@ -31,32 +37,32 @@ const Dashboard = () => {
     }
     fetchDashboardData();
   }, []);
-const handleExportReport = async () => {
-  try {
-    const res = await AdminPlatformService.ExportSystemReport();
-    
-    const blob = new Blob([res.data], { type: 'application/pdf' });
+  const handleExportReport = async () => {
+    try {
+      const res = await AdminPlatformService.ExportSystemReport();
 
-    const url = window.URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    
-    const date = new Date().toISOString().split('T')[0];
-    link.setAttribute('download', `FitTribe-Dashboard-Report-${date}.pdf`);
-    
-    document.body.appendChild(link);
-    link.click();
-    
-    link.remove();
-    window.URL.revokeObjectURL(url);
-    
-    setToastMessage("Report downloaded successfully!");
-  } catch (error) {
-    console.error("Export failed:", error);
-    setToastMessage("Failed to download report.");
-  }
-};
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+
+      const date = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `FitTribe-Dashboard-Report-${date}.pdf`);
+
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      setToastMessage("Report downloaded successfully!");
+    } catch (error) {
+      console.error("Export failed:", error);
+      setToastMessage("Failed to download report.");
+    }
+  };
 
 
   if (!dashboardData) {
@@ -69,6 +75,11 @@ const handleExportReport = async () => {
   }
 
   const { metrics, performanceData, topTrainers, bookingStatus, peakHoursData } = dashboardData;
+  const peakData = peakHoursData.map(item => ({
+    ...item,
+    time: formatTime(item.time),
+    count: item.count
+  }));
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -89,17 +100,20 @@ const handleExportReport = async () => {
             <p className="text-slate-500 font-medium">Monitoring platform growth and trainer performance.</p>
           </div>
           <div className="flex gap-3">
-              <button
-                onClick={handleExportReport}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all"
-              >
-                <FileDownIcon size={16} />
-                Export CSV
-              </button>
-              <button onClick={fetchDashboardData} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-indigo-700">
-                Refresh Data
-              </button>
-            </div>
+            <button
+              onClick={handleExportReport}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all"
+            >
+              <FileDownIcon size={16} />
+              Export CSV
+            </button>
+
+            <button
+              onClick={fetchDashboardData}
+              className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all"
+            >
+              <RefreshCw size={18} className={`${loading ? 'animate-spin' : ''}`} />
+            </button>          </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -194,7 +208,7 @@ const handleExportReport = async () => {
               <div className="relative z-10">
                 <h3 className="text-xl font-black">Peak Hours</h3>
                 <p className="text-indigo-100 text-xs mb-6">Top 4 high-traffic slots</p>
-                <GenericBarChart data={peakHoursData} categoryKey="time" valueKey="count" />
+                <GenericBarChart data={peakData} categoryKey="time" valueKey="count" />
               </div>
             </section>
           </div>

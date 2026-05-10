@@ -10,10 +10,11 @@ import { useLocation } from 'react-router-dom';
 import Toast from "../../components/Toast";
 import { ChatService } from "../../services/shared/chat.service";
 import { FaStar, FaClock } from "react-icons/fa";
+import {type TrainerProfile } from "../../types/trainerType";
 const TrainerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [trainer, setTrainer] = useState<any>(null);
+  const [trainer, setTrainer] = useState<TrainerProfile|null>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   let location = useLocation()
@@ -33,6 +34,7 @@ const TrainerProfile = () => {
         if (!id) return
         setLoading(true);
         const response = await PublicTrainersService.getTrainerDetails(id)
+        console.log(response)
         setTrainer(response.trainer);
       } catch (err: any) {
         let errMesg = err.response?.data?.message
@@ -49,8 +51,9 @@ const TrainerProfile = () => {
       try {
         if (!id) return;
         const response = await PublicTrainersService.getTrainerReviews(id);
+        console.log(response)
         setReviewsData(response.data);
-        console.log(response.data)
+  
       } catch (err) {
         console.error("Failed to fetch reviews");
       }

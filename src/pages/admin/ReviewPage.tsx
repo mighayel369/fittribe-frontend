@@ -1,5 +1,5 @@
-import  { useState, useEffect } from 'react';
-import { Star, Trash2 } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { RotateCcw, Star, Trash2 } from "lucide-react";
 import DEFAULT_IMAGE from '../../assets/default image.png';
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
@@ -7,6 +7,7 @@ import { adminReviewService } from '../../services/admin/admin.review.service';
 import { sharedReviewService } from '../../services/shared/review.shared';
 import Modal from "../../components/Modal";
 import Toast from "../../components/Toast";
+import { FormatDate } from '../../helperFunctions/formatdate';
 
 const AdminReviewsPage = () => {
     const [data, setData] = useState<any>(null);
@@ -19,6 +20,7 @@ const AdminReviewsPage = () => {
     const fetchReviews = async () => {
         try {
             const response = await sharedReviewService.getReviewList('admin');
+            console.log(response)
             if (response.success) {
                 setData(response.data);
             }
@@ -118,7 +120,7 @@ const AdminReviewsPage = () => {
                                                 />
                                                 <div>
                                                     <p className="text-sm font-bold text-slate-900">{review.clientName}</p>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{review.time}</p>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{FormatDate(review.time)}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -144,9 +146,9 @@ const AdminReviewsPage = () => {
                                             </div>
                                         </td>
                                         <td className="py-5 px-4">
-                                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${!review.reviewStatus ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${!review.reviewStatus ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
                                                 }`}>
-                                                {review.reviewStatus ? 'Published' : 'Flagged'}
+                                                {review.reviewStatus ? 'Flagged' : 'Published'}
                                             </span>
                                         </td>
                                         <td className="py-5 px-4 text-right">
@@ -156,7 +158,13 @@ const AdminReviewsPage = () => {
                                                     onClick={() => handleOpenFlagModal(review.reviewId)}
                                                     title={review.reviewStatus ? "Flag Review" : "Unflag Review"}
                                                 >
-                                                    <Trash2 size={16} />
+                                                    {review.reviewStatus ? (
+                                           
+                                                        <RotateCcw size={16} />
+                                                    ) : (
+                              
+                                                        <Trash2 size={16} />
+                                                    )}
                                                 </button>
                                             </div>
                                         </td>

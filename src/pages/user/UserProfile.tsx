@@ -1,5 +1,5 @@
 import UserNavBar from "../../layout/UserNavBar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import GenericTable from "../../components/GenericTable";
 import Pagination from "../../components/Pagination";
 import { UserWalletColumns } from "../../constants/TableColumns/UserWalletColumns";
@@ -16,7 +16,7 @@ import {
   FaArrowRight,
   FaLock,
 } from "react-icons/fa";
-import {Check} from "lucide-react";
+import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserBookingService } from "../../services/user/user.booking";
 import Toast from "../../components/Toast";
@@ -33,6 +33,8 @@ import { ChatService } from "../../services/shared/chat.service";
 import { userBookingHistoryColumns } from "../../constants/TableColumns/UserBookingColumns";
 import ReviewModal from "../../components/Reviewmodal";
 import { userReviewService } from "../../services/user/user.review";
+import { formatTime } from "../../utils/formatTime";
+
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState<number>(1);
@@ -58,72 +60,10 @@ const UserProfile: React.FC = () => {
   const { chatList } = useChat();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedBookingForReview, setSelectedBookingForReview] = useState<any>(null);
-   const [selectedType, setSelectedType] = useState<any>("history");
   const [reviewLoading, setReviewLoading] = useState(false);
-  const walletCoulmns = UserWalletColumns(navigate)
-  useEffect(() => {
-    document.title = "FitTribe | My Account";
-    getUserData();
-  }, []);
 
-  useEffect(() => {
-    if (activeTab === "wallet") {
-      fetchWalletData();
-    }
-  }, [page, activeTab]);
+  const walletCoulmns = UserWalletColumns(navigate);
 
-  const handleReviewSubmit = async (reviewData: { rating: number; comment: string }) => {
-    try {
-      setReviewLoading(true);
-
-      const res = await userReviewService.addReview({
-        bookingId: selectedBookingForReview.bookingId,
-        trainerId: selectedBookingForReview.trainerId,
-        ...reviewData
-      });
-
-      if (res.success) {
-        setToastType("success");
-        setToastMessage("Review submitted successfully!");
-        setIsReviewModalOpen(false);
-
-        fetchBookings(selectedType);
-      }
-    } catch (error: any) {
-      setToastType("error");
-      setToastMessage(error.response?.data?.message || "Failed to submit review");
-    } finally {
-      setReviewLoading(false);
-    }
-  };
-  useEffect(() => {
-    if (activeTab === "schedule" || activeTab === "history") {
-      setPage(1);
-      fetchBookings(activeTab === "schedule" ? "today" : "history");
-    }
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (activeTab === "schedule" || activeTab === "history") {
-      fetchBookings(activeTab === "schedule" ? "today" : "history");
-    }
-  }, [page]);
-
-  const fetchBookings = async (filterType: "today" | "history") => {
-    try {
-      setBookingLoading(true);
-      const res = await UserBookingService.getBookingHistory(page, "", filterType);
-      if (res) {
-        setBookings(res.bookingData);
-        console.log(res)
-        setTotalPages(res.totalPages);
-      }
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-    } finally {
-      setBookingLoading(false);
-    }
-  };
 
   const getUserData = async () => {
     try {
@@ -134,21 +74,88 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const fetchWalletData = async () => {
+  const fetchWalletData = useCallback(async () => {
     try {
       setWalletLoading(true);
       const res = await WalletService.fetchWalletData('user', page, 5);
       if (res?.success) {
-        const { balance, data, total, activeHoldCount } = res.wallet
+        const { balance, data, total, activeHoldCount } = res.wallet;
         setWalletTransactions(data);
         setTotalPages(total);
-        setWalletBalance(balance)
-        setActiveHoldCount(activeHoldCount)
+        setWalletBalance(balance);
+        setActiveHoldCount(activeHoldCount);
       }
     } catch (error) {
       console.error("Error fetching wallet data", error);
     } finally {
       setWalletLoading(false);
+    }
+  }, [page]);
+
+  const fetchBookings = useCallback(async (filterType: "TODAY" | "PAST") => {
+    try {
+      setBookingLoading(true);
+      const res = await UserBookingService.getBookingHistory(page, "", filterType);
+      if (res) {
+        setBookings(res.bookingData);
+        setTotalPages(res.totalPages);
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    } finally {
+      setBookingLoading(false);
+    }
+  }, [page]);
+
+
+  useEffect(() => {
+    document.title = "FitTribe | My Account";
+    getUserData();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "wallet") {
+      fetchWalletData();
+    } else if (activeTab === "schedule") {
+      fetchBookings("TODAY");
+    } else if (activeTab === "history") {
+      fetchBookings("PAST");
+    }
+  }, [page, activeTab, fetchWalletData, fetchBookings]);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    setPage(1); 
+  };
+
+
+
+  const handleReviewSubmit = async (reviewData: { rating: number; comment: string }) => {
+    try {
+      setReviewLoading(true);
+      const res = await userReviewService.addReview({
+        bookingId: selectedBookingForReview.bookingId,
+        trainerId: selectedBookingForReview.trainerId,
+        ...reviewData
+      });
+
+      if (res.success) {
+        setToastType("success");
+        setToastMessage("Review submitted successfully!");
+        setIsReviewModalOpen(false);
+        
+  
+        if (activeTab === "history") {
+          fetchBookings("PAST");
+        } else {
+          fetchBookings("TODAY");
+        }
+      }
+    } catch (error: any) {
+      setToastType("error");
+      setToastMessage(error.response?.data?.message || "Failed to submit review");
+    } finally {
+      setReviewLoading(false);
     }
   };
 
@@ -157,12 +164,12 @@ const UserProfile: React.FC = () => {
       if (chat.unReadCount > 0) {
         await ChatService.markAsRead('user', chat.chatId);
       }
-
       navigate(`/chat/${chat.id}/${chat.chatId}`);
     } catch (error) {
       navigate(`/chat/${chat.id}/${chat.chatId}`);
     }
   };
+
   const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -176,28 +183,25 @@ const UserProfile: React.FC = () => {
         setToastMessage(res.message);
       }
     } catch (err: any) {
-      let errMesg = err.response?.data?.message
-      setToastMessage(errMesg)
-      setToastType('error')
+      setToastMessage(err.response?.data?.message || "Failed to update profile picture");
+      setToastType('error');
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors: ValidationErrors<changePassword> = validatePasswordChange(passwordData);
-    console.log(passwordData)
     setPasswordErrors(validationErrors);
-    console.log(validationErrors)
-    console.log(passwordErrors)
+
     if (Object.keys(validationErrors).length > 0) return;
+
     try {
       setPasswordLoading(true);
-
       const res = await UserProfileService.changePassword({
         oldPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      console.log(res)
+
       if (res.success) {
         setToastType("success");
         setToastMessage(res.message ?? "Password updated successfully!");
@@ -205,24 +209,21 @@ const UserProfile: React.FC = () => {
         setIsPasswordOpen(false);
       }
     } catch (error: any) {
-      console.log(error)
       setToastType("error");
-      setToastMessage(error.response.data.message ?? "An error occurred. Please try again.");
+      setToastMessage(error.response?.data?.message ?? "An error occurred.");
     } finally {
       setPasswordLoading(false);
     }
   };
 
-  const handleOpenReviewModal = (booking: any,type:string) => {
+  const handleOpenReviewModal = (booking: any) => {
     setSelectedBookingForReview(booking);
-    setSelectedType(type)
-    console.log(booking)
     setIsReviewModalOpen(true);
   };
 
   const bookingColumns = userBookingHistoryColumns(
     (id) => navigate(`/bookings/${id}`),
-    (booking) => handleOpenReviewModal(booking,'history')
+    (booking) => handleOpenReviewModal(booking)
   );
 
   const tabs = [
@@ -241,6 +242,7 @@ const UserProfile: React.FC = () => {
       )}
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
 
+        {/* Profile Header */}
         <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center gap-10">
             <div className="relative group">
@@ -265,7 +267,7 @@ const UserProfile: React.FC = () => {
             <div className="bg-gray-900 text-white rounded-3xl p-6 min-w-[200px] text-center shadow-2xl shadow-gray-200">
               <p className="text-xs font-bold text-gray-400 uppercase mb-2">Wallet Balance</p>
               <h2 className="text-3xl font-black">₹{walletBalance}</h2>
-              <button onClick={() => setActiveTab("wallet")} className="mt-3 text-[10px] font-bold text-red-500 flex items-center gap-2 mx-auto hover:text-red-400">
+              <button onClick={() => handleTabChange("wallet")} className="mt-3 text-[10px] font-bold text-red-500 flex items-center gap-2 mx-auto hover:text-red-400">
                 VIEW TRANSACTIONS <FaArrowRight />
               </button>
             </div>
@@ -276,11 +278,12 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
+        {/* Tabs */}
         <div className="flex flex-wrap gap-4 mb-8">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`flex items-center gap-3 px-6 py-3 rounded-full font-bold text-sm transition-all ${activeTab === tab.id
                 ? "bg-red-600 text-white shadow-lg shadow-red-200"
                 : "bg-white text-gray-500 hover:bg-gray-50 border border-gray-100"
@@ -292,8 +295,10 @@ const UserProfile: React.FC = () => {
           ))}
         </div>
 
+        {/* Tab Content */}
         <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 min-h-[400px] animate-in fade-in slide-in-from-bottom-4">
 
+          {/* Wallet Tab */}
           {activeTab === "wallet" && (
             <div className="space-y-8 animate-in fade-in duration-500">
               <div className="grid md:grid-cols-3 gap-6">
@@ -322,7 +327,7 @@ const UserProfile: React.FC = () => {
                     loading={walletLoading}
                     emptyMessage="No transactions found for your account."
                   />
-                  {totalPages >= 1 && (
+                  {totalPages > 1 && (
                     <div className="p-6 border-t border-gray-50">
                       <Pagination
                         page={page}
@@ -336,6 +341,7 @@ const UserProfile: React.FC = () => {
             </div>
           )}
 
+          {/* Schedule Tab */}
           {activeTab === "schedule" && (
             <div className="space-y-6 animate-in fade-in duration-500">
               <div className="flex justify-between items-center px-2">
@@ -350,7 +356,6 @@ const UserProfile: React.FC = () => {
               ) : bookings.length > 0 ? (
                 <div className="grid md:grid-cols-2 gap-4">
                   {bookings.map((booking) => (
-
                     <div
                       key={booking.bookingId}
                       className="group p-5 bg-white border border-gray-100 rounded-[2rem] hover:shadow-xl hover:border-red-100 transition-all flex items-center gap-5"
@@ -372,7 +377,7 @@ const UserProfile: React.FC = () => {
                         </p>
                         <div className="flex items-center gap-3 mt-2">
                           <span className="px-3 py-1 bg-gray-900 text-white text-[10px] font-black rounded-full uppercase tracking-tighter">
-                            {booking.bookedTime}
+                            {formatTime(booking.bookedTime)}
                           </span>
                           <span className="text-[10px] font-bold text-green-500 uppercase">
                             {booking.bookingStatus}
@@ -398,7 +403,7 @@ const UserProfile: React.FC = () => {
 
                         {booking.bookingStatus === "completed" && !booking.isReviewed && (
                           <button
-                            onClick={() => handleOpenReviewModal(booking,'today')}
+                            onClick={() => handleOpenReviewModal(booking)}
                             className="px-4 py-2 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center gap-2"
                           >
                             Leave Review
@@ -435,6 +440,7 @@ const UserProfile: React.FC = () => {
               )}
             </div>
           )}
+
           {activeTab === "chat" && (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="mb-6">
@@ -465,13 +471,11 @@ const UserProfile: React.FC = () => {
                         <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
                       </div>
 
-
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-baseline mb-1">
                           <h4 className="font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors">
                             {chat.name}
                           </h4>
-
                           <span className="text-[10px] font-medium text-gray-400 whitespace-nowrap ml-2">
                             {formatChatTime(chat.lastMessageTime)}
                           </span>
@@ -482,10 +486,9 @@ const UserProfile: React.FC = () => {
                             {chat.lastMessage || "No messages yet"}
                           </p>
 
-
                           <div className="flex items-center gap-2 shrink-0">
                             {chat.unReadCount > 0 && (
-                              <span className="bg-green-500 text-white text-[8px] font-bold  rounded-full min-w-[14px] h-[14px] flex items-center justify-center">
+                              <span className="bg-green-500 text-white text-[8px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center">
                                 {chat.unReadCount}
                               </span>
                             )}
@@ -496,23 +499,18 @@ const UserProfile: React.FC = () => {
                     </div>
                   ))
                 ) : (
-
                   <div className="text-center py-20 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
                     <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                       <FaEnvelope className="text-2xl text-gray-300" />
                     </div>
                     <p className="text-gray-400 font-medium">No conversations yet.</p>
-                    <button
-                      onClick={() => navigate('/trainers')}
-                      className="mt-4 text-sm font-bold text-red-600 hover:text-red-700 underline-offset-4 hover:underline"
-                    >
-                      Browse Trainers
-                    </button>
+                    <button onClick={() => navigate('/trainers')} className="mt-4 text-sm font-bold text-red-600 hover:text-red-700 underline-offset-4 hover:underline">Browse Trainers</button>
                   </div>
                 )}
               </div>
             </div>
           )}
+
 
           {activeTab === "history" && (
             <div className="space-y-6 animate-in fade-in duration-500">
@@ -544,6 +542,8 @@ const UserProfile: React.FC = () => {
               </div>
             </div>
           )}
+
+    
           {activeTab === "settings" && (
             <div className="max-w-2xl space-y-4">
               <div className="mb-6">
@@ -578,11 +578,7 @@ const UserProfile: React.FC = () => {
                           className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-red-500/10 focus:outline-none"
                           placeholder="••••••••"
                         />
-                        {passwordErrors.currentPassword && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {passwordErrors.currentPassword}
-                          </p>
-                        )}
+                        {passwordErrors.currentPassword && <p className="text-red-500 text-xs mt-1">{passwordErrors.currentPassword}</p>}
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
@@ -595,11 +591,7 @@ const UserProfile: React.FC = () => {
                             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-red-500/10 focus:outline-none"
                             placeholder="••••••••"
                           />
-                          {passwordErrors.newPassword && (
-                            <p className="text-red-500 text-xs mt-1">
-                              {passwordErrors.newPassword}
-                            </p>
-                          )}
+                          {passwordErrors.newPassword && <p className="text-red-500 text-xs mt-1">{passwordErrors.newPassword}</p>}
                         </div>
                         <div>
                           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Confirm New</label>
@@ -611,11 +603,7 @@ const UserProfile: React.FC = () => {
                             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-red-500/10 focus:outline-none"
                             placeholder="••••••••"
                           />
-                          {passwordErrors.confirmPassword && (
-                            <p className="text-red-500 text-xs mt-1">
-                              {passwordErrors.confirmPassword}
-                            </p>
-                          )}
+                          {passwordErrors.confirmPassword && <p className="text-red-500 text-xs mt-1">{passwordErrors.confirmPassword}</p>}
                         </div>
                       </div>
                       <button
@@ -629,24 +617,10 @@ const UserProfile: React.FC = () => {
                   </div>
                 )}
               </div>
-
-              <div className="border border-gray-100 rounded-[1.5rem] overflow-hidden bg-white">
-                <div className="flex items-center justify-between p-5">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                      <FaCog className="text-sm" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-gray-800 text-sm">Email Notifications</span>
-                      <span className="text-[10px] text-gray-400 font-medium tracking-tight">Receive updates about your sessions</span>
-                    </div>
-                  </div>
-                  <input type="checkbox" className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-red-600 transition-all cursor-pointer relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:w-3 after:h-3 after:rounded-full after:transition-all checked:after:translate-x-5 shadow-inner" />
-                </div>
-              </div>
             </div>
           )}
         </div>
+
         {isReviewModalOpen && (
           <ReviewModal
             booking={selectedBookingForReview}

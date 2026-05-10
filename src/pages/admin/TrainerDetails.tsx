@@ -14,6 +14,7 @@ import { type AdminTrainerDetails } from "../../types/trainerType";
 import SubmitButton from "../../components/SubmitButton";
 import DEFAULT_IMAGE from '../../assets/default image.png'
 import { AdminTrainerService } from "../../services/admin/admin.trainer.service";
+import { FormatDate } from "../../helperFunctions/formatdate";
 const TrainerDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const TrainerDetails = () => {
 
   const [showVerifyModal, setShowVerifyModal] = useState<boolean>(false);
   const [showStatusModal, setShowStatusModal] = useState<boolean>(false);
-  const [verifyAction, setVerifyAction] = useState<"accept" | "decline">("accept");
+  const [verifyAction, setVerifyAction] = useState<"accept" | "reject">("accept");
   const [toast, setToast] = useState<{ message: string, type: "success" | "error" } | null>(null);
 
   useEffect(() => {
@@ -35,19 +36,19 @@ const TrainerDetails = () => {
   const fetchTrainer = async () => {
     try {
       setLoading(true);
-      const response = await  AdminTrainerService.getTrainerDetails(id!);
+      const response = await AdminTrainerService.getTrainerDetails(id!);
       setTrainer(response.trainer);
-    } catch (error:any) {
-      setToast({ 
-        message: error.response?.data?.message || "Verification failed", 
-        type: "error" 
+    } catch (error: any) {
+      setToast({
+        message: error.response?.data?.message || "Verification failed",
+        type: "error"
       })
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyClick = (action: "accept" | "decline") => {
+  const handleVerifyClick = (action: "accept" | "reject") => {
     setVerifyAction(action);
     setShowVerifyModal(true);
   };
@@ -58,15 +59,16 @@ const TrainerDetails = () => {
     setShowVerifyModal(false);
 
     try {
-      const result = await  AdminTrainerService.handleTrainerApproval(id, verifyAction, reason);
+      const result = await AdminTrainerService.handleTrainerApproval(id, verifyAction, reason);
+      console.log(result)
       if (result.success) {
         setTrainer((prev) => prev ? { ...prev, verified: result.updatedStatus } : null);
         setToast({ message: result.message, type: "success" });
       }
     } catch (err: any) {
-      setToast({ 
-        message: err.response?.data?.message || "Verification failed", 
-        type: "error" 
+      setToast({
+        message: err.response?.data?.message || "Verification failed",
+        type: "error"
       });
     } finally {
       setActionLoading(false);
@@ -79,15 +81,15 @@ const TrainerDetails = () => {
     setShowStatusModal(false);
 
     try {
-      const result = await  AdminTrainerService.updateTrainerStatus(trainer.trainerId, !trainer.status);
+      const result = await AdminTrainerService.updateTrainerStatus(trainer.trainerId, !trainer.status);
       if (result.success) {
         setTrainer((prev) => prev ? { ...prev, status: result.newStatus } : null);
         setToast({ message: result.message, type: "success" });
       }
     } catch (err: any) {
-      setToast({ 
-        message: err.response?.data?.message || "Status update failed", 
-        type: "error" 
+      setToast({
+        message: err.response?.data?.message || "Status update failed",
+        type: "error"
       });
     } finally {
       setActionLoading(false);
@@ -95,7 +97,7 @@ const TrainerDetails = () => {
   };
 
   if (loading) return <Loading message="Fetching profile..." />;
-  if (!trainer) return <NotFound/>;
+  if (!trainer) return <NotFound />;
 
   return (
     <>
@@ -107,9 +109,9 @@ const TrainerDetails = () => {
         isVisible={showVerifyModal}
         onCancel={() => setShowVerifyModal(false)}
         onConfirm={confirmVerification}
-        title={verifyAction === "accept" ? "Accept Trainer" : "Decline Trainer"}
+        title={verifyAction === "accept" ? "Accept Trainer" : "Reject Trainer"}
         message={`Confirm ${verifyAction} for ${trainer.name}?`}
-        showReasonInput={verifyAction === "decline"}
+        showReasonInput={verifyAction === "reject"}
       />
 
       <Modal
@@ -131,15 +133,14 @@ const TrainerDetails = () => {
         </div>
 
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-          <div className={`p-8 flex flex-col items-center text-white ${
-            trainer.verified === 'pending' 
-              ? 'bg-gradient-to-r from-blue-500 to-indigo-600' 
+          <div className={`p-8 flex flex-col items-center text-white ${trainer.verified === 'pending'
+              ? 'bg-gradient-to-r from-blue-500 to-indigo-600'
               : 'bg-gradient-to-r from-teal-500 to-emerald-600'
-          }`}>
-            <img 
-              src={trainer.profilePic || DEFAULT_IMAGE} 
-              className="w-32 h-32 rounded-full border-4 border-white shadow-xl mb-4 bg-white object-cover" 
-              alt="avatar" 
+            }`}>
+            <img
+              src={trainer.profilePic || DEFAULT_IMAGE}
+              className="w-32 h-32 rounded-full border-4 border-white shadow-xl mb-4 bg-white object-cover"
+              alt="avatar"
             />
             <h2 className="text-3xl font-bold flex items-center gap-2">
               {trainer.name}
@@ -157,16 +158,16 @@ const TrainerDetails = () => {
             <DetailCard icon={<FaCheck />} label="Programs" value={trainer.programs?.map(s => s.name).join(", ") || "None"} />
             <DetailCard icon={<span className="text-lg">₹</span>} label="Price/Session" value={trainer.pricePerSession ? `₹${trainer.pricePerSession}` : "Not Added"} />
             <DetailCard icon={<FaLanguage />} label="Languages" value={trainer.languages?.join(", ") || "English"} />
-            <DetailCard icon={<FaClock />} label="Joined On" value={new Date(trainer.joined).toLocaleDateString()} />
+            <DetailCard icon={<FaClock />} label="Joined On" value={FormatDate(trainer.joined)} />
 
             <div className="md:col-span-2 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
               <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <FaCertificate className="text-indigo-600" /> Professional Certification
               </h4>
-              <a 
-                href={trainer.certificate} 
-                target="_blank" 
-                rel="noreferrer" 
+              <a
+                href={trainer.certificate}
+                target="_blank"
+                rel="noreferrer"
                 className="text-indigo-600 font-bold hover:underline"
               >
                 View Uploaded Document &rarr;
@@ -179,8 +180,8 @@ const TrainerDetails = () => {
                 <SubmitButton
                   type="button"
                   text="Decline Application"
-                  loading={actionLoading && verifyAction === "decline"}
-                  onClick={() => handleVerifyClick("decline")}
+                  loading={actionLoading && verifyAction === "reject"}
+                  onClick={() => handleVerifyClick("reject")}
                   className="px-6 py-2.5 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200"
                 />
                 <SubmitButton
@@ -191,23 +192,22 @@ const TrainerDetails = () => {
                   className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-md"
                 />
               </>
-            ):trainer.verified==='accepted'?(
+            ) : trainer.verified === 'accepted' ? (
               <div className="w-full md:w-64">
                 <SubmitButton
                   type="button"
                   text={trainer.status ? 'Block Account' : 'Unblock Account'}
                   loading={actionLoading}
                   onClick={() => setShowStatusModal(true)}
-                  className={`w-full px-8 py-2.5 rounded-xl font-bold text-white shadow-md transition ${
-                    trainer.status ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'
-                  }`}
+                  className={`w-full px-8 py-2.5 rounded-xl font-bold text-white shadow-md transition ${trainer.status ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'
+                    }`}
                 />
               </div>
-            ): (
-            <div className="text-red-500 font-semibold italic">
-              {trainer?.rejectReason}
-            </div>
-          )}
+            ) : (
+              <div className="text-red-500 font-semibold italic">
+                {trainer?.rejectReason}
+              </div>
+            )}
           </div>
         </div>
       </main>

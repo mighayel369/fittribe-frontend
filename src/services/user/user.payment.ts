@@ -5,7 +5,7 @@ export interface InitiatePaymentDTO {
   trainerId: string;
   programId: string;
   date: string;
-  time: string;
+  time: number;
   amount: number;
 }
 

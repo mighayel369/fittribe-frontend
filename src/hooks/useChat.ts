@@ -4,6 +4,7 @@ import { getSocket } from '../utils/socket';
 import { ChatService } from '../services/shared/chat.service';
 
 
+
 export const useChat = (chatId?: string, receiverId?: string, search: string = "") => {
     const [messages, setMessages] = useState<any[]>([]);
     const [chatList, setChatList] = useState<any[]>([]);
@@ -11,34 +12,35 @@ export const useChat = (chatId?: string, receiverId?: string, search: string = "
 
     const { user, accessToken, role } = useAppSelector((state) => state.auth);
 
-useEffect(() => {
-    const fetchChatData = async () => {
-        if (!user?.id || !role) return;
-        setLoading(true);
-        
-        try {
-            const listResponse = await ChatService.getChatLists(role, search);
-            setChatList(listResponse.data);
+    useEffect(() => {
+        const fetchChatData = async () => {
+            if (!user?.id || !role) return;
+            setLoading(true);
 
-            if (chatId) {
-                const messageResponse = await ChatService.getMessage(chatId, role);
-                setMessages(messageResponse.data);
-            } else {
-                setMessages([]);
+            try {
+                const listResponse = await ChatService.getChatLists(role, search);
+                console.log(listResponse)
+                setChatList(listResponse.data);
+
+                if (chatId) {
+                    const messageResponse = await ChatService.getMessage(chatId, role);
+                    setMessages(messageResponse.data);
+                } else {
+                    setMessages([]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch chat data:", error);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to fetch chat data:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
 
-    const delayDebounceFn = setTimeout(() => {
-        fetchChatData();
-    }, 300);
+        const delayDebounceFn = setTimeout(() => {
+            fetchChatData();
+        }, 300);
 
-    return () => clearTimeout(delayDebounceFn);
-}, [user?.id, chatId, role, search]);
+        return () => clearTimeout(delayDebounceFn);
+    }, [user?.id, chatId, role, search]);
 
     useEffect(() => {
         if (user?.id && accessToken) {
@@ -69,18 +71,26 @@ useEffect(() => {
         }
     }, [user?.id, accessToken, chatId, receiverId]);
 
-    const sendMessage = (text: string) => {
-        if (!text.trim() || (!chatId && !receiverId) || !user?.id) return;
-
+    const sendMessage = (text: string, fileData?: { url: string; type: string,name:string,size:number }) => {
+        if (!text.trim() && !fileData) return;
+        if ((!chatId && !receiverId) || !user?.id) return;
+        console.log(fileData)
         const socket = getSocket(user.id);
         const newMessage = {
-            senderId: user.id,
-            chatId: chatId || null,
+            sender: user.id,
+            chatId: chatId || undefined,
             receiverId: receiverId,
-            content: text,
-            type: "text",
+            content: text.trim() || "", 
+            type: fileData ? fileData.type : "text",
+            file: fileData ? {
+                url: fileData.url,
+                mimeType: fileData.type,
+                name:fileData.name,
+                size:fileData.size
+            } : undefined,
             time: new Date().toISOString()
         };
+        console.log('new message',newMessage)
 
         socket.emit('send_message', newMessage);
         setMessages((prev) => [...prev, newMessage]);

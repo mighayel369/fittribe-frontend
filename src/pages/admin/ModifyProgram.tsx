@@ -61,8 +61,7 @@ const ModifyProgram = () => {
     
     const validationPayload = {
       name: values.name,
-      description: values.description,
-      duration: Number(values.duration),
+      description: values.description
     } as any;
 
     const errors = programValidate(validationPayload);
@@ -82,7 +81,6 @@ const ModifyProgram = () => {
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("description", values.description);
-      formData.append("duration", values.duration.toString());
       formData.append("programId",id)
       if (values.programPic instanceof File) {
         formData.append("programPic", values.programPic);
@@ -98,6 +96,7 @@ const ModifyProgram = () => {
         })
       }
     } catch (error: any) {
+      console.log(error)
       setToast({ message: error.response?.data?.message || "Update failed", type: "error" });
     } finally {
       setIsUpdating(false);

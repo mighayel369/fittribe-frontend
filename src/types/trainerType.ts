@@ -1,3 +1,6 @@
+
+import {type ProgramInfo } from "./programType";
+
 export type TrainerSignupDTO = {
   name: string;
   email: string;
@@ -38,25 +41,45 @@ export interface PendingTrainer extends Omit<Trainer,'status'|'email'>{
   programs: string[];
 }
 
-export interface AdminTrainerDetails extends Trainer {
-  profilePic: string | null;
-  verified: "pending" | "accepted" | "rejected";
-  certificate: string;
-  joined: string;
-  gender: string;
-  programs: {programId:string,name:string}[]; 
-  role: string;
-  experience: number;
-  bio?: string | null;
-  phone?: string | null;
-  address?: string | null;
-  languages?:string[]
-  rejectReason?: string;
+export interface AdminTrainerDetails {
+    trainerId: string;
+    name: string;
+    email: string;
+    role: "trainer";
+    profilePic: string | null;
+    gender: string;
+
+    experience: number;
+    languages: string[];
+    pricePerSession: number;
+    programs:ProgramInfo[]
+
+    certificate: string;     
+    verified: "pending" | "accepted" | "rejected";
+    status: boolean;         
+    joined: string;         
+    rejectReason?: string;    
 }
 
-export interface TrainerPrivateProfileDTO extends AdminTrainerDetails{
+export interface TrainerAccount {
+    trainerId: string;
+    name: string;
+    email: string;
+    phone?: string;
+    gender: string;
     address: string;
     bio: string;
+    profilePic: string;
+    experience: number;
+    languages: string[];
+    pricePerSession: number;
+    programs: ProgramInfo[];
+    status: boolean;       
+    verified: "pending" | "accepted" | "rejected";
+    rejectReason?: string;
+    certificate: string;
+    joined: string;
+    rating: number;
 }
 
 export interface UpdateTrainerProfileDTO {
@@ -98,4 +121,21 @@ export interface TrainerDetails{
     languages:string[];
     rejectReason?: string;
     phone?:string
+}
+
+
+
+
+export interface TrainerProfile {
+    trainerId: string;
+    name: string;
+    profilePic: string;
+    pricePerSession: number;
+    experience: number;
+    languages: string[];
+    address: string;
+    bio: string;
+    programs: ProgramInfo[];
+    rating: number;
+    chatId?: string;
 }

@@ -1,8 +1,7 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaSearch} from "react-icons/fa";
-import { UserMinus, UserCheck, Eye } from "lucide-react";
+
+import { UserMinus, UserCheck, Eye, FileDown, Filter, RefreshCw } from "lucide-react";
 
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
@@ -18,6 +17,7 @@ type User = {
   name: string;
   email: string;
   status: boolean;
+  createdAt?: string;
 };
 
 const UserList: React.FC = () => {
@@ -26,6 +26,8 @@ const UserList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "blocked">("all");
+  const [exportRange, setExportRange] = useState("1D");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -49,7 +51,8 @@ const UserList: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await AdminUserService.fetchUsers(page, search);
+
+      const res = await AdminUserService.fetchUsers(page, search, statusFilter);
       setUsers(res.data || []);
       setTotalPages(res.total || 1);
     } catch (err: any) {
@@ -64,23 +67,45 @@ const UserList: React.FC = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [page, search]);
+  }, [page, search, statusFilter]);
+
+ const handleExportPDF = async () => {
+  try {
+    const blobData = await AdminUserService.exportUsersPDF(exportRange);
+    console.log(blobData)
+    const blob = new Blob([blobData], { type: 'application/pdf' });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    
+    const fileName = `FitTribe_Churn_${exportRange.replace(/\s+/g, '_')}.pdf`;
+    link.setAttribute('download', fileName);
+
+    document.body.appendChild(link);
+    link.click();
+    
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    setToast({ type: "success", message: "Download started!" });
+  } catch (err) {
+    setToast({ type: "error", message: "Failed to generate PDF report" });
+    console.error("PDF Export Error:", err);
+  }
+};
 
   const handleConfirmAction = async () => {
     if (!selectedUser) return;
-    const targetId = selectedUser.userId;
-    const targetStatus = !selectedUser.status;
-
     try {
-      let res = await AdminUserService.updateUserStatus(targetId, targetStatus);
-      setUsers(prev => prev.map(u => u.userId === targetId ? { ...u, status: targetStatus } : u));
+      const targetStatus = !selectedUser.status;
+      await AdminUserService.updateUserStatus(selectedUser.userId, targetStatus);
+      setUsers(prev => prev.map(u => u.userId === selectedUser.userId ? { ...u, status: targetStatus } : u));
       setShowModal(false);
-      setToast({ type: "success", message: res.message || "Status updated successfully" });
+      setToast({ type: "success", message: "Status updated successfully" });
     } catch (error: any) {
-      setToast({
-        type: "error",
-        message: error.response?.data?.message || "Action failed",
-      });
+      setToast({ type: "error", message: "Action failed" });
     } finally {
       setSelectedUser(null);
     }
@@ -91,23 +116,66 @@ const UserList: React.FC = () => {
       <AdminTopBar />
       <AdminSideBar />
 
-      {toast && (
-        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <main className="ml-72 pt-28 px-10 pb-12">
-        <header className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-          <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">User Directory</h1>
-            <p className="text-slate-500 font-medium">Manage platform members and monitor account statuses.</p>
+        <header className="mb-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-4xl font-black text-slate-900 tracking-tight">User Directory</h1>
+              <p className="text-slate-500 font-medium">Manage platform members and monitor account statuses.</p>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+              {['1D', '30D', '90D'].map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setExportRange(range)}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${exportRange === range ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50'
+                    }`}
+                >
+                  {range}
+                </button>
+              ))}
+              <div className="w-[1px] h-4 bg-slate-200 mx-1" />
+              <button
+                onClick={handleExportPDF}
+                className="flex items-center gap-2 px-4 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all active:scale-95"
+              >
+                <FileDown size={14} /> Export CSV
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <SearchInput 
-              value={searchTerm} 
-              onChange={setSearchTerm} 
-              placeholder="Search by name or email..." 
-            />
+          <div className="flex flex-wrap items-center justify-between mt-8 gap-4">
+            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+              {(['all', 'active', 'blocked'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => { setStatusFilter(filter); setPage(1); }}
+                  className={`px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${statusFilter === filter
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Search name or email..."
+              />
+              <button
+                onClick={fetchUsers}
+                className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all"
+              >
+                <RefreshCw size={18} className={`${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
         </header>
 
@@ -118,16 +186,26 @@ const UserList: React.FC = () => {
             loading={loading}
             columns={[
               {
-                header: "User Details",
+                header: "Name",
                 accessor: "name",
                 render: (user) => (
                   <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-blue-600 font-bold border border-slate-200 uppercase">
+                    <div className="w-11 h-11 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 uppercase">
                       {user.name.charAt(0)}
                     </div>
                     <div>
                       <p className="font-bold text-slate-900 text-sm">{user.name}</p>
-                      <p className="text-xs text-slate-500 font-medium">{user.email}</p>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                header: "Email",
+                accessor: "email",
+                render: (user) => (
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <p className="font-bold text-slate-900 text-sm">{user.email}</p>
                     </div>
                   </div>
                 ),
@@ -137,42 +215,24 @@ const UserList: React.FC = () => {
                 accessor: "status",
                 className: "text-center",
                 render: (user) => (
-                  <div className="flex justify-center items-center w-full">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border ${
-                      user.status 
-                        ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
-                        : "bg-rose-50 text-rose-600 border-rose-100"
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${user.status ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                  <div className="flex justify-center">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${user.status ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
+                      }`}>
                       {user.status ? "Active" : "Blocked"}
                     </span>
                   </div>
                 ),
               },
               {
-                header: "Management",
+                header: "Actions",
                 accessor: "userId",
                 className: "text-center",
                 render: (user) => (
                   <div className="flex justify-center gap-2">
+                    <button onClick={() => navigate(`/admin/users/${user.userId}`)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"><Eye size={18} /></button>
                     <button
-                      title="View Details"
-                      className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      onClick={() => navigate(`/admin/users/${user.userId}`)}
-                    >
-                      <Eye size={18} />
-                    </button>
-                    <button
-                      title={user.status ? "Block User" : "Unblock User"}
-                      className={`p-2 rounded-lg transition-colors ${
-                        user.status 
-                        ? "text-slate-400 hover:text-rose-600 hover:bg-rose-50" 
-                        : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
-                      }`}
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setShowModal(true);
-                      }}
+                      onClick={() => { setSelectedUser(user); setShowModal(true); }}
+                      className={`p-2 rounded-lg transition-all ${user.status ? "text-slate-400 hover:text-rose-600 hover:bg-rose-50" : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"}`}
                     >
                       {user.status ? <UserMinus size={18} /> : <UserCheck size={18} />}
                     </button>
@@ -185,19 +245,15 @@ const UserList: React.FC = () => {
           {!loading && users.length === 0 && (
             <div className="py-24 flex flex-col items-center justify-center text-center">
               <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                <FaSearch className="text-slate-300 text-2xl" />
+                <Filter className="text-slate-200" size={32} />
               </div>
-              <h3 className="text-xl font-bold text-slate-800">No users found</h3>
-              <p className="text-slate-500 max-w-xs">We couldn't find any users matching "{searchTerm}".</p>
+              <h3 className="text-xl font-bold text-slate-800">No results found</h3>
+              <p className="text-slate-500 max-w-xs">Try adjusting your filters or search terms.</p>
             </div>
           )}
 
           <div className="p-6 border-t border-slate-50 bg-slate-50/50">
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-            />
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         </div>
 
@@ -206,8 +262,8 @@ const UserList: React.FC = () => {
             isVisible={showModal}
             onCancel={() => setShowModal(false)}
             onConfirm={handleConfirmAction}
-            title={selectedUser.status ? 'Restrict User Access' : 'Restore User Access'}
-            message={`Are you sure you want to change the status for ${selectedUser.name}? This will prevent them from accessing their account until unblocked.`}
+            title={selectedUser.status ? 'Restrict Access' : 'Restore Access'}
+            message={`Change status for ${selectedUser.name}? This will affect their ability to log in.`}
           />
         )}
       </main>

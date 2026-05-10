@@ -5,7 +5,7 @@ export const API_ENDPOINTS = {
     RESEND_OTP: (role: string) => `${role}/auth/resend-otp`,
     REFRESH: (role: string) => `${role}/auth/refresh-token`,
     LOGOUT: (role: string) => `${role}/auth/logout`,
-    VERIFY_OTP:(role:string) =>`${role}/auth/verify-otp`,
+    VERIFY_OTP: (role: string) => `${role}/auth/verify-otp`,
   },
 
   USER_AUTH: {
@@ -28,18 +28,19 @@ export const API_ENDPOINTS = {
 
   ADMIN_MGMT: {
     PLATFORM: {
-      OVERVIEW: 'admin/platform/platform-overview',
-      METRICS:'/admin/platform/leave-metrics',
-      LEAVE_REQUEST_HISTORY:'/admin/platform/history',
-      LEAVE_STATUS:'/admin/platform/update-status',
-      EXPORT_REPORT:'/admin/platform/export-report',
-      EXPORT_LEAVE_REPORT:'/admin/platform/export-leave-report'
+      OVERVIEW: 'admin/dashboard/overview',
+      METRICS: '/admin/leave/metrics',
+      LEAVE_REQUEST_HISTORY: '/admin/leave/history',
+      LEAVE_STATUS: '/admin/leave/update-status',
+      EXPORT_REPORT: '/admin/dashboard/export-report',
+      EXPORT_LEAVE_REPORT: '/admin/leave/export-leave-report'
     },
 
     USERS: {
       GET_ALL: 'admin/users',
       GET_DETAILS: (id: string) => `admin/users/${id}`,
       TOGGLE_STATUS: 'admin/users/status',
+      EXPORT_USER_PDF: 'admin/users/export-churn-user'
     },
 
     TRAINERS: {
@@ -51,11 +52,11 @@ export const API_ENDPOINTS = {
     },
 
     PROGRAMS: {
-      ONBOARD: 'admin/programs/onboard', 
+      ONBOARD: 'admin/programs/onboard',
       INVENTORY: 'admin/programs/inventory',
       GET_DETAILS: (id: string) => `admin/programs/${id}`,
       UPDATE_SPECS: 'admin/programs/specs',
-      TOGGLE_VISIBILITY:  'admin/programs/visibility',
+      TOGGLE_VISIBILITY: 'admin/programs/visibility',
       DELETE: (id: string) => `admin/programs/${id}`,
     },
   },
@@ -63,49 +64,49 @@ export const API_ENDPOINTS = {
     GET_MY_WALLET: (role: string) => `${role}/wallet/my-wallet`
   },
   USER_PAYMENTS: {
-    INITIATE: 'user/payments/initiate', 
-    VERIFY: 'user/payments/verify',  
+    INITIATE: 'user/payments/initiate',
+    VERIFY: 'user/payments/verify',
   },
   TRAINER_ACCOUNT: {
     GET_ME: 'trainer/account/me',
     VERIFY_SESSION: 'trainer/account/verify',
     UPDATE_PROFILE: 'trainer/account/profile',
-    UPDATE_AVATAR: 'trainer/account/avatar',   
-    REAPPLY: 'trainer/account/re-apply',  
+    UPDATE_AVATAR: 'trainer/account/avatar',
+    REAPPLY: 'trainer/account/re-apply',
     METRICS: 'trainer/dashboard/metrics',
     AGENDA: 'trainer/dashboard/agenda',
     GET_CONFIG: 'trainer/schedule/config',
     SYNC_TEMPLATE: 'trainer/schedule/weekly-template',
-    CHANGE_PASSWORD:'trainer/account/change-password'
+    CHANGE_PASSWORD: 'trainer/account/change-password'
   },
 
 
   USER_ACCOUNT: {
     GET_ME: 'user/account/me',
-    CHANGE_PASSWORD:'user/account/change-password',
+    CHANGE_PASSWORD: 'user/account/change-password',
     VERIFY_SESSION: 'user/account/verify',
     UPDATE_PROFILE: 'user/account/update',
-    UPDATE_AVATAR: 'user/account/avatar', 
+    UPDATE_AVATAR: 'user/account/avatar',
   },
   TRAINER_BOOKINGS: {
     HISTORY: 'trainer/bookings/history',
     PENDING: 'trainer/bookings/pending',
     RESCHEDULE_REQUESTS: 'trainer/bookings/reschedule',
     DETAILS: (bookingId: string) => `trainer/bookings/${bookingId}`,
-    
+
     ACCEPT: 'trainer/bookings/accept',
     REJECT: 'trainer/bookings/reject',
     APPROVE_RESCHEDULE: 'trainer/bookings/reschedule/approve',
     REJECT_RESCHEDULE: 'trainer/bookings/reschedule/reject',
-    RESCHEDULE_BY_TRAINER:'trainer/bookings/reschedule',
-    GET_MEET_LINK:(bookingId:string)=>`trainer/bookings/get-meetlink/${bookingId}`,
-    MARK_AS_COMPLETE:(bookingId:string)=>`trainer/bookings/mark-as-complete/${bookingId}`
+    RESCHEDULE_BY_TRAINER: 'trainer/bookings/reschedule',
+    GET_MEET_LINK: (bookingId: string) => `trainer/bookings/get-meetlink/${bookingId}`,
+    MARK_AS_COMPLETE: (bookingId: string) => `trainer/bookings/mark-as-complete/${bookingId}`
   },
 
   USER_BOOKINGS: {
     HISTORY: 'user/bookings/history',
     DETAILS: (id: string) => `user/bookings/details/${id}`,
-    
+
 
     CHECKOUT: 'user/bookings/checkout',
     RESCHEDULE_REQUEST: 'user/bookings/reschedule',
@@ -113,10 +114,10 @@ export const API_ENDPOINTS = {
     ACCEPT_RESCHEDULE: (id: string) => `user/bookings/reschedule/accept/${id}`,
     DECLINE_RESCHEDULE: (id: string) => `user/bookings/reschedule/decline/${id}`,
   },
-    ADMIN_BOOKINGS: {
+  ADMIN_BOOKINGS: {
     DETAILS: (id: string) => `admin/bookings/details/${id}`,
-    GET_ALL_BOOKINGS:'admin/bookings/all',
-    BOOKING_METRICS:'admin/bookings/booking-metrics'
+    GET_ALL_BOOKINGS: 'admin/bookings/all',
+    BOOKING_METRICS: 'admin/bookings/booking-metrics'
   },
   DISCOVERY: {
     PROGRAMS: {
@@ -126,32 +127,33 @@ export const API_ENDPOINTS = {
       EXPLORE: 'user/discovery/trainers/explore',
       DETAILS: (id: string) => `user/discovery/trainers/explore/${id}`,
       AVAILABILITY: 'user/discovery/trainers/availability',
-      REVIEW_LIST:(trainerId:string)=>`user/discovery/trainers/review-list/${trainerId}`
+      REVIEW_LIST: (trainerId: string) => `user/discovery/trainers/review-list/${trainerId}`
     },
   },
   TRAINER_LEAVES: {
     APPLY: 'trainer/leaves/apply',
     HISTORY: 'trainer/leaves/history',
     CANCEL: (leaveId: string) => `trainer/leaves/${leaveId}/cancel`,
-    METRICS:'trainer/leaves/metrics',
-    WITHDRAW_REQUEST:(id:string)=>`trainer/leaves/withdraw/${id}`
+    METRICS: 'trainer/leaves/metrics',
+    WITHDRAW_REQUEST: (id: string) => `trainer/leaves/withdraw/${id}`
   },
-  NOTIFICATION:{
-    GET_ALL:(role:string)=>`/${role}/notification/get`,
-    MARK_AS_READ:(role:string,id:string)=>`/${role}/notification/mark-as-read/${id}`,
-    MARK_ALL_READ:(role:string)=>`/${role}/notification/mark-all-as-read`
+  NOTIFICATION: {
+    GET_ALL: (role: string) => `/${role}/notification/get`,
+    MARK_AS_READ: (role: string, id: string) => `/${role}/notification/mark-as-read/${id}`,
+    MARK_ALL_READ: (role: string) => `/${role}/notification/mark-all-as-read`
   },
-  CHAT:{
-    CHAT_LIST:(role:string)=>`${role}/chats/chat-list`,
-    NON_CHAT_LIST:(role:string)=>`${role}/chats/non-chat-list`,
+  CHAT: {
+    CHAT_LIST: (role: string) => `${role}/chats/chat-list`,
+    NON_CHAT_LIST: (role: string) => `${role}/chats/non-chat-list`,
 
-    FETCH_MESSAGES:(role:string,chatId:string)=>`${role}/chats/messages/${chatId}`,
-    GET_CHAT_ID:(role:string,id:string)=>`${role}/chats/chat-id/${id}`,
-    MARK_AS_READ:(role:string,chatId:string)=>`${role}/chats/mark-as-read/${chatId}`
+    FETCH_MESSAGES: (role: string, chatId: string) => `${role}/chats/messages/${chatId}`,
+    GET_CHAT_ID: (role: string, id: string) => `${role}/chats/chat-id/${id}`,
+    MARK_AS_READ: (role: string, chatId: string) => `${role}/chats/mark-as-read/${chatId}`,
+    UPLOAD_FILE: (role: string) => `${role}/chats/upload-file`
   },
-  REVIEW:{
-    ADD_REVIEW:'/user/review/add-review',
-    GET_REVIEWS:(role:string)=>`/${role}/review/get-list`,
-    FLAG_REVIEW:(id:string)=>`admin/review/flag-review/${id}`
+  REVIEW: {
+    ADD_REVIEW: '/user/review/add-review',
+    GET_REVIEWS: (role: string) => `/${role}/review/get-list`,
+    FLAG_REVIEW: (id: string) => `admin/review/flag-review/${id}`
   }
 };

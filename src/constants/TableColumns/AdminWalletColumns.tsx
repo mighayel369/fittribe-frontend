@@ -1,8 +1,9 @@
 import { FaArrowRight } from "react-icons/fa";
 import { type NavigateFunction } from "react-router-dom";
+import { formatDate } from "../../utils/formatTime";
 interface TransactionRow {
   _id: string;
-  createdAt: string | Date;
+  createdAt: string;
   source: string;
   type: "credit" | "debit";
   amount: number;
@@ -16,10 +17,7 @@ export const getAdminWalletColumns = (navigate: NavigateFunction) => [
     render: (row: TransactionRow) => (
       <div className="flex flex-col">
         <span className="font-bold text-gray-700">
-          {new Date(row.createdAt).toLocaleDateString()}
-        </span>
-        <span className="text-[10px] text-gray-400">
-          {new Date(row.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {formatDate(row.createdAt)}
         </span>
       </div>
     ),
