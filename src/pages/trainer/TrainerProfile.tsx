@@ -44,7 +44,7 @@ const TrainerProfile = () => {
     confirmPassword: "",
   });
 
-  const [passwordErros, setPasswordErrors] = useState<any>("")
+
 
   useEffect(() => {
     document.title = "FitTribe | Profile";
@@ -60,8 +60,6 @@ const TrainerProfile = () => {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors: ValidationErrors<changePassword> = validatePasswordChange(passwordData);
-
-    setPasswordErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) return;
     try {

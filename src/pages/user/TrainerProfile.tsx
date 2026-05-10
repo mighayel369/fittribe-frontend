@@ -10,11 +10,11 @@ import { useLocation } from 'react-router-dom';
 import Toast from "../../components/Toast";
 import { ChatService } from "../../services/shared/chat.service";
 import { FaStar, FaClock } from "react-icons/fa";
-import {type TrainerProfile } from "../../types/trainerType";
+import {type TrainerProfileType } from "../../types/trainerType";
 const TrainerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [trainer, setTrainer] = useState<TrainerProfile|null>(null);
+  const [trainer, setTrainer] = useState<TrainerProfileType|null>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   let location = useLocation()

@@ -1,5 +1,5 @@
 
-import {type ProgramInfo } from "./programType";
+import { type ProgramInfo } from "./programType";
 
 export type TrainerSignupDTO = {
   name: string;
@@ -21,7 +21,7 @@ export type TrainerLoginDTO = {
 
 
 export interface Trainer {
-  trainerId: string; 
+  trainerId: string;
   name: string;
   email: string;
   status: boolean;
@@ -33,53 +33,53 @@ export interface UserSideTrainer extends Trainer {
   rating: number;
   experience: number;
   address: string | null;
-  programs: string; 
+  programs: string;
 }
 
-export interface PendingTrainer extends Omit<Trainer,'status'|'email'>{
+export interface PendingTrainer extends Omit<Trainer, 'status' | 'email'> {
   gender: string;
   programs: string[];
 }
 
 export interface AdminTrainerDetails {
-    trainerId: string;
-    name: string;
-    email: string;
-    role: "trainer";
-    profilePic: string | null;
-    gender: string;
+  trainerId: string;
+  name: string;
+  email: string;
+  role: "trainer";
+  profilePic: string | null;
+  gender: string;
 
-    experience: number;
-    languages: string[];
-    pricePerSession: number;
-    programs:ProgramInfo[]
+  experience: number;
+  languages: string[];
+  pricePerSession: number;
+  programs: ProgramInfo[]
 
-    certificate: string;     
-    verified: "pending" | "accepted" | "rejected";
-    status: boolean;         
-    joined: string;         
-    rejectReason?: string;    
+  certificate: string;
+  verified: "pending" | "accepted" | "rejected";
+  status: boolean;
+  joined: string;
+  rejectReason?: string;
 }
 
 export interface TrainerAccount {
-    trainerId: string;
-    name: string;
-    email: string;
-    phone?: string;
-    gender: string;
-    address: string;
-    bio: string;
-    profilePic: string;
-    experience: number;
-    languages: string[];
-    pricePerSession: number;
-    programs: ProgramInfo[];
-    status: boolean;       
-    verified: "pending" | "accepted" | "rejected";
-    rejectReason?: string;
-    certificate: string;
-    joined: string;
-    rating: number;
+  trainerId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  gender: string;
+  address: string;
+  bio: string;
+  profilePic: string;
+  experience: number;
+  languages: string[];
+  pricePerSession: number;
+  programs: ProgramInfo[];
+  status: boolean;
+  verified: "pending" | "accepted" | "rejected";
+  rejectReason?: string;
+  certificate: string;
+  joined: string;
+  rating: number;
 }
 
 export interface UpdateTrainerProfileDTO {
@@ -91,51 +91,51 @@ export interface UpdateTrainerProfileDTO {
   phone: string;
   address: string;
   pricePerSession: number;
-  programs: string[]; 
+  programs: string[];
 }
 
 export interface ReapplyTrainerDTO {
   name: string;
   gender: string;
   experience: number;
-  programs: string[]; 
+  programs: string[];
   languages: string[];
-  pricePerSession:number;
+  pricePerSession: number;
   certificate?: File | null;
 }
 
-export interface TrainerDetails{
-    trainerId: string;
-    name: string;
-    email: string;
-    status: boolean;
-    profilePic: string;
-    pricePerSession: number;
-    verified: string;
-    certificate: string;
-    joined: string;
-    gender: string;
-    programs: { programId: string; name: string }[];
-    role: string;
-    experience: number;
-    languages:string[];
-    rejectReason?: string;
-    phone?:string
+export interface TrainerDetails {
+  trainerId: string;
+  name: string;
+  email: string;
+  status: boolean;
+  profilePic: string;
+  pricePerSession: number;
+  verified: string;
+  certificate: string;
+  joined: string;
+  gender: string;
+  programs: { programId: string; name: string }[];
+  role: string;
+  experience: number;
+  languages: string[];
+  rejectReason?: string;
+  phone?: string
 }
 
 
 
 
-export interface TrainerProfile {
-    trainerId: string;
-    name: string;
-    profilePic: string;
-    pricePerSession: number;
-    experience: number;
-    languages: string[];
-    address: string;
-    bio: string;
-    programs: ProgramInfo[];
-    rating: number;
-    chatId?: string;
+export interface TrainerProfileType {
+  trainerId: string;
+  name: string;
+  profilePic: string;
+  pricePerSession: number;
+  experience: number;
+  languages: string[];
+  address: string;
+  bio: string;
+  programs: ProgramInfo[];
+  rating: number;
+  chatId?: string;
 }

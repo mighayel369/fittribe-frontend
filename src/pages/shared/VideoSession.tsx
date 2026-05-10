@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../redux/hooks';
@@ -17,13 +17,41 @@ const VideoSession: React.FC = () => {
       ? meetLink.split('/').pop()?.split('?')[0]
       : `FitTribe_${bookingId}`;
 
-    return rawName?.replace(/[^a-zA-Z0-9]/g, '_') || "FitTribe_Session";
+    return rawName?.replace(/[^a-zA-Z0-9]/g, '_') || "FitTribe_Default_Session";
   }, [meetLink, bookingId]);
 
   const isTrainer = role === 'trainer' || user?.role === 'trainer';
 
+
+  const handleApiReady = useCallback((api: any) => {
+    const apiAny = api as any;
+
+    if (isTrainer) {
+      apiAny.executeCommand('toggleLobby', true);
+
+      const lobbyHandler = (_data: any) => {
+        console.log("New participant requested to join the lobby");
+      };
+
+      if (typeof apiAny.on === 'function') {
+        apiAny.on('lobbyPushAccepted', lobbyHandler);
+      } else {
+        apiAny.addEventListener('lobbyPushAccepted', lobbyHandler);
+      }
+    }
+
+    apiAny.on('videoConferenceJoined', (_data: any) => {
+      console.log("Local user joined the FitTribe session");
+    });
+
+    apiAny.on('videoConferenceLeft', () => {
+      navigate(-1);
+    });
+  }, [isTrainer, navigate]);
+
   return (
     <div className="min-h-screen bg-black overflow-hidden">
+
       <div className="absolute top-4 left-6 z-50 flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
@@ -33,7 +61,7 @@ const VideoSession: React.FC = () => {
         </button>
         {isTrainer && (
           <div className="bg-emerald-500/20 text-emerald-400 px-4 py-2 rounded-full backdrop-blur-md text-[10px] font-black uppercase border border-emerald-500/30">
-            Moderator Mode
+            Moderator Mode Active
           </div>
         )}
       </div>
@@ -46,9 +74,7 @@ const VideoSession: React.FC = () => {
             prejoinPageEnabled: false,
             enableLobby: true,
             startWithAudioMuted: true,
-            enableNoAudioDetection: true,
             enableWelcomePage: false,
-            enableClosePage: false,
             disableDeepLinking: true,
           }}
           userInfo={{
@@ -56,33 +82,14 @@ const VideoSession: React.FC = () => {
             email: user?.email || "",
           }}
           interfaceConfigOverwrite={{
-            DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
             TOOLBAR_BUTTONS: [
-              'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-              'fodeviceselection', 'hangup', 'profile', 'chat', 'settings',
-              'raisehand', 'videoquality', 'filmstrip', 'tileview',
+              'microphone', 'camera', 'desktop', 'fullscreen',
+              'fodeviceselection', 'hangup', 'chat', 'settings',
+              'raisehand', 'videoquality', 'tileview',
             ],
             SHOW_JITSI_WATERMARK: false,
-            DEFAULT_REMOTE_DISPLAY_NAME: 'Member',
           }}
-          onApiReady={(api: any) => {
-            if (isTrainer) {
-              api.executeCommand('toggleLobby', true);
-              const apiAny = api as any;
-
-              if (typeof apiAny.on === 'function') {
-                apiAny.on('lobbyPushAccepted', (data: any) => {
-  
-                });
-              } else {
-                apiAny.addEventListener('lobbyPushAccepted', (data: any) => {
-                });
-              }
-            }
-
-            (api as any).on('videoConferenceJoined', () => {
-            });
-          }}
+          onApiReady={handleApiReady}
           onReadyToClose={() => navigate(-1)}
           getIFrameRef={(iframeRef) => {
             if (iframeRef) {
