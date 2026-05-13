@@ -32,7 +32,6 @@ const UserList: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,32 +68,32 @@ const UserList: React.FC = () => {
     fetchUsers();
   }, [page, search, statusFilter]);
 
- const handleExportPDF = async () => {
-  try {
-    const blobData = await AdminUserService.exportUsersPDF(exportRange);
-    console.log(blobData)
-    const blob = new Blob([blobData], { type: 'application/pdf' });
+  const handleExportPDF = async () => {
+    try {
+      const blobData = await AdminUserService.exportUsersPDF(exportRange);
+      console.log(blobData)
+      const blob = new Blob([blobData], { type: 'application/pdf' });
 
-    const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(blob);
 
-    const link = document.createElement('a');
-    link.href = url;
-    
-    const fileName = `FitTribe_Churn_${exportRange.replace(/\s+/g, '_')}.pdf`;
-    link.setAttribute('download', fileName);
+      const link = document.createElement('a');
+      link.href = url;
 
-    document.body.appendChild(link);
-    link.click();
-    
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+      const fileName = `FitTribe_Churn_${exportRange.replace(/\s+/g, '_')}.pdf`;
+      link.setAttribute('download', fileName);
 
-    setToast({ type: "success", message: "Download started!" });
-  } catch (err) {
-    setToast({ type: "error", message: "Failed to generate PDF report" });
-    console.error("PDF Export Error:", err);
-  }
-};
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      setToast({ type: "success", message: "Download started!" });
+    } catch (err) {
+      setToast({ type: "error", message: "Failed to generate PDF report" });
+      console.error("PDF Export Error:", err);
+    }
+  };
 
   const handleConfirmAction = async () => {
     if (!selectedUser) return;
@@ -177,6 +176,7 @@ const UserList: React.FC = () => {
               </button>
             </div>
           </div>
+
         </header>
 
         <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">

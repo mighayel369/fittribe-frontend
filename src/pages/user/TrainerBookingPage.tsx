@@ -32,7 +32,7 @@ const TrainerBookingPage = () => {
     isOnLeave: false,
     message: null
   });
-  const [selectedTime, setSelectedTime] = useState<number|null>(null);
+  const [selectedTime, setSelectedTime] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -83,6 +83,7 @@ const TrainerBookingPage = () => {
         } else {
           setLeaveStatus({ isOnLeave: false, message: null });
           setSlots(res.data.slots || []);
+          console.log(slots)
         }
       } catch (err: any) {
         let errMesg = err.response?.data?.message
@@ -148,7 +149,7 @@ const TrainerBookingPage = () => {
               });
             }
           } catch (err: any) {
-       
+
             setToastMessage(err.response?.data?.message || "Verification Failed");
             setToastType("error");
           } finally {
@@ -171,7 +172,7 @@ const TrainerBookingPage = () => {
       rzp.open();
 
     } catch (err: any) {
-console.log(err)
+      console.log(err)
       setToastMessage(err.response?.data?.message || "Payment Initialization Failed");
       setToastType("error");
       setLoading(false);
