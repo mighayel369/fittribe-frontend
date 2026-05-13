@@ -1,15 +1,14 @@
 export const formatTime = (minutes: number) => {
-  if (minutes === undefined || minutes === null) return "--:--";
-
-  const totalMinutes = Number(minutes);
-  const hours = Math.floor(totalMinutes / 60);
-  const mins = totalMinutes % 60;
-
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const displayHours = hours % 12 || 12;
-  const displayMinutes = mins < 10 ? `0${mins}` : mins;
-
-  return `${displayHours}:${displayMinutes} ${ampm}`;
+  console.log(minutes)
+  const date = new Date();
+  console.log(date)
+  date.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+  
+  return date.toLocaleTimeString(undefined, { 
+    hour: 'numeric', 
+    minute: '2-digit', 
+    hour12: true 
+  });
 };
 
 export const formatDate = (isoString: string | undefined): string => {
