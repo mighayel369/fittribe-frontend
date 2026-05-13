@@ -77,13 +77,14 @@ const TrainerBookingPage = () => {
           selectedDate,
           trainer.trainerId
         );
+        console.log(res)
         if (res.data.status === "ON_LEAVE") {
           setLeaveStatus({ isOnLeave: true, message: res.data.message });
           setSlots([]);
         } else {
           setLeaveStatus({ isOnLeave: false, message: null });
           setSlots(res.data.slots || []);
-          console.log(slots)
+  
         }
       } catch (err: any) {
         let errMesg = err.response?.data?.message
@@ -280,7 +281,7 @@ const TrainerBookingPage = () => {
                       : "bg-white text-gray-600 border-gray-200 hover:border-gray-900 hover:text-gray-900 shadow-sm"
                       }`}
                   >
-                    {formatTime(slot)}
+                    {slot}
                   </button>
                 ))}
               </div>
