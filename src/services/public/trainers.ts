@@ -19,7 +19,7 @@ export const PublicTrainersService = {
         return data;
     },
 
-    getTrainerAvailability: async (date: Date,trainerId: string) => {
+    getTrainerAvailability: async (date: string,trainerId: string) => {
         const { data } = await axiosInstance.get(API_ENDPOINTS.DISCOVERY.TRAINERS.AVAILABILITY, {
             params: { trainerId, date }
         });

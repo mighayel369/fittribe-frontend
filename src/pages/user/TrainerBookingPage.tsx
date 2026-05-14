@@ -26,7 +26,7 @@ const TrainerBookingPage = () => {
   const [trainer, setTrainer] = useState<TrainerDetails | null>(null);
   const [selectedProgram, setSelectedProgram] = useState<programOption | null>(null);
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString());
   const [slots, setSlots] = useState<number[]>([]);
   const [leaveStatus, setLeaveStatus] = useState<{ isOnLeave: boolean; message: string | null }>({
     isOnLeave: false,
@@ -84,7 +84,7 @@ const TrainerBookingPage = () => {
         } else {
           setLeaveStatus({ isOnLeave: false, message: null });
           setSlots(res.data.slots || []);
-  
+
         }
       } catch (err: any) {
         let errMesg = err.response?.data?.message
@@ -109,7 +109,7 @@ const TrainerBookingPage = () => {
       const orderResponse = await UserPaymentService.initiateCheckout({
         trainerId: trainer.trainerId,
         programId: selectedProgram.programId,
-        date: selectedDate.toISOString(),
+        date: new Date(selectedDate).toISOString(),
         time: selectedTime,
         amount: trainer.pricePerSession,
       });
@@ -143,7 +143,7 @@ const TrainerBookingPage = () => {
               setBookingSummary({
                 trainer: summary.trainerName,
                 program: summary.bookedProgram,
-                date: new Date(summary.bookedDate),
+                date: summary.bookedDate,
                 time: formatTime(summary.bookedTime),
                 id: summary.bookingId,
                 payment: "Razorpay (Online)",
@@ -260,7 +260,7 @@ const TrainerBookingPage = () => {
                 </p>
 
                 <button
-                  onClick={() => setSelectedDate(new Date())}
+                  onClick={() => setSelectedDate(new Date().toISOString())}
                   className="mt-5 text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors"
                 >
                   Try Another Date →
@@ -281,7 +281,7 @@ const TrainerBookingPage = () => {
                       : "bg-white text-gray-600 border-gray-200 hover:border-gray-900 hover:text-gray-900 shadow-sm"
                       }`}
                   >
-                    {slot}
+                    {formatTime(slot)}
                   </button>
                 ))}
               </div>
@@ -293,10 +293,11 @@ const TrainerBookingPage = () => {
             <div className="flex items-center gap-4">
               <div className="bg-red-600 p-4 rounded-2xl flex flex-col items-center justify-center min-w-[70px]">
                 <span className="text-[10px] uppercase font-black tracking-tighter">
-                  {selectedDate.toLocaleDateString('en-US', { month: 'short' })}
+
+                  {new Date(selectedDate).toLocaleDateString('en-IN', { month: 'short', timeZone: 'UTC' })}
                 </span>
                 <span className="text-xl font-black">
-                  {selectedDate.getDate()}
+                  {new Date(selectedDate).getDate()}
                 </span>
               </div>
 

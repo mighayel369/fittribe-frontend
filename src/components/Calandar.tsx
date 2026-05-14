@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 type CalendarProps = {
-  selectDate: (date: Date) => void;
-  selectedDate: Date;
+  selectDate: (date: string) => void;
+  selectedDate: string;
 };
 
 const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
@@ -36,9 +36,9 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
 
   const isDateSelected = (day: number) => {
     return (
-      selectedDate.getDate() === day &&
-      selectedDate.getMonth() === currentMonth &&
-      selectedDate.getFullYear() === currentYear
+      new Date(selectedDate).getDate() === day &&
+      new Date(selectedDate).getMonth() === currentMonth &&
+      new Date(selectedDate).getFullYear() === currentYear
     );
   };
 
@@ -97,7 +97,7 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
               `}
               onClick={() => {
                 if (!isPastDate) {
-                  selectDate(cellDate);
+                  selectDate(cellDate.toISOString());
                 }
               }}
             >

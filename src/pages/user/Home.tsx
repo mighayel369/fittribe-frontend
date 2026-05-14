@@ -29,7 +29,7 @@ const Home: React.FC = () => {
     const fetchServices = async () => {
       let response = await PublicProgramsService.explorePrograms('user');
       console.log(response)
-      setPrograms(response.program.data ?? []);
+      setPrograms(response.data.data ?? []);
     };
     fetchServices();
   }, []);

@@ -62,7 +62,7 @@ const BookingDetails = () => {
     if (!newDate || !booking?.trainerId) return;
     const fetchSlots = async () => {
       try {
-        const res = await PublicTrainersService.getTrainerAvailability(new Date(newDate), booking.trainerId);
+        const res = await PublicTrainersService.getTrainerAvailability(new Date(newDate).toISOString(), booking.trainerId);
         setSlots(res.data.slots || []);
       } catch (error) { console.log(error) }
     };
@@ -253,9 +253,7 @@ const BookingDetails = () => {
                         <ChevronRight size={16} className="text-gray-300" />
                         <div className="px-4 py-2 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-2 text-xs font-black text-gray-800">
                           <Clock size={14} className="text-indigo-500" />
-                          {isNaN(Number(booking.rescheduleRequest.newTimeSlot))
-                            ? booking.rescheduleRequest.newTimeSlot
-                            : formatTime(Number(booking.rescheduleRequest.newTimeSlot))}
+                          {booking.rescheduleRequest.newTimeSlot}
                         </div>
                       </div>
                     </div>
@@ -394,7 +392,7 @@ const BookingDetails = () => {
         </div>
       </main>
 
-      {/* Confirmation Modal */}
+
       <Modal
         isVisible={showModal}
         title={modalConfig.title}
@@ -403,7 +401,7 @@ const BookingDetails = () => {
         onCancel={() => setShowModal(false)}
       />
 
-      {/* Reschedule Custom Modal Content */}
+
       <Modal
         isVisible={showRescheduleModal}
         title="Reschedule Session"
