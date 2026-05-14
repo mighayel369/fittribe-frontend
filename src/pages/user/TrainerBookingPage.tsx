@@ -26,7 +26,7 @@ const TrainerBookingPage = () => {
   const [trainer, setTrainer] = useState<TrainerDetails | null>(null);
   const [selectedProgram, setSelectedProgram] = useState<programOption | null>(null);
 
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [slots, setSlots] = useState<number[]>([]);
   const [leaveStatus, setLeaveStatus] = useState<{ isOnLeave: boolean; message: string | null }>({
     isOnLeave: false,
@@ -74,7 +74,7 @@ const TrainerBookingPage = () => {
     const fetchSlots = async () => {
       try {
         const res = await PublicTrainersService.getTrainerAvailability(
-          selectedDate,
+          new Date(selectedDate).toISOString(),
           trainer.trainerId
         );
         console.log(res)
@@ -275,7 +275,7 @@ const TrainerBookingPage = () => {
                 </p>
 
                 <button
-                  onClick={() => setSelectedDate(new Date().toISOString())}
+                  onClick={() => setSelectedDate(new Date())}
                   className="mt-5 text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors"
                 >
                   Try Another Date →

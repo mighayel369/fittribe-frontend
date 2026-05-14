@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 type CalendarProps = {
-  selectDate: (date: string) => void;
-  selectedDate: string;
+  selectDate: (date: Date) => void;
+  selectedDate: Date;
 };
 
 const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
@@ -75,8 +75,6 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
           if (day === null) return <div key={`empty-${index}`} />;
 
           const cellDate = new Date(currentYear, currentMonth, day);
-          cellDate.setUTCHours(0, 0, 0, 0);
-
           const isPastDate = cellDate < today;
           const isSelected = isDateSelected(day);
 
@@ -97,7 +95,7 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
               `}
               onClick={() => {
                 if (!isPastDate) {
-                  selectDate(cellDate.toISOString());
+                  selectDate(cellDate);
                 }
               }}
             >
