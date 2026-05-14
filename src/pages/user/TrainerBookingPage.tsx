@@ -158,7 +158,7 @@ const TrainerBookingPage = () => {
               setBookingSummary({
                 trainer: summary.trainerName,
                 program: summary.bookedProgram,
-                date: summary.bookedDate,
+                date: new Date(summary.bookedDate),
                 time: formatTime(summary.bookedTime),
                 id: summary.bookingId,
                 payment: "Razorpay (Online)",
