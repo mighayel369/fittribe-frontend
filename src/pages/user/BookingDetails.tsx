@@ -29,6 +29,10 @@ const BookingDetails = () => {
   const [slots, setSlots] = useState<number[]>([]);
   const [showModal, setShowModal] = useState(false)
   const [reason, setReason] = useState("");
+  const [leaveStatus, setLeaveStatus] = useState<{ isOnLeave: boolean; message: string | null }>({
+    isOnLeave: false,
+    message: null
+  });
   const [modalConfig, setModalConfig] = useState<{
     type: 'cancel' | 'accept' | 'decline' | null;
     title: string;
@@ -60,14 +64,52 @@ const BookingDetails = () => {
 
   useEffect(() => {
     if (!newDate || !booking?.trainerId) return;
+
     const fetchSlots = async () => {
       try {
-        const res = await PublicTrainersService.getTrainerAvailability(new Date(newDate).toISOString(), booking.trainerId);
-        setSlots(res.data.slots || []);
-      } catch (error) { console.log(error) }
+        const dateForBackend = new Date(newDate).toISOString();
+
+        const res = await PublicTrainersService.getTrainerAvailability(
+          dateForBackend,
+          booking.trainerId
+        );
+
+        if (res.data.status === "ON_LEAVE") {
+          setLeaveStatus({
+            isOnLeave: true,
+            message: res.data.message || "Trainer is on leave for the selected date."
+          });
+          setSlots([]);
+        } else {
+          setLeaveStatus({ isOnLeave: false, message: null });
+
+          const allSlots: number[] = res.data.slots || [];
+          const now = new Date();
+          const selected = new Date(newDate);
+
+          const isToday =
+            selected.getFullYear() === now.getFullYear() &&
+            selected.getMonth() === now.getMonth() &&
+            selected.getDate() === now.getDate();
+
+          if (isToday) {
+
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+            const buffer = 30;
+            const filtered = allSlots.filter(slot => slot > (currentTotalMinutes + buffer));
+            setSlots(filtered);
+          } else {
+            setSlots(allSlots);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching slots:", error);
+        setToast({ message: "Could not fetch trainer availability", type: "error" });
+      }
     };
+
     fetchSlots();
-  }, [newDate]);
+  }, [newDate, booking?.trainerId]);
 
   const openConfirmation = (type: 'cancel' | 'accept' | 'decline') => {
     const configs = {
@@ -433,6 +475,16 @@ const BookingDetails = () => {
               {!newDate ? (
                 <div className="text-center py-10 border-2 border-dashed border-gray-100 rounded-[2rem] text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   Select a date first
+                </div>
+              ) : leaveStatus.isOnLeave ? (
+                <div className="text-center py-10 bg-amber-50 rounded-[2rem] border border-amber-100 px-6">
+                  <XCircle size={24} className="text-amber-500 mx-auto mb-2" />
+                  <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
+                    Trainer Unavailable
+                  </p>
+                  <p className="text-xs text-amber-600 font-medium mt-1">
+                    {leaveStatus.message}
+                  </p>
                 </div>
               ) : slots.length === 0 ? (
                 <div className="text-center py-10 bg-rose-50 rounded-[2rem] text-[10px] font-black text-rose-500 uppercase tracking-widest border border-rose-100">

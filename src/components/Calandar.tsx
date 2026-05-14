@@ -7,7 +7,7 @@ type CalendarProps = {
 
 const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0); 
+  today.setHours(0, 0, 0, 0);
 
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -45,8 +45,8 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
   return (
     <div className="select-none">
       <div className="flex justify-between items-center mb-5">
-        <button 
-          onClick={goPrevMonth} 
+        <button
+          onClick={goPrevMonth}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors font-bold text-gray-600"
         >
           &lt;
@@ -54,8 +54,8 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
         <h2 className="text-lg font-black uppercase tracking-tight text-gray-800">
           {monthNames[currentMonth]} {currentYear}
         </h2>
-        <button 
-          onClick={goNextMonth} 
+        <button
+          onClick={goNextMonth}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors font-bold text-gray-600"
         >
           &gt;
@@ -75,7 +75,7 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
           if (day === null) return <div key={`empty-${index}`} />;
 
           const cellDate = new Date(currentYear, currentMonth, day);
-          cellDate.setHours(0, 0, 0, 0);
+          cellDate.setUTCHours(0, 0, 0, 0);
 
           const isPastDate = cellDate < today;
           const isSelected = isDateSelected(day);
@@ -85,14 +85,14 @@ const Calendar: React.FC<CalendarProps> = ({ selectDate, selectedDate }) => {
               key={day}
               className={`
                 p-3 rounded-xl text-xs font-bold transition-all duration-200 border
-                ${isSelected 
-                  ? "bg-red-600 text-white border-red-600 shadow-md scale-105" 
+                ${isSelected
+                  ? "bg-red-600 text-white border-red-600 shadow-md scale-105"
                   : "border-transparent"}
-                ${isPastDate 
-                  ? "text-gray-200 cursor-not-allowed" 
+                ${isPastDate
+                  ? "text-gray-200 cursor-not-allowed"
                   : ""}
-                ${!isSelected  && !isPastDate 
-                  ? "text-gray-700 hover:bg-red-50 hover:text-red-600 cursor-pointer" 
+                ${!isSelected && !isPastDate
+                  ? "text-gray-700 hover:bg-red-50 hover:text-red-600 cursor-pointer"
                   : ""}
               `}
               onClick={() => {

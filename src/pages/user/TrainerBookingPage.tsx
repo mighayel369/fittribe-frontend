@@ -83,8 +83,23 @@ const TrainerBookingPage = () => {
           setSlots([]);
         } else {
           setLeaveStatus({ isOnLeave: false, message: null });
+          const allSlots: number[] = res.data.slots || [];
           setSlots(res.data.slots || []);
+          const now = new Date();
+          const selected = new Date(selectedDate);
 
+          const isToday = selected.getFullYear() === now.getFullYear() &&
+            selected.getMonth() === now.getMonth() &&
+            selected.getDate() === now.getDate();
+
+          if (isToday) {
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+            const buffer = 15;
+            const filtered = allSlots.filter(slot => slot > (currentTotalMinutes + buffer));
+            setSlots(filtered);
+          } else {
+            setSlots(allSlots);
+          }
         }
       } catch (err: any) {
         let errMesg = err.response?.data?.message
