@@ -125,7 +125,7 @@ const UserProfile: React.FC = () => {
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
-    setPage(1); 
+    setPage(1);
   };
 
 
@@ -143,8 +143,8 @@ const UserProfile: React.FC = () => {
         setToastType("success");
         setToastMessage("Review submitted successfully!");
         setIsReviewModalOpen(false);
-        
-  
+
+
         if (activeTab === "history") {
           fetchBookings("PAST");
         } else {
@@ -543,7 +543,7 @@ const UserProfile: React.FC = () => {
             </div>
           )}
 
-    
+
           {activeTab === "settings" && (
             <div className="max-w-2xl space-y-4">
               <div className="mb-6">

@@ -3,8 +3,9 @@ import { API_ENDPOINTS } from "../../api/endPoints";
 
 export const UserBookingService = {
   getBookingHistory: async (page: number, search: string, filter: string = "ALL") => {
+    const today=new Date().toISOString()
     const { data } = await axiosInstance.get(API_ENDPOINTS.USER_BOOKINGS.HISTORY, {
-      params: { pageNo: page, search, filter }
+      params: { pageNo: page, search, filter ,date:today}
     });
     return data;
   },
