@@ -36,7 +36,7 @@ export default function UserRoutes() {
 
       <Route path="otp" element={<PrivateRouteOtp><AuthVerification /></PrivateRouteOtp>} />
 
-      <Route path="user/auth/google/callback" element={<GoogleAuthSuccess />} />
+      <Route path="oauth-success" element={<GoogleAuthSuccess />} />
       <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="reset-password/:token" element={<ResetPassword />} />
       <Route path="trainer-booking/:trainerId" element={<PrivateRoute><TrainerBookingPage /></PrivateRoute>} />
