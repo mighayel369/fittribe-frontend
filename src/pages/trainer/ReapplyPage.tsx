@@ -68,7 +68,7 @@ const ReapplyPage = () => {
         });
         setCertificateUrl(t.certificate);
       } catch (err: any) {
-        const errorMsg = err.response?.data?.message || "Failed to load data";
+        const errorMsg = err.message || "Failed to load data";
         setToast({ message: errorMsg, type: 'error' });
       } finally {
         setLoading(false);
@@ -129,7 +129,7 @@ const ReapplyPage = () => {
         setTimeout(() => navigate("/trainer/trainer-profile"), 2000);
       }
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message
+      const errorMsg = err.message
       setToast({ message: errorMsg, type: 'error' })
     }
   };

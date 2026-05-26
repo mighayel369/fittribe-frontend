@@ -5,9 +5,11 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
 import SearchInput from "../../components/SearchInput";
 import { type Program } from "../../types/programType";
-import {type UserSideTrainer } from "../../types/trainerType";
+import { type UserSideTrainer } from "../../types/trainerType";
 import { PublicTrainersService } from "../../services/public/trainers";
 import { PublicProgramsService } from "../../services/public/programs";
+import { cleanTrainerFilters } from "../../helperFunctions/cleanFilters";
+import Toast from "../../components/Toast";
 type ProgramOption = {
   programId: string;
   name: string;
@@ -18,7 +20,7 @@ const TrainerListing = () => {
     gender: "",
     availability: "",
     language: "",
-    programs: "",
+    programId: "",
     sort: "rating"
   });
   const [search, setSearch] = useState("");
@@ -27,23 +29,24 @@ const TrainerListing = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const DEFAULT_IMAGE = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   useEffect(() => {
     const fetchServices = async () => {
       try {
-       let response = await PublicProgramsService.explorePrograms();
-    
+        let response = await PublicProgramsService.explorePrograms();
+
         if (response.data.data) {
           const programData: ProgramOption[] = response.data.data.map(
             (curr: Program): ProgramOption => ({
-             programId: curr.programId,
+              programId: curr.programId,
               name: curr.name,
             })
           );
           setPrograms(programData)
         }
-      } catch (error) {
-        console.error("Error fetching services:", error);
+      } catch (error:any) {
+        setToast({ message: error.message, type: 'error' });
       }
     };
     fetchServices();
@@ -56,11 +59,12 @@ const TrainerListing = () => {
     const fetchTrainers = async () => {
       try {
         setLoading(true);
-        const response = await PublicTrainersService.exploreTrainers(page, search, filters);
+        const cleanedFilter = cleanTrainerFilters({ ...filters, search })
+        const response = await PublicTrainersService.exploreTrainers(page, cleanedFilter);
         setTrainers(response.data || []);
-        setTotalPages(response.total || 1);
-      } catch (err) {
-        console.error("Failed to fetch trainers", err);
+        setTotalPages(response.totalPages || 1);
+      } catch (err: any) {
+        setToast({ message: err.message, type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -74,7 +78,13 @@ const TrainerListing = () => {
     <div className="min-h-screen bg-[#F8FAFC]">
       <UserNavBar />
 
-
+      {toast && (
+        <Toast
+          message={toast.message}
+          type="success"
+          onClose={() => setToast(null)}
+        />
+      )}
       <div className="pt-40 pb-20 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">
@@ -100,7 +110,7 @@ const TrainerListing = () => {
           <div className="flex flex-wrap gap-3">
             {[
               { label: "Gender", key: "gender", options: ["male", "female"] },
-              { label: "Programs", key: "programs", options: [...programs] },
+              { label: "Programs", key: "programId", options: [...programs] },
               { label: "Availability", key: "availability", options: ["Morning", "Evening"] }
             ].map((item) => (
               <div key={item.key} className="relative group">
@@ -110,7 +120,7 @@ const TrainerListing = () => {
                 >
                   <option value="">{item.label}</option>
                   {item.options.map((opt: any) => {
-                    if (item.key === "programs") {
+                    if (item.key === "programId") {
                       return (
                         <option key={opt.programId} value={opt.programId}>
                           {opt.name}

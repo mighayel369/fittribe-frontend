@@ -28,11 +28,11 @@ const Bookings = () => {
     try {
       setLoading(true);
       const res = await UserBookingService.getBookingHistory(page, search, "UPCOMING");
-      setBookings(res.bookingData);
+      setBookings(res.data);
       setTotalPages(res.totalPages);
     } catch (err: any) {
       setToast({ 
-        message: err.response?.data?.message || "Failed to fetch bookings", 
+        message: err.message || "Failed to fetch bookings", 
         type: 'error' 
       });
     } finally {

@@ -1,6 +1,6 @@
-export type UpdateWeeklySlotDTO = {
-  startTime?: string;
-  endTime?: string;
+export type TimeRange= {
+  start: number;
+  end: number;
 };
 
 export type SlotValidationResult = {

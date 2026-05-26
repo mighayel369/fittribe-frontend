@@ -9,7 +9,7 @@ import AdminSideBar from "../../layout/AdminSideBar";
 import Modal from "../../components/Modal";
 import Toast from "../../components/Toast";
 import Loading from "../../components/Loading";
-import NotFound from "../../components/NotFound";
+import NotFound from "../../components/ErrorPage";
 import { type AdminTrainerDetails } from "../../types/trainerType";
 import SubmitButton from "../../components/SubmitButton";
 import DEFAULT_IMAGE from '../../assets/default image.png'
@@ -40,7 +40,7 @@ const TrainerDetails = () => {
       setTrainer(response.trainer);
     } catch (error: any) {
       setToast({
-        message: error.response?.data?.message || "Verification failed",
+        message: error.message || "Verification failed",
         type: "error"
       })
     } finally {
@@ -67,7 +67,7 @@ const TrainerDetails = () => {
       }
     } catch (err: any) {
       setToast({
-        message: err.response?.data?.message || "Verification failed",
+        message: err.message || "Verification failed",
         type: "error"
       });
     } finally {
@@ -88,7 +88,7 @@ const TrainerDetails = () => {
       }
     } catch (err: any) {
       setToast({
-        message: err.response?.data?.message || "Status update failed",
+        message: err.message || "Status update failed",
         type: "error"
       });
     } finally {
@@ -134,8 +134,8 @@ const TrainerDetails = () => {
 
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
           <div className={`p-8 flex flex-col items-center text-white ${trainer.verified === 'pending'
-              ? 'bg-gradient-to-r from-blue-500 to-indigo-600'
-              : 'bg-gradient-to-r from-teal-500 to-emerald-600'
+            ? 'bg-gradient-to-r from-blue-500 to-indigo-600'
+            : 'bg-gradient-to-r from-teal-500 to-emerald-600'
             }`}>
             <img
               src={trainer.profilePic || DEFAULT_IMAGE}

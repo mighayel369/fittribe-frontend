@@ -12,7 +12,7 @@ import Loading from "../../components/Loading";
 import Modal from "../../components/Modal";
 import Toast from "../../components/Toast";
 import { HiOutlineX } from "react-icons/hi";
-import { formatTime, formatDate } from "../../utils/formatTime";
+import { formatTime, formatDate, timeToMin, formatLocalDate } from "../../utils/formatTime";
 
 const BOOKING_ACTION = {
     booking: {
@@ -52,8 +52,8 @@ const BookingDetails = () => {
         try {
             const res = await TrainerBookingService.getBookingDetails(id);
             if (res.success) setBooking(res.data);
-        } catch (err) {
-            console.error(err);
+        } catch (err: any) {
+            setToast({ message: err.message, type: "error" })
         } finally {
             setLoading(false);
         }
@@ -83,7 +83,7 @@ const BookingDetails = () => {
                 setPendingAction(null);
             }
         } catch (err: any) {
-            setToast({ message: err.response?.data?.message || "Action failed", type: "error" });
+            setToast({ message: err.message || "Action failed", type: "error" });
         } finally {
             setLoading(false);
         }
@@ -96,14 +96,14 @@ const BookingDetails = () => {
         }
         try {
             setLoading(true);
-            const res = await TrainerBookingService.rescheduleByTrainer(id, rescheduleDate, rescheduleTime, rescheduleReason);
+            const res = await TrainerBookingService.rescheduleByTrainer(id, formatLocalDate(new Date(rescheduleDate)), timeToMin(rescheduleTime), rescheduleReason);
             if (res.success) {
                 setToast({ message: "Proposal sent!", type: "success" });
                 setRescheduleModal(false);
                 fetchBookingDetails();
             }
         } catch (err: any) {
-            setToast({ message: "Reschedule failed", type: "error" });
+            setToast({ message: err.message || "Reschedule failed", type: "error" });
         } finally {
             setLoading(false);
         }
@@ -144,10 +144,10 @@ const BookingDetails = () => {
                 </div>
 
                 <div className="grid grid-cols-12 gap-8">
-         
+
                     <div className="col-span-12 lg:col-span-8 space-y-6">
 
-                
+
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 overflow-hidden relative">
 
                             <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Primary Client</h2>
@@ -218,7 +218,7 @@ const BookingDetails = () => {
 
                     <div className="col-span-12 lg:col-span-4 space-y-6">
 
-            
+
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100">
                             <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Payment Status</h2>
                             <div className="flex items-center justify-between mb-6">

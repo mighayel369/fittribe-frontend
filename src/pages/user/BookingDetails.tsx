@@ -55,8 +55,8 @@ const BookingDetails = () => {
       const res = await UserBookingService.getBookingDetails(id);
       setBooking(res.data);
       document.title = `Session | ${res.data.bookedProgram}`;
-    } catch (error) {
-      console.error(error);
+    } catch (error:any) {
+      setToast({ message: error.message || "Could not fetch bookings", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -102,9 +102,9 @@ const BookingDetails = () => {
             setSlots(allSlots);
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching slots:", error);
-        setToast({ message: "Could not fetch trainer availability", type: "error" });
+        setToast({ message: error.message || "Could not fetch trainer availability", type: "error" });
       }
     };
 
@@ -146,7 +146,7 @@ const BookingDetails = () => {
         fetchBookingDetails(bookingId!);
       }
     } catch (error: any) {
-      setToast({ message: error.response?.data?.message || "Failed to request reschedule", type: "error" });
+      setToast({ message: error.message || "Failed to request reschedule", type: "error" });
     } finally {
       setShowRescheduleModal(false);
       resetRescheduleState();
@@ -170,8 +170,7 @@ const BookingDetails = () => {
         setToast({ message: "Booking cancelled. Refund processed to wallet.", type: "success" });
       }
     } catch (error: any) {
-      const message = error.response?.data?.message
-      setToast({ message: message || "Failed to cancel booking", type: "error" });
+      setToast({ message: error.message || "Failed to cancel booking", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -186,7 +185,7 @@ const BookingDetails = () => {
         setToast({ message: "Reschedule accepted!", type: "success" });
         fetchBookingDetails(booking.bookingId);
       }
-    } catch (error) { setToast({ message: "Failed to accept", type: "error" }); }
+    } catch (error: any) { setToast({ message: error.message || "Failed to accept", type: "error" }); }
     finally { setLoading(false); }
   };
 
@@ -199,7 +198,7 @@ const BookingDetails = () => {
         setToast({ message: "Proposal declined", type: "success" });
         fetchBookingDetails(booking.bookingId);
       }
-    } catch (error) { setToast({ message: "Failed to decline", type: "error" }); }
+    } catch (error: any) { setToast({ message: error.message || "Failed to decline", type: "error" }); }
     finally { setLoading(false); }
   };
 
@@ -295,7 +294,7 @@ const BookingDetails = () => {
                         <ChevronRight size={16} className="text-gray-300" />
                         <div className="px-4 py-2 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-2 text-xs font-black text-gray-800">
                           <Clock size={14} className="text-indigo-500" />
-                          {booking.rescheduleRequest.newTimeSlot}
+                          {formatTime(booking.rescheduleRequest.newTimeSlot)}
                         </div>
                       </div>
                     </div>

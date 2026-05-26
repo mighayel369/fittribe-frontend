@@ -17,8 +17,8 @@ import TrainerBookingPage from "../pages/user/TrainerBookingPage";
 import Bookings from "../pages/user/Bookings";
 import BookingDetails from "../pages/user/BookingDetails";
 import ChatPage from "../pages/user/ChatPage";
-import VideoSession from "../pages/shared/VideoSession";
-import NotFoundPage from "../components/NotFound";
+import { LiveVideoSession } from "../pages/shared/LiveSessionPage";
+import ErrorPage from "../components/ErrorPage";
 import About from "../pages/user/About";
 export default function UserRoutes() {
   return (
@@ -43,8 +43,9 @@ export default function UserRoutes() {
       <Route path="bookings" element={<PrivateRoute><Bookings /></PrivateRoute>} />
       <Route path="bookings/:bookingId" element={<PrivateRoute><BookingDetails /></PrivateRoute>} />
       <Route path="chat/:trainerId/:chatId?" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
-      <Route path="/session/:bookingId" element={<PrivateRoute><VideoSession /></PrivateRoute>} />
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="/session/:bookingId" element={<LiveVideoSession />} />
+      <Route path="/error" element={<ErrorPage />} />
+      <Route path="*" element={<ErrorPage />} />
     </Routes>
   );
 }

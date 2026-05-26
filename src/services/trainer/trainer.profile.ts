@@ -10,7 +10,6 @@ export const TrainerProfileService = {
   },
   updateProfile: async (payload: FormData) => {
     const { data } = await axiosInstance.put(API_ENDPOINTS.TRAINER_ACCOUNT.UPDATE_PROFILE, payload);
-    console.log(payload)
     return data;
   },
 

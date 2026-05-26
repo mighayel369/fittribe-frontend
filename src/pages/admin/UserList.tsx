@@ -57,7 +57,7 @@ const UserList: React.FC = () => {
     } catch (err: any) {
       setToast({
         type: "error",
-        message: err.response?.data?.message || "Failed to fetch users",
+        message: err.message || "Failed to fetch users",
       });
     } finally {
       setLoading(false);
@@ -89,9 +89,8 @@ const UserList: React.FC = () => {
       window.URL.revokeObjectURL(url);
 
       setToast({ type: "success", message: "Download started!" });
-    } catch (err) {
-      setToast({ type: "error", message: "Failed to generate PDF report" });
-      console.error("PDF Export Error:", err);
+    } catch (err:any) {
+      setToast({ type: "error", message:err.message|| "Failed to generate PDF report" });
     }
   };
 
@@ -104,7 +103,7 @@ const UserList: React.FC = () => {
       setShowModal(false);
       setToast({ type: "success", message: "Status updated successfully" });
     } catch (error: any) {
-      setToast({ type: "error", message: "Action failed" });
+      setToast({ type: "error", message: error.message || "Action failed" });
     } finally {
       setSelectedUser(null);
     }
@@ -141,7 +140,7 @@ const UserList: React.FC = () => {
                 onClick={handleExportPDF}
                 className="flex items-center gap-2 px-4 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all active:scale-95"
               >
-                <FileDown size={14} /> Export CSV
+                <FileDown size={14} /> Export PDF
               </button>
             </div>
           </div>

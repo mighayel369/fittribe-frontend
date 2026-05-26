@@ -11,7 +11,7 @@ import DEFAULT_IMAGE from '../../assets/default image.png'
 import { UserPaymentService } from "../../services/user/user.payment";
 import { PublicTrainersService } from "../../services/public/trainers";
 import { UserBookingService } from "../../services/user/user.booking";
-import { formatTime } from "../../utils/formatTime";
+import { formatLocalDate, formatTime } from "../../utils/formatTime";
 
 type programOption = {
   programId: string,
@@ -59,8 +59,7 @@ const TrainerBookingPage = () => {
         setTrainer(response.trainer);
 
       } catch (err: any) {
-        let errMesg = err.response?.data?.message
-        setToastMessage(errMesg);
+        setToastMessage(err.message);
         setToastType("error");
       } finally {
         setLoading(false);
@@ -74,7 +73,7 @@ const TrainerBookingPage = () => {
     const fetchSlots = async () => {
       try {
         const res = await PublicTrainersService.getTrainerAvailability(
-          new Date(selectedDate).toISOString(),
+          formatLocalDate(selectedDate),
           trainer.trainerId
         );
         console.log(res)
@@ -102,8 +101,7 @@ const TrainerBookingPage = () => {
           }
         }
       } catch (err: any) {
-        let errMesg = err.response?.data?.message
-        setToastMessage(errMesg);
+        setToastMessage(err.message);
         setToastType("error");
       }
     };
@@ -124,7 +122,7 @@ const TrainerBookingPage = () => {
       const orderResponse = await UserPaymentService.initiateCheckout({
         trainerId: trainer.trainerId,
         programId: selectedProgram.programId,
-        date: new Date(selectedDate).toISOString(),
+        date: formatLocalDate(selectedDate),
         time: selectedTime,
         amount: trainer.pricePerSession,
       });
@@ -145,7 +143,7 @@ const TrainerBookingPage = () => {
               razorpay_signature: paymentRes.razorpay_signature,
               trainerId: trainer.trainerId,
               program: selectedProgram.name,
-              date: selectedDate,
+              date: formatLocalDate(selectedDate),
               time: selectedTime,
               price: trainer.pricePerSession
             })
@@ -166,7 +164,7 @@ const TrainerBookingPage = () => {
             }
           } catch (err: any) {
 
-            setToastMessage(err.response?.data?.message || "Verification Failed");
+            setToastMessage(err.message || "Verification Failed");
             setToastType("error");
           } finally {
             setLoading(false);
@@ -189,7 +187,7 @@ const TrainerBookingPage = () => {
 
     } catch (err: any) {
       console.log(err)
-      setToastMessage(err.response?.data?.message || "Payment Initialization Failed");
+      setToastMessage(err.message || "Payment Initialization Failed");
       setToastType("error");
       setLoading(false);
     }
@@ -309,7 +307,7 @@ const TrainerBookingPage = () => {
               <div className="bg-red-600 p-4 rounded-2xl flex flex-col items-center justify-center min-w-[70px]">
                 <span className="text-[10px] uppercase font-black tracking-tighter">
 
-                  {new Date(selectedDate).toLocaleDateString('en-IN', { month: 'short', timeZone: 'UTC' })}
+                  {formatLocalDate(selectedDate)}
                 </span>
                 <span className="text-xl font-black">
                   {new Date(selectedDate).getDate()}

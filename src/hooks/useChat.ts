@@ -24,6 +24,7 @@ export const useChat = (chatId?: string, receiverId?: string, search: string = "
 
                 if (chatId) {
                     const messageResponse = await ChatService.getMessage(chatId, role);
+                    console.log(messageResponse)
                     setMessages(messageResponse.data);
                 } else {
                     setMessages([]);
@@ -48,19 +49,44 @@ export const useChat = (chatId?: string, receiverId?: string, search: string = "
 
             socket.on('message_received', (data: any) => {
                 const isCurrentChat = chatId && data.chatId === chatId;
-                const isNewChatFromTarget = !chatId && receiverId && data.senderId === receiverId;
+                const isNewChatFromTarget = !chatId && receiverId && data.sender === receiverId;
 
                 if (isCurrentChat || isNewChatFromTarget) {
                     setMessages((prev) => [...prev, data]);
                 }
 
                 setChatList((prev) => {
-                    const index = prev.findIndex(chat => chat.chatId === data.chatId || chat.receiverId === data.senderId);
+                    const index = prev.findIndex(chat =>
+                        (data.chatId && chat.chatId === data.chatId) ||
+                        chat.id === data.sender
+                    );
+
                     if (index !== -1) {
                         const updatedList = [...prev];
-                        updatedList[index].lastMessage = data.content || data.text;
-                        return updatedList;
+                        const targetChat = { ...updatedList[index] };
+
+                        targetChat.lastMessage = {
+                            content: data.content || "",
+                            type: data.type || "text",
+                            file: data.file ? {
+                                url: data.file.url,
+                                mimeType: data.file.mimeType || data.type,
+                                name: data.file.name || "Attachment",
+                                size: data.file.size || 0
+                            } : undefined
+                        };
+
+                        targetChat.lastMessageTime = new Date();
+                        if (!isCurrentChat && !isNewChatFromTarget) {
+                            targetChat.unreadCount = (targetChat.unreadCount || 0) + 1;
+                        }
+
+                        updatedList[index] = targetChat;
+
+                        const [updatedChatRow] = updatedList.splice(index, 1);
+                        return [updatedChatRow, ...updatedList];
                     }
+
                     return prev;
                 });
             });
@@ -69,9 +95,10 @@ export const useChat = (chatId?: string, receiverId?: string, search: string = "
                 socket.off("message_received");
             };
         }
+      
     }, [user?.id, accessToken, chatId, receiverId]);
 
-    const sendMessage = (text: string, fileData?: { url: string; type: string,name:string,size:number }) => {
+    const sendMessage = (text: string, fileData?: { url: string; type: string, name: string, size: number }) => {
         if (!text.trim() && !fileData) return;
         if ((!chatId && !receiverId) || !user?.id) return;
         console.log(fileData)
@@ -80,17 +107,17 @@ export const useChat = (chatId?: string, receiverId?: string, search: string = "
             sender: user.id,
             chatId: chatId || undefined,
             receiverId: receiverId,
-            content: text.trim() || "", 
+            content: text.trim() || "",
             type: fileData ? fileData.type : "text",
             file: fileData ? {
                 url: fileData.url,
                 mimeType: fileData.type,
-                name:fileData.name,
-                size:fileData.size
+                name: fileData.name,
+                size: fileData.size
             } : undefined,
-            time: new Date().toISOString()
+            time: new Date()
         };
-        console.log('new message',newMessage)
+        console.log('new message', newMessage)
 
         socket.emit('send_message', newMessage);
         setMessages((prev) => [...prev, newMessage]);

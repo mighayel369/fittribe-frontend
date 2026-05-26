@@ -52,7 +52,7 @@ const TrainerList = () => {
       } catch (err: any) {
         setToast({
           type: "error",
-          message: err.response?.data?.message || "Failed to fetch trainers",
+          message: err.message || "Failed to fetch trainers",
         });
       } finally {
         setLoading(false);
@@ -84,7 +84,7 @@ const TrainerList = () => {
     } catch (err: any) {
       setToast({
         type: "error",
-        message: err.response?.data?.message || "Action failed",
+        message: err.message || "Action failed",
       });
     }
   };
@@ -164,8 +164,8 @@ const TrainerList = () => {
                 render: (trainer) => (
                   <div className="flex justify-center items-center w-full">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border ${trainer.status
-                        ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                        : "bg-rose-50 text-rose-600 border-rose-100"
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                      : "bg-rose-50 text-rose-600 border-rose-100"
                       }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${trainer.status ? 'bg-emerald-500' : 'bg-rose-500'
                         }`} />
@@ -190,8 +190,8 @@ const TrainerList = () => {
                     <button
                       title={trainer.status ? "Block Trainer" : "Unblock Trainer"}
                       className={`p-2 rounded-lg transition-colors ${trainer.status
-                          ? "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                          : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                        ? "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                        : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
                         }`}
                       onClick={() => {
                         setSelectedTrainer(trainer);

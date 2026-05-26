@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   FaArrowLeft, FaCalendarAlt,
-  FaCreditCard, FaCheckCircle,  FaVideo, FaStar
+  FaCreditCard, FaCheckCircle, FaStar
 } from "react-icons/fa";
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import Loading from "../../components/Loading";
-import NotFound from "../../components/NotFound";
+import NotFound from "../../components/ErrorPage";
 import { AdminBookingService } from "../../services/admin/admin.booking.service";
 import DEFAULT_IMAGE from '../../assets/default image.png';
-import { formatDate } from "../../utils/formatTime";
+import { formatDate, formatTime } from "../../utils/formatTime";
 
 const BookingDetails = () => {
   const { id } = useParams();
@@ -86,17 +86,15 @@ const BookingDetails = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-8 gap-x-12">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Scheduled Date</p>
-                  <p className="text-lg font-bold text-slate-900">{booking.scheduledDate}</p>
+                  <p className="text-lg font-bold text-slate-900">{formatDate(booking.scheduledDate)}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Time Slot (IST)</p>
-                  <p className="text-lg font-bold text-slate-900">{booking.scheduledTime}</p>
+                  <p className="text-lg font-bold text-slate-900">{formatTime(booking.scheduledTime)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Session Type</p>
-                  <div className="flex items-center gap-2 text-indigo-600 font-bold">
-                    <FaVideo size={14} /> {booking.sessionType}
-                  </div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Booked Program</p>
+                  <p className="text-lg font-bold text-slate-900">{booking.bookedProgram}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Duration</p>
@@ -106,7 +104,7 @@ const BookingDetails = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 relative overflow-hidden group" onClick={()=>navigate(`/admin/users/${booking.client.clientId}`)}>
+              <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 relative overflow-hidden group" onClick={() => navigate(`/admin/users/${booking.client.clientId}`)}>
                 <div className="flex flex-col items-center text-center">
                   <img
                     src={booking.client.profilePic || DEFAULT_IMAGE}
@@ -129,7 +127,7 @@ const BookingDetails = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 relative overflow-hidden group"  onClick={() => navigate(`/admin/trainers/${booking.trainer.trainerId}`)}>
+              <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 relative overflow-hidden group" onClick={() => navigate(`/admin/trainers/${booking.trainer.trainerId}`)}>
                 <div className="flex flex-col items-center text-center">
                   <img
                     src={booking.trainer.profilePic || DEFAULT_IMAGE}

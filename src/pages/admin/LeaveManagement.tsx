@@ -40,8 +40,9 @@ const LeaveManagement = () => {
       setMetrics(metricsResponse);
       setLeaves(historyResponse.data);
       setTotal(historyResponse.total);
-    } catch (error) {
-      console.error("Failed to fetch leaves:", error);
+    } catch (error: any) {
+      setToastMessage(error.message)
+      setToastType("error")
     } finally {
       setLoading(false);
     }
@@ -61,8 +62,8 @@ const LeaveManagement = () => {
     if (!selectedLeave || !actionType) return;
 
     try {
-      const status = actionType === 'approve' ? 'APPROVED' : 'REJECTED';
-  
+      const status = actionType === 'approve' ? 'approved' : 'rejected';
+
       const result = await LeaveService.updateLeaveStatus(
         selectedLeave,
         status,
@@ -75,40 +76,40 @@ const LeaveManagement = () => {
       setAdminComment("");
       fetchData();
     } catch (error: any) {
-      const errMesg = error.response?.data?.message || "Update failed";
+      const errMesg = error.message || "Update failed";
       setToastType("error");
       setToastMessage(errMesg);
     }
   };
 
-const handleExportLeaveReport = async () => {
-  try {
-    const res = await AdminPlatformService.ExportLeaveReport();
-    
-    const blob = new Blob([res.data], { type: 'application/pdf' });
+  const handleExportLeaveReport = async () => {
+    try {
+      const res = await AdminPlatformService.ExportLeaveReport();
 
-    const url = window.URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    
-    const date = new Date().toISOString().split('T')[0];
-    link.setAttribute('download', `FitTribe-Leave-Report-${date}.pdf`);
-    
-    document.body.appendChild(link);
-    link.click();
-    
-    link.remove();
-    window.URL.revokeObjectURL(url);
-    
-    setToastType("success");
-    setToastMessage("Report downloaded successfully!");
-  } catch (error) {
-    console.error("Export failed:", error);
-    setToastType("error");
-    setToastMessage("Failed to download report.");
-  }
-};
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+
+      const date = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `FitTribe-Leave-Report-${date}.pdf`);
+
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      setToastType("success");
+      setToastMessage("Report downloaded successfully!");
+    } catch (error) {
+      console.error("Export failed:", error);
+      setToastType("error");
+      setToastMessage("Failed to download report.");
+    }
+  };
 
   const handleSearch = (val: string) => {
     setSearchTerm(val);

@@ -3,12 +3,11 @@ import { API_ENDPOINTS } from "../../api/endPoints";
 
 export const PublicTrainersService = {
 
-    exploreTrainers: async (page: number, search: string, filters: any) => {
+    exploreTrainers: async (page: number, filters: any) => {
         const { data } = await axiosInstance.get(API_ENDPOINTS.DISCOVERY.TRAINERS.EXPLORE, {
             params: {
-                pageNO: page,
-                search: search,
-                ...filters,
+                currentPage: page,
+                filter:filters
             },
         });
         return data;
@@ -19,14 +18,14 @@ export const PublicTrainersService = {
         return data;
     },
 
-    getTrainerAvailability: async (date: string,trainerId: string) => {
+    getTrainerAvailability: async (date: string, trainerId: string) => {
         const { data } = await axiosInstance.get(API_ENDPOINTS.DISCOVERY.TRAINERS.AVAILABILITY, {
             params: { trainerId, date }
         });
         return data;
     },
-    getTrainerReviews:async(trainerId:string)=>{
-        const {data}=await axiosInstance.get(API_ENDPOINTS.DISCOVERY.TRAINERS.REVIEW_LIST(trainerId))
+    getTrainerReviews: async (trainerId: string) => {
+        const { data } = await axiosInstance.get(API_ENDPOINTS.DISCOVERY.TRAINERS.REVIEW_LIST(trainerId))
         return data
     }
 };

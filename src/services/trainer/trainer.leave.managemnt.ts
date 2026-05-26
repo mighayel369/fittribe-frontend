@@ -15,7 +15,12 @@ export const TrainerLeaveManagementService = {
 
     getLeaveistory: async (page: number, search: string) => {
         const { data } = await axiosInstance.get(API_ENDPOINTS.TRAINER_LEAVES.HISTORY, {
-            params: { pageNo: page, search }
+            params: {
+                currentPage: page,
+                filter: {
+                    search
+                }
+            }
         });
         return data;
     },
@@ -25,8 +30,8 @@ export const TrainerLeaveManagementService = {
         return data;
     },
 
-    withdrawLeave:async(leaveId:string)=>{
-        const {data}=await axiosInstance.patch(API_ENDPOINTS.TRAINER_LEAVES.WITHDRAW_REQUEST(leaveId))
+    withdrawLeave: async (leaveId: string) => {
+        const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_LEAVES.WITHDRAW_REQUEST(leaveId))
         return data
     }
 };

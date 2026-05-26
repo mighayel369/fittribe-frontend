@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { formatChatTime } from "../../helperFunctions/formatdate";
 import {
   DollarSign, Star, Clock, TrendingUp,
-  AlertCircle, MessageSquare, Calendar, ChevronRight, Check
+  AlertCircle, MessageSquare, Calendar, ChevronRight, Check, Video
 } from "lucide-react";
 import { type PendingActionDTO, type TrainerDashboardMainData } from "../../types/dashboardType";
 import { type ChatList } from "../../types/chatType";
@@ -16,12 +16,15 @@ import { type UpcomingAppointmentDTO } from "../../types/dashboardType";
 import DEFAULT_IMAGE from '../../assets/default image.png'
 import { TrainerBookingService } from "../../services/trainer/trainer.booking";
 import Modal from "../../components/Modal";
+import { MessagePopUp } from "../../components/ChatMessagePopUp";
+import Toast from "../../components/Toast";
 const TrainerHome = () => {
   const [dashData, setDashData] = useState<TrainerDashboardMainData | null>(null);
   const [appointments, setAppointments] = useState<UpcomingAppointmentDTO[]>([]);
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
   const [showModal, setShowModal] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate()
   const weekDays = useMemo(() => {
@@ -58,8 +61,8 @@ const TrainerHome = () => {
       setDashData(mainResponse.dashboardData);
       setAppointments(appointmentResponse.dashboardData.upcomingAppointments);
 
-    } catch (error) {
-      console.error("Dashboard Load Error:", error);
+    } catch (error: any) {
+      setToast({ message: error.message, type: "error" })
     } finally {
       setLoading(false);
     }
@@ -79,22 +82,10 @@ const TrainerHome = () => {
         setShowModal(false);
         setSelectedBookingId(null);
       }
-    } catch (error) {
-      console.error("Failed to complete session:", error);
+    } catch (error: any) {
+      setToast({ message: error.message, type: "error" })
     }
   };
-  const handleStartSession = async (bookingId: string) => {
-    try {
-      const response = await TrainerBookingService.getBookingLink(bookingId);
-
-      if (response.success && response.data) {
-        navigate(`/trainer/session/${bookingId}?link=${encodeURIComponent(response.data)}`);
-      }
-    } catch (error) {
-      console.error("Failed to handle session action:", error);
-    }
-  };
-
 
   const handleChatClick = (chatId: string, receiverId: string, name: string, pic: string) => {
     navigate('/trainer/chats', {
@@ -112,8 +103,8 @@ const TrainerHome = () => {
     try {
       const data = await TrainerDashboardService.getDailyAgenda(fullDate);
       setAppointments(data.dashboardData.upcomingAppointments);
-    } catch (error) {
-      console.error("Failed to fetch appointments:", error);
+    } catch (error: any) {
+      setToast({ message: error.message, type: "error" })
     }
   };
 
@@ -125,7 +116,7 @@ const TrainerHome = () => {
     <div className="min-h-screen bg-[#F8FAFC]">
       <TrainerTopBar />
       <TrainerSideBar />
-
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <main className="ml-72 pt-28 px-10 pb-12">
         <header className="flex justify-between items-end mb-10">
           <div>
@@ -254,11 +245,11 @@ const TrainerHome = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleStartSession(app.bookingId);
+                                navigate(`/session/${app.bookingId}`);
                               }}
-                              className="flex-1 max-w-[80px] py-2 bg-slate-900 text-white rounded-xl text-[9px] font-bold uppercase tracking-tight hover:bg-indigo-600 transition-all shadow-sm"
+                              className="p-2.5 bg-slate-900 text-white rounded-xl hover:bg-indigo-600 transition-all shadow-sm flex items-center justify-center gap-1"
                             >
-                              {app.meetLink ? "Join" : "Start"}
+                              <Video size={16} />
                             </button>
 
                             <button
@@ -266,7 +257,7 @@ const TrainerHome = () => {
                                 e.stopPropagation();
                                 handleOpenCompleteModal(app.bookingId);
                               }}
-                              className="p-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                              className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-sm flex items-center justify-center"
                               title="Mark as Complete"
                             >
                               <Check size={16} />
@@ -332,10 +323,7 @@ const TrainerHome = () => {
                         </div>
 
                         <div className="flex justify-between items-center gap-2">
-                          <p className={`text-[11px] truncate leading-tight ${chat.unReadCount > 0 ? 'text-slate-900 font-semibold' : 'text-slate-500 font-medium'
-                            }`}>
-                            {chat.lastMessage || "No messages yet"}
-                          </p>
+                          <MessagePopUp message={chat.lastMessage} />
 
                           {chat.unReadCount > 0 && (
                             <span className="bg-indigo-600 text-white text-[8px] font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center shadow-sm shadow-indigo-100">

@@ -46,7 +46,7 @@ const TrainerLeaveManagement = () => {
         getMetrics();
       }
     } catch (err: any) {
-      const errMesg = err.response?.data?.message || "Something went wrong";
+      const errMesg = err.message || "Something went wrong";
       setToast({ message: errMesg, type: "error" });
     } finally {
       setLoadingButton(false)
@@ -69,12 +69,12 @@ const TrainerLeaveManagement = () => {
         selectedLeave
       );
 
-      setToast({message:result.message,type:'success'})
+      setToast({ message: result.message, type: 'success' })
       setShowModal(false);
       getHistory()
     } catch (error: any) {
-      const errMesg = error.response?.data?.message || "Update failed";
-      setToast({message:errMesg,type:'error'})
+      const errMesg = error.message || "Update failed";
+      setToast({ message: errMesg, type: 'error' })
     }
   }
 
@@ -87,8 +87,9 @@ const TrainerLeaveManagement = () => {
     try {
       const res = await TrainerLeaveManagementService.getLeaveMtrics();
       if (res.success) setLeaveStats(res.data);
-    } catch (err) {
-      console.error("Metrics fetch failed", err);
+    } catch (error: any) {
+      const errMesg = error.message || "failed get metrics";
+      setToast({ message: errMesg, type: 'error' })
     }
   };
 
@@ -100,8 +101,9 @@ const TrainerLeaveManagement = () => {
         setLeaves(res.data);
         setTotal(res.total);
       }
-    } catch (err) {
-      console.error("History fetch failed", err);
+    } catch (error:any) {
+      const errMesg = error.message || "failed to get history";
+      setToast({ message: errMesg, type: 'error' })
     } finally {
       setLoading(false);
     }

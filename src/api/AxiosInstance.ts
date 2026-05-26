@@ -1,9 +1,7 @@
 import axios from "axios";
 import { store } from "../redux/store";
 import { setAuth, clearAuth } from "../redux/slices/authSlice";
-import { ERROR_MESSAGES } from "../constants/ErrorMessage";
 import { AuthService } from "../services/shared/auth.service";
-
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -51,7 +49,7 @@ axiosInstance.interceptors.response.use(
       currentRole &&
       !originalRequest.url.includes('/refresh-token')
     ) {
-      
+
       if (isRefreshing) {
 
         return new Promise((resolve, reject) => {
@@ -94,14 +92,17 @@ axiosInstance.interceptors.response.use(
 
     if (error.response) {
       const { status, data } = error.response;
-      if (status !== 401 || originalRequest._retry) {
-        console.error(`[API Error ${status}]:`, data?.message || ERROR_MESSAGES.SOMETHING_WENT_WRONG);
+
+      if ([403, 500].includes(status)) {
+        const serverMessage = data?.message || "Internal Server Error";
+        window.location.href = `/error?status=${status}&msg=${encodeURIComponent(serverMessage)}`;
       }
-    } else if (error.request) {
-      console.error(ERROR_MESSAGES.NETWORK_ERROR);
+
+      const customErrorMessage = data?.message || "An unexpected error occurred.";
+      return Promise.reject({ message: customErrorMessage });
     }
 
-    return Promise.reject(error);
+    return Promise.reject({ message: error.message || "Network error. Please check your connection." });
   }
 );
 

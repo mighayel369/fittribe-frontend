@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { AdminPlatformService } from "../../services/admin/admin.platform.service";
-import { FileDownIcon } from "lucide-react";
 import AdminSideBar from "../../layout/AdminSideBar";
 import AdminTopBar from "../../layout/AdminTopBar";
 import StatCard from "../../components/StatCard";
@@ -15,6 +14,7 @@ import { formatTime } from "../../utils/formatTime";
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState<AdminDashbardResponseDTO | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error">("success");
   const [loading, setLoading] = useState(false)
   const fetchDashboardData = async () => {
     try {
@@ -24,8 +24,9 @@ const Dashboard = () => {
       setDashboardData(response.dashboardData);
       setLoading(false)
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || "Failed to load system analytics";
+      const errorMsg = err.message || "Failed to load system analytics";
       setToastMessage(errorMsg);
+      setToastType("error")
       setLoading(false)
     }
   }
@@ -37,33 +38,6 @@ const Dashboard = () => {
     }
     fetchDashboardData();
   }, []);
-  const handleExportReport = async () => {
-    try {
-      const res = await AdminPlatformService.ExportSystemReport();
-
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-
-      const date = new Date().toISOString().split('T')[0];
-      link.setAttribute('download', `FitTribe-Dashboard-Report-${date}.pdf`);
-
-      document.body.appendChild(link);
-      link.click();
-
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      setToastMessage("Report downloaded successfully!");
-    } catch (error) {
-      console.error("Export failed:", error);
-      setToastMessage("Failed to download report.");
-    }
-  };
-
 
   if (!dashboardData) {
     return (
@@ -90,7 +64,7 @@ const Dashboard = () => {
         {toastMessage && (
           <Toast
             message={toastMessage}
-            type="success"
+            type={toastType}
             onClose={() => setToastMessage(null)}
           />
         )}
@@ -100,14 +74,6 @@ const Dashboard = () => {
             <p className="text-slate-500 font-medium">Monitoring platform growth and trainer performance.</p>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={handleExportReport}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all"
-            >
-              <FileDownIcon size={16} />
-              Export CSV
-            </button>
-
             <button
               onClick={fetchDashboardData}
               className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all"

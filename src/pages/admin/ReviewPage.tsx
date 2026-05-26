@@ -24,8 +24,9 @@ const AdminReviewsPage = () => {
             if (response.success) {
                 setData(response.data);
             }
-        } catch (error) {
-            console.error("Failed to fetch reviews:", error);
+        } catch (error: any) {
+            setToastMessage(error.message || "failed to fetch reviews")
+            setToastType("error")
         }
     };
 
@@ -54,7 +55,7 @@ const AdminReviewsPage = () => {
         } catch (err: any) {
             console.error(err);
             setToastType("error");
-            setToastMessage("An unexpected error occurred");
+            setToastMessage(err.message || "An unexpected error occurred");
         }
     };
 
@@ -159,10 +160,10 @@ const AdminReviewsPage = () => {
                                                     title={review.reviewStatus ? "Flag Review" : "Unflag Review"}
                                                 >
                                                     {review.reviewStatus ? (
-                                           
+
                                                         <RotateCcw size={16} />
                                                     ) : (
-                              
+
                                                         <Trash2 size={16} />
                                                     )}
                                                 </button>

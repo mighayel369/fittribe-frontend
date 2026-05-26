@@ -28,14 +28,14 @@ const ProgramList = () => {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<"success" | "error">("success");
-  let location=useLocation()
+  let location = useLocation()
   useEffect(() => {
-      if (location.state?.message) {
-        setToastMessage(location.state.message);
-  
-        window.history.replaceState({}, document.title);
-      }
-    }, [location]);
+    if (location.state?.message) {
+      setToastMessage(location.state.message);
+
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
   useEffect(() => {
     document.title = "FitTribe | Program Management";
   }, []);
@@ -44,10 +44,11 @@ const ProgramList = () => {
     try {
       setLoading(true);
       const response = await AdminProgramService.fetchProgramsInventory(page, search);
-      setPrograms(response.programs.data?? []);
+      setPrograms(response.programs.data ?? []);
       setTotalPages(response.programs.total ?? 1);
-    } catch (error) {
-      console.error("Failed to fetch programs", error);
+    } catch (error: any) {
+      setToastType("error")
+      setToastMessage(error.message || "failed to fetch programs")
     } finally {
       setLoading(false);
     }
@@ -77,20 +78,20 @@ const ProgramList = () => {
       } else if (actionType === "list" || actionType === "unlist") {
         const isVisible = actionType === "list";
         const response = await AdminProgramService.toggleProgramVisibility(targetId, isVisible);
-        
+
         setPrograms((prev) =>
           prev.map((p) =>
             p.programId === targetId ? { ...p, isPublished: isVisible } : p
           )
         );
-        
+
         setToastType("success");
         setToastMessage(response.message || `Program successfully ${actionType}ed`);
       }
     } catch (error: any) {
       console.error(`Error during ${actionType}:`, error);
       setToastType("error");
-      setToastMessage(error.response?.data?.message || "Action failed");
+      setToastMessage(error.message || "Action failed");
     } finally {
       setShowModal(false);
       setSelectedProgram(null);
@@ -117,7 +118,7 @@ const ProgramList = () => {
 
       <main className="ml-64 mt-16 p-6 bg-gray-100 min-h-screen">
         <div className="flex justify-between items-center mb-6">
-                    <div>
+          <div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Programs Inventory</h1>
             <p className="text-slate-500 font-medium">Manage programs and access control.</p>
           </div>
@@ -128,8 +129,8 @@ const ProgramList = () => {
               placeholder="Search programs..."
               fullWidth={false}
             />
-            <button 
-              className="flex items-center gap-2 px-5 py-2 bg-yellow-400 text-black font-semibold rounded-lg shadow hover:bg-yellow-500 transition" 
+            <button
+              className="flex items-center gap-2 px-5 py-2 bg-yellow-400 text-black font-semibold rounded-lg shadow hover:bg-yellow-500 transition"
               onClick={handleAdd}
             >
               <FaPlus size={14} /> Onboard New
@@ -161,11 +162,10 @@ const ProgramList = () => {
                 accessor: "status",
                 render: (program) => (
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                      program.isPublished
+                    className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${program.isPublished
                         ? "bg-green-100 text-green-700 border border-green-200"
                         : "bg-orange-100 text-orange-700 border border-orange-200"
-                    }`}
+                      }`}
                   >
                     {program.isPublished ? "Public" : "Hidden"}
                   </span>
@@ -177,11 +177,10 @@ const ProgramList = () => {
                 accessor: "action",
                 render: (program) => (
                   <button
-                    className={`px-4 py-1 text-white rounded-md text-xs font-bold transition-colors ${
-                      program.isPublished
+                    className={`px-4 py-1 text-white rounded-md text-xs font-bold transition-colors ${program.isPublished
                         ? "bg-orange-500 hover:bg-orange-600"
                         : "bg-green-600 hover:bg-green-700"
-                    }`}
+                      }`}
                     onClick={() =>
                       openModal(program, program.isPublished ? "unlist" : "list")
                     }
@@ -230,9 +229,8 @@ const ProgramList = () => {
           <Modal
             isVisible={showModal}
             title={`${actionType === 'delete' ? 'Archive' : 'Toggle'} Program: ${selectedProgram.name}`}
-            message={`Are you sure you want to ${
-              actionType === "delete" ? "archive" : actionType
-            } this program? This affects how users see it on the platform.`}
+            message={`Are you sure you want to ${actionType === "delete" ? "archive" : actionType
+              } this program? This affects how users see it on the platform.`}
             onCancel={() => setShowModal(false)}
             onConfirm={handleConfirmAction}
           />

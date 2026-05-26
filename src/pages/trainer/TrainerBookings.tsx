@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {  Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import TrainerTopBar from "../../layout/TrainerTopBar";
 import TrainerSideBar from "../../layout/TrainerSideBar";
 import Toast from "../../components/Toast";
@@ -8,18 +8,19 @@ import Loading from "../../components/Loading";
 import { TrainerBookingService } from "../../services/trainer/trainer.booking";
 import GenericTable from "../../components/GenericTable";
 import Modal from "../../components/Modal";
-import {type TrainerBookingColumnActions } from "../../types/table-types";
-import { allBookingsColumns,pendingBookingsColumns,rescheduleColumns } from "../../constants/TableColumns/TrainerBookingColumns";
+import { type TrainerBookingColumnActions } from "../../types/table-types";
+import { allBookingsColumns, pendingBookingsColumns, rescheduleColumns } from "../../constants/TableColumns/TrainerBookingColumns";
 type TabType = "all" | "pending" | "reschedule";
 
 const TRAINER_BOOKING_ACTIONS = {
-    booking: {
-        accept: (id: string) => TrainerBookingService.acceptBooking(id),
-       reject: (id: string, reason: string) => TrainerBookingService.rejectBooking(id, reason),    },
-    reschedule: {
-        accept: (id: string) => TrainerBookingService.approveReschedule(id),
-        reject: (id: string,reason:string) => TrainerBookingService.rejectReschedule(id,reason),
-    },
+  booking: {
+    accept: (id: string) => TrainerBookingService.acceptBooking(id),
+    reject: (id: string, reason: string) => TrainerBookingService.rejectBooking(id, reason),
+  },
+  reschedule: {
+    accept: (id: string) => TrainerBookingService.approveReschedule(id),
+    reject: (id: string, reason: string) => TrainerBookingService.rejectReschedule(id, reason),
+  },
 };
 const TrainerBookings = () => {
   const [activeTab, setActiveTab] = useState<TabType>("all");
@@ -29,25 +30,25 @@ const TrainerBookings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-const [showModal, setShowModal] = useState(false);
-const navigate = useNavigate();
-const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [action, setAction] = useState<{
     type: 'accept' | 'reject';
     context: 'booking' | 'reschedule';
   } | null>(null);
 
-const triggerAction = (id: string, type: 'accept' | 'reject', context: 'booking' | 'reschedule') => {
+  const triggerAction = (id: string, type: 'accept' | 'reject', context: 'booking' | 'reschedule') => {
     setSelectedId(id);
     setAction({ type, context });
     setShowModal(true);
   };
 
-const getActiveColumns = () => {
-const actions: TrainerBookingColumnActions = {
-    onView: (id) => navigate(`/trainer/bookings/${id}`),
-    onAction: triggerAction 
-  };    
+  const getActiveColumns = () => {
+    const actions: TrainerBookingColumnActions = {
+      onView: (id) => navigate(`/trainer/bookings/${id}`),
+      onAction: triggerAction
+    };
     switch (activeTab) {
       case "pending":
         return pendingBookingsColumns(actions);
@@ -65,7 +66,7 @@ const actions: TrainerBookingColumnActions = {
 
 
 
-const fetchData = async () => {
+  const fetchData = async () => {
     try {
       setIsLoading(true);
       const serviceMap = {
@@ -80,23 +81,23 @@ const fetchData = async () => {
         setBookings(res.data);
         setTotal(res.total);
       }
-    } catch (err) {
-      setToast({ message: "Failed to load bookings", type: "error" });
+    } catch (err: any) {
+      setToast({ message: err.message || "Failed to load bookings", type: "error" });
     } finally {
       setIsLoading(false);
     }
   };
 
-const handleConfirmAction = async (reason?: string) => {
+  const handleConfirmAction = async (reason?: string) => {
     if (!action || !selectedId) return;
 
     if (action.type === 'reject' && (!reason || reason.trim().length < 5)) {
       setShowModal(false)
-      setToast({ 
-        message: "Please provide a valid reason (at least 5 characters).", 
-        type: "error" 
+      setToast({
+        message: "Please provide a valid reason (at least 5 characters).",
+        type: "error"
       });
-      return; 
+      return;
     }
 
     try {
@@ -113,9 +114,9 @@ const handleConfirmAction = async (reason?: string) => {
       }
     } catch (err: any) {
 
-      setToast({ 
-        message: err.response?.data?.message || "Action failed.", 
-        type: "error" 
+      setToast({
+        message: err.message || "Action failed.",
+        type: "error"
       });
     } finally {
       setIsLoading(false);
@@ -159,8 +160,8 @@ const handleConfirmAction = async (reason?: string) => {
               key={tab.id}
               onClick={() => { setActiveTab(tab.id as TabType); setCurrentPage(1); }}
               className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
-                  ? `bg-${tab.color}-600 text-white shadow-md shadow-${tab.color}-200`
-                  : "text-gray-500 hover:bg-gray-50"
+                ? `bg-${tab.color}-600 text-white shadow-md shadow-${tab.color}-200`
+                : "text-gray-500 hover:bg-gray-50"
                 }`}
             >
               {tab.label}
@@ -172,13 +173,13 @@ const handleConfirmAction = async (reason?: string) => {
           <Loading message="Fetching your data..." />
         ) : (
           <>
-          <GenericTable
-            data={bookings}
-            columns={getActiveColumns()} 
-            page={currentPage}
-            loading={isLoading}
-            emptyMessage={`No ${activeTab} records found.`}
-          />
+            <GenericTable
+              data={bookings}
+              columns={getActiveColumns()}
+              page={currentPage}
+              loading={isLoading}
+              emptyMessage={`No ${activeTab} records found.`}
+            />
 
 
             <div className="flex justify-between items-center mt-6">
@@ -202,17 +203,17 @@ const handleConfirmAction = async (reason?: string) => {
             </div>
           </>
         )}
-                <Modal
-                    isVisible={showModal}
-                    onCancel={() => setShowModal(false)}
-                    onConfirm={handleConfirmAction}
-                    title="Confirm Action"
-                    message={`Confirming will ${action?.type} this ${action?.context} request.`}
-                    showReasonInput={action?.type === "reject"}
-                />
+        <Modal
+          isVisible={showModal}
+          onCancel={() => setShowModal(false)}
+          onConfirm={handleConfirmAction}
+          title="Confirm Action"
+          message={`Confirming will ${action?.type} this ${action?.context} request.`}
+          showReasonInput={action?.type === "reject"}
+        />
       </main>
     </div>
-     );
+  );
 };
 
 export default TrainerBookings;

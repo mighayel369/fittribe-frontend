@@ -30,7 +30,7 @@ const EditProfile: React.FC = () => {
     const fetchUserProfile = async () => {
       try {
         const res = await UserProfileService.getProfile();
-        setFormData(res.userData);
+        setFormData(res.data);
       } catch (err) {
         console.error("Error fetching profile:", err);
       } finally {
@@ -67,8 +67,7 @@ const EditProfile: React.FC = () => {
         });
       }
     } catch (err:any) {
-      let errMesg=err.response?.data?.message
-      setToast({message:errMesg,type:'error'})
+      setToast({message:err.message,type:'error'})
     }
   };
 

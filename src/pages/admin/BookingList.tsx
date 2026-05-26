@@ -24,7 +24,7 @@ const BookingList = () => {
 
   const totalPages = Math.ceil(totalCount / limit);
 
-  const navigate=useNavigate()
+  const navigate = useNavigate()
 
   const fetchMetrics = useCallback(async () => {
     try {
@@ -40,7 +40,7 @@ const BookingList = () => {
       setLoading(true);
       const res = await AdminBookingService.getAllBookings(page, searchTerm, limit);
       setBookings(res.data || []);
-      setTotalCount(res.total || 0);
+      setTotalCount(res.totalPages || 0);
     } catch (error) {
       console.error("Pagination Error:", error);
     } finally {
@@ -211,16 +211,16 @@ const BookingList = () => {
             columns={[
               {
                 header: "BId",
-                accessor: "id",
-                render: (row: any) => <span className="font-mono font-black text-slate-400 text-sm">#{row.id.toString().slice(-5)}</span>
+                accessor: "bookingId",
+                render: (row: any) => <span className="font-mono font-black text-slate-400 text-sm">#{row.bookingId.toString().slice(-5)}</span>
               },
               {
                 header: "Appointment",
                 accessor: "client",
                 render: (row: any) => (
                   <div className="py-1">
-                    <p className="text-sm font-black text-slate-900">{row.client}</p>
-                    <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-tight">With {row.trainer}</p>
+                    <p className="text-sm font-black text-slate-900">{row.clientName}</p>
+                    <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-tight">With {row.trainerName}</p>
                   </div>
                 )
               },
@@ -234,8 +234,8 @@ const BookingList = () => {
                 accessor: "status",
                 render: (row: any) => (
                   <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${row.status.toLowerCase() === 'completed' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
-                      row.status.toLowerCase() === 'confirmed' ? 'bg-blue-50 border-blue-100 text-blue-600' :
-                        row.status.toLowerCase() === 'cancelled' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-slate-50 text-slate-400'
+                    row.status.toLowerCase() === 'confirmed' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                      row.status.toLowerCase() === 'cancelled' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-slate-50 text-slate-400'
                     }`}>
                     {row.status}
                   </span>
@@ -243,9 +243,9 @@ const BookingList = () => {
               },
               {
                 header: "Action",
-                accessor: "id",
-                render: (row:any) => (
-                  <button className="bg-slate-50 p-3 rounded-2xl hover:bg-slate-900 hover:text-white transition-all group" onClick={()=>navigate(`/admin/bookings/${row.id}`)}>
+                accessor: "bookingId",
+                render: (row: any) => (
+                  <button className="bg-slate-50 p-3 rounded-2xl hover:bg-slate-900 hover:text-white transition-all group" onClick={() => navigate(`/admin/bookings/${row.bookingId}`)}>
                     <Eye size={18} className="group-hover:scale-110 transition-transform" />
                   </button>
                 )

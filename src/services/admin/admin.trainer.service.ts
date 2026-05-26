@@ -4,7 +4,13 @@ import { API_ENDPOINTS } from "../../api/endPoints";
 export const AdminTrainerService = {
   getVerifiedTrainers: async (page: number, search: string, filters?: any) => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.ADMIN_MGMT.TRAINERS.LIST_VERIFIED, {
-      params: { pageNO: page, search, ...filters },
+      params: {
+        currentPage: page,
+        filter: {
+          ...filters,
+          search
+        }
+      },
     });
     return data;
   },
@@ -12,7 +18,7 @@ export const AdminTrainerService = {
   updateTrainerStatus: async (trainerId: string, newStatus: boolean) => {
     const { data } = await axiosInstance.patch(
       API_ENDPOINTS.ADMIN_MGMT.TRAINERS.UPDATE_STATUS,
-      { status: newStatus, trainerId }
+      { isActive: newStatus, trainerId }
     );
     return data;
   },
@@ -34,7 +40,13 @@ export const AdminTrainerService = {
   },
   getPendingTrainers: async (page: number, search: string, filters?: any) => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.ADMIN_MGMT.TRAINERS.LIST_PENDING, {
-      params: { pageNO: page, search, ...filters },
+      params: {
+        currentPage: page,
+        filter: {
+          ...filters,
+          search
+        }
+      },
     });
     return data;
   },

@@ -9,11 +9,13 @@ import { validateImageFile } from '../../validations/validateImageFile';
 import { type ValidationErrors } from "../../validations/ValidationErrors";
 import { type OnboardNewProgramDTO } from "../../types/programType";
 import { PROGRAM_FIELDS } from "../../constants/FormFields/program-fields";
-
+import Toast from "../../components/Toast";
 const OnboardNewProgram = () => {
   const navigate = useNavigate();
   const [formErrors, setFormErrors] = useState<ValidationErrors<OnboardNewProgramDTO>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error">("success");
   useEffect(() => {
     document.title = "FitTribe | Onboard New Program";
   }, []);
@@ -48,7 +50,8 @@ const OnboardNewProgram = () => {
         navigate("/admin/programs", { state: { message: response.message } });
       }
     } catch (err: any) {
-
+      setToastType("error");
+      setToastMessage(err.message || "Action failed");
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +62,13 @@ const OnboardNewProgram = () => {
       <AdminTopBar />
       <AdminSideBar />
 
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       <main className="ml-64 mt-16 p-8 transition-all duration-300">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">

@@ -44,7 +44,7 @@ const ModifyProgram = () => {
         setExistingImage(programData.programPic);
       } catch (error: any) {
         setToast({ 
-            message: error.response?.data?.message || "Failed to load program", 
+            message: error.message || "Failed to load program", 
             type: "error" 
         });
       } finally {
@@ -97,7 +97,7 @@ const ModifyProgram = () => {
       }
     } catch (error: any) {
       console.log(error)
-      setToast({ message: error.response?.data?.message || "Update failed", type: "error" });
+      setToast({ message: error.message || "Update failed", type: "error" });
     } finally {
       setIsUpdating(false);
     }

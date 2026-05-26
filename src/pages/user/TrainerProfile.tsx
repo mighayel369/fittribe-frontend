@@ -10,11 +10,11 @@ import { useLocation } from 'react-router-dom';
 import Toast from "../../components/Toast";
 import { ChatService } from "../../services/shared/chat.service";
 import { FaStar, FaClock } from "react-icons/fa";
-import {type TrainerProfileType } from "../../types/trainerType";
+import { type TrainerProfileType } from "../../types/trainerType";
 const TrainerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [trainer, setTrainer] = useState<TrainerProfileType|null>(null);
+  const [trainer, setTrainer] = useState<TrainerProfileType | null>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   let location = useLocation()
@@ -37,8 +37,7 @@ const TrainerProfile = () => {
         console.log(response)
         setTrainer(response.trainer);
       } catch (err: any) {
-        let errMesg = err.response?.data?.message
-        setToast({ message: errMesg, type: 'error' });
+        setToast({ message: err.message, type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -53,9 +52,9 @@ const TrainerProfile = () => {
         const response = await PublicTrainersService.getTrainerReviews(id);
         console.log(response)
         setReviewsData(response.data);
-  
-      } catch (err) {
-        console.error("Failed to fetch reviews");
+
+      } catch (err: any) {
+        setToast({ message: err.message || "failed to fetch reviews", type: 'error' });
       }
     };
     fetchReviews();
@@ -221,58 +220,58 @@ const TrainerProfile = () => {
             </div>
           </div>
 
-    <div className="relative">
-  <div className="grid md:grid-cols-2 gap-6 overflow-y-auto max-h-[400px] pb-24 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-    {reviewsData?.reviews && reviewsData.reviews.length > 0 ? (
-      reviewsData.reviews.map((review: any, index: number) => (
-        <div 
-          key={index} 
-          className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"
-        >
-          <div className="absolute top-0 right-0 bg-indigo-50 text-indigo-600 px-4 py-1 text-[9px] font-black uppercase rounded-bl-2xl border-l border-b border-indigo-100">
-            {review.program}
-          </div>
+          <div className="relative">
+            <div className="grid md:grid-cols-2 gap-6 overflow-y-auto max-h-[400px] pb-24 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {reviewsData?.reviews && reviewsData.reviews.length > 0 ? (
+                reviewsData.reviews.map((review: any, index: number) => (
+                  <div
+                    key={index}
+                    className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"
+                  >
+                    <div className="absolute top-0 right-0 bg-indigo-50 text-indigo-600 px-4 py-1 text-[9px] font-black uppercase rounded-bl-2xl border-l border-b border-indigo-100">
+                      {review.program}
+                    </div>
 
-          <div className="flex items-center gap-4 mb-5">
-            <img
-              src={review.profilePic || DEFAULT_IMAGE}
-              alt={review.name}
-              className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm"
-            />
-            <div>
-              <h4 className="font-black text-slate-900 uppercase text-xs leading-tight">
-                {review.name}
-              </h4>
-              <div className="flex text-amber-400 text-[10px] mt-1">
-                {[...Array(5)].map((_, i) => (
-                  <FaStar key={i} className={i < review.rating ? "fill-current" : "text-slate-200"} />
-                ))}
-              </div>
+                    <div className="flex items-center gap-4 mb-5">
+                      <img
+                        src={review.profilePic || DEFAULT_IMAGE}
+                        alt={review.name}
+                        className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm"
+                      />
+                      <div>
+                        <h4 className="font-black text-slate-900 uppercase text-xs leading-tight">
+                          {review.name}
+                        </h4>
+                        <div className="flex text-amber-400 text-[10px] mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <FaStar key={i} className={i < review.rating ? "fill-current" : "text-slate-200"} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-slate-600 font-medium text-sm leading-relaxed mb-4 line-clamp-3 italic">
+                      "{review.comment}"
+                    </p>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                      <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-1">
+                        <FaClock size={10} /> {review.time}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-16 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No coach feedback found</p>
+                </div>
+              )}
             </div>
+
+            {reviewsData?.reviews && reviewsData.reviews.length > 0 && (
+              <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/80 to-transparent pointer-events-none rounded-b-[3rem]"></div>
+            )}
           </div>
-
-          <p className="text-slate-600 font-medium text-sm leading-relaxed mb-4 line-clamp-3 italic">
-            "{review.comment}"
-          </p>
-
-          <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-            <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-1">
-              <FaClock size={10} /> {review.time}
-            </span>
-          </div>
-        </div>
-      ))
-    ) : (
-      <div className="col-span-2 text-center py-16 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No coach feedback found</p>
-      </div>
-    )}
-  </div>
-
-  {reviewsData?.reviews && reviewsData.reviews.length > 0 && (
-    <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/80 to-transparent pointer-events-none rounded-b-[3rem]"></div>
-  )}
-</div>
         </div>
       </main>
     </div>

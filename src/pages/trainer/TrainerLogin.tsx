@@ -11,7 +11,7 @@ import TextInput from '../../components/TextInput';
 import PasswordInput from '../../components/PasswordInput';
 import SubmitButton from '../../components/SubmitButton';
 import BackgroundImageWrapper from '../../components/BackgroundImage';
-import {type TrainerLoginDTO } from '../../types/trainerType';
+import { type TrainerLoginDTO } from '../../types/trainerType';
 import type { ValidationErrors } from '../../validations/ValidationErrors';
 import { trainerLoginValidate } from '../../validations/trainerLoginValidate';
 
@@ -34,64 +34,64 @@ const TrainerLogin: React.FC = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location]);
-const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setErrors({});
-  setGeneralError('');
-  
-  const newErrors = trainerLoginValidate({ email, password });
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrors({});
+    setGeneralError('');
 
-  setLoading(true);
-  try {
-    const result = await TrainerAuthService.login({ email, password });
-
-    if (result.success) {
-
-     dispatch(setAuth({ 
-      accessToken: result.accessToken, 
-      role: result.role ,
-      user:result.trainer
-    }));
-      navigate('/trainer',{
-        state:{
-          message:result.message
-        }
-      }); 
+    const newErrors = trainerLoginValidate({ email, password });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
     }
-  } catch (err: any) {
-    const errorMsg = err.response?.data?.message || "Invalid trainer credentials.";
-    setGeneralError(errorMsg);
-  } finally {
-    setLoading(false);
-  }
-};
+
+    setLoading(true);
+    try {
+      const result = await TrainerAuthService.login({ email, password });
+
+      if (result.success) {
+
+        dispatch(setAuth({
+          accessToken: result.accessToken,
+          role: result.role,
+          user: result.trainer
+        }));
+        navigate('/trainer', {
+          state: {
+            message: result.message
+          }
+        });
+      }
+    } catch (err: any) {
+      const errorMsg = err.message || "Invalid trainer credentials.";
+      setGeneralError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <BackgroundImageWrapper image={loginpic}>
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50">
-          <Toast 
-            message={toastMessage} 
-            type="success" 
-            onClose={() => setToastMessage(null)} 
+          <Toast
+            message={toastMessage}
+            type="success"
+            onClose={() => setToastMessage(null)}
           />
         </div>
       )}
 
       <div className="flex justify-center md:justify-start w-full h-screen items-center p-4 md:pl-24">
         <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-[440px] border border-white/40">
-          
+
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-red-600 rounded-b-full opacity-20"></div>
 
           <header className="mb-10 text-center flex flex-col items-center">
             <div className="mb-4 w-16 h-16 rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-white">
-              <img 
-                src={LogoHeader} 
-                alt="FitTribe Logo" 
-                className="w-full h-full object-cover" 
+              <img
+                src={LogoHeader}
+                alt="FitTribe Logo"
+                className="w-full h-full object-cover"
               />
             </div>
             <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase">
@@ -126,7 +126,7 @@ const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
                 onChange={(e) => setPassword(e.target.value)}
                 showButton={true}
                 error={errors.password}
-            
+
               />
             </div>
 

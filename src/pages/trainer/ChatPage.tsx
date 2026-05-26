@@ -9,6 +9,8 @@ import { type NonChatList } from '../../types/chatType';
 import { FormatDate, formatChatTime } from '../../helperFunctions/formatdate';
 import { useLocation } from 'react-router-dom';
 import { SizeConvert } from '../../helperFunctions/sizeConversion';
+import { MessagePopUp } from '../../components/ChatMessagePopUp';
+import Toast from "../../components/Toast";
 interface SelectedReceiver {
   id: string;
   name: string;
@@ -32,7 +34,8 @@ const ChatPage = () => {
     selectedReceiver?.id,
     searchQuery
   );
-
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error">("success");
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
@@ -96,8 +99,10 @@ const ChatPage = () => {
       if (selectedReceiver?.chatId && (selectedReceiver.unReadCount ?? 0) > 0) {
         try {
           await ChatService.markAsRead('trainer', selectedReceiver.chatId);
-        } catch (error) {
-          console.error("Failed to mark messages as read:", error);
+        } catch (err:any) {
+          const errMesg = err.message || "failed to mark notification as read";
+          setToastType("error");
+          setToastMessage(errMesg);
         }
       }
     };
@@ -110,8 +115,10 @@ const ChatPage = () => {
       try {
         const response = await ChatService.getNonChatLists('trainer');
         setDiscoveryClients(response.data);
-      } catch (error) {
-        console.error("Failed to fetch discovery clients:", error);
+      } catch (err: any) {
+        const errMesg = err.message || "failed to fetch data";
+        setToastType("error");
+        setToastMessage(errMesg);
       }
     };
     fetchSidebarData();
@@ -130,8 +137,8 @@ const ChatPage = () => {
       const response = await ChatService.uploadFiles('trainer', formData)
       console.log(response)
       attachment = {
-        url: response.fileUrl,
-        type: response.resource_type,
+        url: response.data.url,
+        type: response.data.resource_type,
         name: selectedFile.name,
         size: selectedFile.size
       };
@@ -149,6 +156,9 @@ const ChatPage = () => {
       <TrainerTopBar />
       <TrainerSideBar />
 
+      {toastMessage && (
+        <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
+      )}
       <main className="ml-72 pt-28 px-10 pb-12">
         <header className="flex justify-between items-end mb-8">
           <div>
@@ -230,9 +240,7 @@ const ChatPage = () => {
                         </div>
 
                         <div className="flex justify-between items-center gap-2">
-                          <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-slate-900 font-semibold' : 'text-slate-500'}`}>
-                            {chat.lastMessage || "No messages yet"}
-                          </p>
+                          <MessagePopUp message={chat.lastMessage} />
 
                           {chat.unReadCount > 0 && (
                             <span className="bg-green-500 text-white text-[8px] font-bold  rounded-full min-w-[14px] h-[14px] flex items-center justify-center">

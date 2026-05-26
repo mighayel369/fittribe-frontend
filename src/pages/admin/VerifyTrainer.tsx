@@ -7,13 +7,14 @@ import GenericTable from "../../components/GenericTable";
 import Pagination from "../../components/Pagination";
 import SearchInput from "../../components/SearchInput";
 import { type PendingTrainer } from "../../types/trainerType";
-
+import Toast from "../../components/Toast";
 const VerifyTrainer = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [trainers, setTrainers] = useState<PendingTrainer[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [search, setSearch] = useState<string>("");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -28,8 +29,8 @@ const VerifyTrainer = () => {
         setTrainers(response.data);
         setTotalPages(response.total);
       }
-    } catch (err) {
-      console.error("Failed to fetch trainers", err);
+    } catch (err:any) {
+      setToast({message:err.message,type:'error'})
     } finally {
       setLoading(false);
     }
@@ -48,6 +49,7 @@ const VerifyTrainer = () => {
       <AdminTopBar />
       <AdminSideBar />
       <main className="ml-64 mt-16 p-6 bg-gray-100 min-h-screen relative">
+        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         <div className="flex justify-between mb-6">
           <h2 className="text-3xl font-bold text-gray-800">Trainer Verification</h2>
           <SearchInput

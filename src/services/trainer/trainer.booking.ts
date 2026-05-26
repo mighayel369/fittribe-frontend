@@ -5,50 +5,68 @@ export const TrainerBookingService = {
 
   getSessionHistory: async (page: number, search: string) => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.TRAINER_BOOKINGS.HISTORY, {
-      params: { pageNo: page, search }
+      params: {
+        currentPage: page,
+        filter: {
+          search
+        }
+      }
     });
     return data;
   },
 
   getPendingSessions: async (pageNo: number, search: string) => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.TRAINER_BOOKINGS.PENDING, {
-      params: { pageNo, search }
+      params: {
+        currentPage: pageNo,
+        filter: {
+          search
+        }
+      }
     });
     return data;
   },
 
   getRescheduleRequests: async (pageNo: number, search: string) => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.TRAINER_BOOKINGS.RESCHEDULE_REQUESTS, {
-      params: { pageNo, search }
+      params: {
+        currentPage: pageNo,
+        filter: {
+          search
+        }
+      }
     });
     return data;
   },
 
   acceptBooking: async (bookingId: string) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.ACCEPT, {
-      bookingId
-    });
+    const { data } = await axiosInstance.patch(
+      API_ENDPOINTS.TRAINER_BOOKINGS.ACCEPT(bookingId),
+      {},
+    );
+
     return data;
   },
 
   rejectBooking: async (bookingId: string, reason: string) => {
     const { data } = await axiosInstance.patch(
-      API_ENDPOINTS.TRAINER_BOOKINGS.REJECT,
-      { reason, bookingId }
+      API_ENDPOINTS.TRAINER_BOOKINGS.REJECT(bookingId),
+      {
+        reason
+      },
     );
+
     return data;
   },
 
   approveReschedule: async (bookingId: string) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.APPROVE_RESCHEDULE, {
-      bookingId
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.APPROVE_RESCHEDULE(bookingId), {}, {
     });
     return data;
   },
 
   rejectReschedule: async (bookingId: string, reason: string) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.REJECT_RESCHEDULE, {
-      bookingId,
+    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.REJECT_RESCHEDULE(bookingId), {
       reason
     });
     return data;
@@ -59,7 +77,7 @@ export const TrainerBookingService = {
     return data;
   },
 
-  rescheduleByTrainer: async (bookingId: string, newDate: string, newTimeSlot: string,reason:string) => {
+  rescheduleByTrainer: async (bookingId: string, newDate: string, newTimeSlot: number, reason: string) => {
     const { data } = await axiosInstance.put(API_ENDPOINTS.TRAINER_BOOKINGS.RESCHEDULE_BY_TRAINER,
       {
         bookingId,
@@ -70,12 +88,6 @@ export const TrainerBookingService = {
     );
     return data;
   },
-
-  getBookingLink: async (bookingId: string) => {
-    const { data } = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.GET_MEET_LINK(bookingId))
-    return data
-  },
-
   completeSession: async (bookingId: string) => {
     const response = await axiosInstance.patch(API_ENDPOINTS.TRAINER_BOOKINGS.MARK_AS_COMPLETE(bookingId));
     return response.data;

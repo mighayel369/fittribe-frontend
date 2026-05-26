@@ -1,36 +1,37 @@
-import { type UpdateWeeklySlotDTO,type SlotValidationResult } from "../types/slotType";
 
-export const updateSlotValidate=(data:UpdateWeeklySlotDTO):SlotValidationResult=>{
- 
-      if (!data.startTime) {
-    return {
-      isValid: false,
-      error: "Please select a start time"
-    };
+import { type TimeRange } from "../types/slotType";
+
+type WeeklyAvailability = Record<string, TimeRange[]>;
+
+export const validateUpdateAvailability = (
+  data: WeeklyAvailability,
+  dayName: string,
+  index: number,
+  type: "start" | "end",
+  newValue: number
+): string | null => {
+  const slots = data[dayName].map((slot, i) => {
+    if (i === index) {
+      return { ...slot, [type]: newValue };
+    }
+    return slot;
+  });
+
+  const targetSlot = slots[index];
+  if (targetSlot.start >= targetSlot.end) {
+    return "End time must be after start time.";
   }
 
-  if (!data.endTime) {
-    return {
-      isValid: false,
-      error: "Please select an end time"
-    };
-  }
-  const startTime = new Date(`1970-01-01 ${data.startTime}`);
-  const endTime = new Date(`1970-01-01 ${data.endTime}`);
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      const slotA = slots[i];
+      const slotB = slots[j];
 
-  if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
-    return {
-      isValid: false,
-      error: "Invalid time format"
-    };
+      if (slotA.start < slotB.end && slotB.start < slotA.end) {
+        return "This time range overlaps with an existing slot.";
+      }
+    }
   }
 
-  if (endTime <= startTime) {
-    return {
-      isValid: false,
-      error: "End time must be later than start time"
-    };
-  }
-
-  return { isValid: true };
-}
+  return null; 
+};

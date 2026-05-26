@@ -48,7 +48,7 @@ const UserSignup: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await UserAuthService.register({name, email, password});
+      const response = await UserAuthService.register({ name, email, password });
 
       if (response.success) {
         dispatch(setEmail(email));
@@ -58,8 +58,7 @@ const UserSignup: React.FC = () => {
         navigate('/otp');
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed. Please try again.';
-      setGenericErrors(message);
+      setGenericErrors(error.message)
     } finally {
       setLoading(false);
     }
@@ -69,14 +68,14 @@ const UserSignup: React.FC = () => {
     <BackgroundImageWrapper image={signuppic}>
       <div className="flex justify-center md:justify-end w-full h-screen items-center p-4 md:pr-24">
         <div className="relative bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl p-8 md:p-10 w-full max-w-[450px] border border-white/40 overflow-hidden">
-          
+
 
           <header className="mb-8 text-center flex flex-col items-center">
             <div className="mb-4 w-16 h-16 rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-white">
-              <img 
-                src={LogoHeader} 
-                alt="FitTribe Logo" 
-                className="w-full h-full object-cover" 
+              <img
+                src={LogoHeader}
+                alt="FitTribe Logo"
+                className="w-full h-full object-cover"
               />
             </div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tighter">
@@ -98,24 +97,24 @@ const UserSignup: React.FC = () => {
 
           <form className="space-y-4" onSubmit={handleSubmit} noValidate>
             <TextInput
-            name='name'
-             label='Full Name'
+              name='name'
+              label='Full Name'
               placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               error={errors.name}
-           
+
             />
-            
+
             <TextInput
-            name='email'
-            label='Email'
+              name='email'
+              label='Email'
               type="email"
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmailVal(e.target.value)}
               error={errors.email}
-              
+
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,7 +124,7 @@ const UserSignup: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 error={errors.password}
-                showButton={true} 
+                showButton={true}
               />
               <PasswordInput
                 label="Confirm"
@@ -133,7 +132,7 @@ const UserSignup: React.FC = () => {
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="••••••••"
                 error={errors.confirm}
-                showButton={true} 
+                showButton={true}
               />
             </div>
 

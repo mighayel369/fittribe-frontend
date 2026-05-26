@@ -7,7 +7,13 @@ export const LeaveService = {
     },
     getLeaveistory: async (page: number, search: string, limit: number) => {
         const { data } = await axiosInstance.get(API_ENDPOINTS.ADMIN_MGMT.PLATFORM.LEAVE_REQUEST_HISTORY, {
-            params: { pageNo: page, search, limit }
+            params: {
+                 currentPage: page,
+                 limit,
+                filter:{
+                    search
+                }
+                }
         });
         return data;
     },

@@ -16,7 +16,7 @@ import {
   FaArrowRight,
   FaLock,
 } from "react-icons/fa";
-import { Check } from "lucide-react";
+import { Check, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserBookingService } from "../../services/user/user.booking";
 import Toast from "../../components/Toast";
@@ -34,6 +34,7 @@ import { userBookingHistoryColumns } from "../../constants/TableColumns/UserBook
 import ReviewModal from "../../components/Reviewmodal";
 import { userReviewService } from "../../services/user/user.review";
 import { formatTime } from "../../utils/formatTime";
+import { MessagePopUp } from "../../components/ChatMessagePopUp";
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const UserProfile: React.FC = () => {
   const getUserData = async () => {
     try {
       const res = await UserProfileService.getProfile();
-      if (res.success) setUser(res.userData);
+      if (res.success) setUser(res.data);
     } catch (error) {
       console.error("Error fetching user data", error);
     }
@@ -85,8 +86,9 @@ const UserProfile: React.FC = () => {
         setWalletBalance(balance);
         setActiveHoldCount(activeHoldCount);
       }
-    } catch (error) {
-      console.error("Error fetching wallet data", error);
+    } catch (error: any) {
+      setToastType("error");
+      setToastMessage(error.message || "Failed to fetch wallet");
     } finally {
       setWalletLoading(false);
     }
@@ -96,12 +98,14 @@ const UserProfile: React.FC = () => {
     try {
       setBookingLoading(true);
       const res = await UserBookingService.getBookingHistory(page, "", filterType);
+      console.log(res)
       if (res) {
-        setBookings(res.bookingData);
+        setBookings(res.data);
         setTotalPages(res.totalPages);
       }
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
+    } catch (error: any) {
+      setToastType("error");
+      setToastMessage(error.message || "Failed to fetch bookings");
     } finally {
       setBookingLoading(false);
     }
@@ -153,7 +157,7 @@ const UserProfile: React.FC = () => {
       }
     } catch (error: any) {
       setToastType("error");
-      setToastMessage(error.response?.data?.message || "Failed to submit review");
+      setToastMessage(error.message || "Failed to submit review");
     } finally {
       setReviewLoading(false);
     }
@@ -183,7 +187,7 @@ const UserProfile: React.FC = () => {
         setToastMessage(res.message);
       }
     } catch (err: any) {
-      setToastMessage(err.response?.data?.message || "Failed to update profile picture");
+      setToastMessage(err.message || "Failed to update profile picture");
       setToastType('error');
     }
   };
@@ -210,7 +214,7 @@ const UserProfile: React.FC = () => {
       }
     } catch (error: any) {
       setToastType("error");
-      setToastMessage(error.response?.data?.message ?? "An error occurred.");
+      setToastMessage(error.message ?? "An error occurred.");
     } finally {
       setPasswordLoading(false);
     }
@@ -242,7 +246,6 @@ const UserProfile: React.FC = () => {
       )}
       <main className="pt-32 pb-20 max-w-7xl mx-auto px-6">
 
-        {/* Profile Header */}
         <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center gap-10">
             <div className="relative group">
@@ -278,7 +281,6 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex flex-wrap gap-4 mb-8">
           {tabs.map((tab) => (
             <button
@@ -295,10 +297,8 @@ const UserProfile: React.FC = () => {
           ))}
         </div>
 
-        {/* Tab Content */}
         <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 min-h-[400px] animate-in fade-in slide-in-from-bottom-4">
 
-          {/* Wallet Tab */}
           {activeTab === "wallet" && (
             <div className="space-y-8 animate-in fade-in duration-500">
               <div className="grid md:grid-cols-3 gap-6">
@@ -341,7 +341,6 @@ const UserProfile: React.FC = () => {
             </div>
           )}
 
-          {/* Schedule Tab */}
           {activeTab === "schedule" && (
             <div className="space-y-6 animate-in fade-in duration-500">
               <div className="flex justify-between items-center px-2">
@@ -386,20 +385,15 @@ const UserProfile: React.FC = () => {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {booking.meetLink && (
-                          <button
-                            onClick={() =>
-                              navigate(
-                                `/session/${booking.bookingId}?link=${encodeURIComponent(
-                                  booking.meetLink
-                                )}`
-                              )
-                            }
-                            className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 animate-pulse"
-                          >
-                            Join Now
-                          </button>
-                        )}
+
+                        <button
+                          onClick={() => navigate(`/session/${booking.bookingId}`)}
+                          className="p-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-1.5 group/btn"
+                          title="Join Live Workout Room"
+                        >
+                          <Video size={16} className="animate-pulse" />
+                          <span className="text-[9px] font-black uppercase tracking-wider pr-1 hidden sm:inline">Live</span>
+                        </button>
 
                         {booking.bookingStatus === "completed" && !booking.isReviewed && (
                           <button
@@ -482,9 +476,7 @@ const UserProfile: React.FC = () => {
                         </div>
 
                         <div className="flex justify-between items-center gap-4">
-                          <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
-                            {chat.lastMessage || "No messages yet"}
-                          </p>
+                          <MessagePopUp message={chat.lastMessage} />
 
                           <div className="flex items-center gap-2 shrink-0">
                             {chat.unReadCount > 0 && (

@@ -46,8 +46,7 @@ const ResetPassword: React.FC = () => {
         });
       } 
     } catch (err: any) {
-      const message = err.response?.data?.message
-      setError(message || "Something went wrong. Please try again.");
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

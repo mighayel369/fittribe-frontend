@@ -18,7 +18,6 @@ const About: React.FC = () => {
       <UserNavBar />
 
       <main className="pt-24 pb-16 px-6">
-        {/* Hero Section */}
         <section className="max-w-6xl mx-auto text-center mb-20">
           <span className="text-indigo-600 font-black text-xs uppercase tracking-[0.3em] mb-4 block">
             The Movement
@@ -35,7 +34,6 @@ const About: React.FC = () => {
           </p>
         </section>
 
-        {/* Stats Grid */}
         <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
           {stats.map((stat, i) => (
             <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm text-center group hover:border-indigo-200 transition-all">
@@ -48,7 +46,6 @@ const About: React.FC = () => {
           ))}
         </section>
 
-        {/* Vision Section */}
         <section className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center mb-24">
           <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 blur-[80px] -mr-32 -mt-32"></div>
@@ -94,7 +91,6 @@ const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Join CTA */}
         <section className="max-w-4xl mx-auto text-center bg-white rounded-[3rem] p-12 border border-slate-100 shadow-xl relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl font-black text-slate-900 mb-6">Ready to find your Tribe?</h2>

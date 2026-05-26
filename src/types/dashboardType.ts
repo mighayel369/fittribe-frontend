@@ -14,7 +14,6 @@ export interface UpcomingAppointmentDTO {
   program: string;
   status: 'confirmed' | 'pending' | 'completed'; 
   profilePic: string;
-  meetLink?:string
 }
 
 

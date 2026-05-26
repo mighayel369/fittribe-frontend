@@ -59,7 +59,7 @@ const TrainerEditProfile = () => {
         });
 
       } catch (err: any) {
-        const errMesg = err.response?.data?.message
+        const errMesg = err.message
         setToast({ message: errMesg, type: "error" });
         console.log(err)
       } finally {
@@ -115,7 +115,7 @@ const TrainerEditProfile = () => {
         }
       });
 
-      console.log('data',data)
+      console.log('data', data)
 
       const res = await TrainerProfileService.updateProfile(data);
       if (res.success) {
@@ -126,7 +126,7 @@ const TrainerEditProfile = () => {
         })
       }
     } catch (err: any) {
-      const errMesg = err.response?.data?.message
+      const errMesg = err.message
       setToast({ message: errMesg, type: "error" });
     } finally {
       setActionLoading(false);

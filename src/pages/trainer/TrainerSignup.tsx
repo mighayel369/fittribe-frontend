@@ -18,7 +18,7 @@ import { type TrainerSignupDTO } from "../../types/trainerType";
 import { trainerSignupValidate } from "../../validations/trainerSignupValidate";
 import type { ValidationErrors } from "../../validations/ValidationErrors";
 import type { DiscoveryProgram } from "../../types/programType";
-
+import Toast from "../../components/Toast";
 const languageOptions = import.meta.env.VITE_LANGUAGES?.split(",").map((lang: string) => ({ label: lang.trim(), value: lang.trim() })) || [];
 const experienceOptions = import.meta.env.VITE_EXPERIENCE?.split(",") || [];
 
@@ -38,7 +38,7 @@ const TrainerSignup: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [pricePerSession, setPricePerSession] = useState<string>('500');
   const [genericErrors, setGenericErrors] = useState<string>('');
-
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -49,8 +49,8 @@ const TrainerSignup: React.FC = () => {
         const response = await PublicProgramsService.explorePrograms('trainer');
         console.log(response)
         setProgramOptions(response.data.data);
-      } catch (error) {
-        console.error(error);
+      } catch (error: any) {
+        setToast({message:error.message || "Failed to fetch services",type: 'error'});
       }
     };
     fetchServices();
@@ -100,7 +100,7 @@ const TrainerSignup: React.FC = () => {
         navigate("/otp");
       }
     } catch (err: any) {
-      setGenericErrors(err.response?.data?.message || "Registration failed.");
+      setGenericErrors(err.message || "Registration failed.");
     } finally {
       setLoading(false);
     }
@@ -108,6 +108,13 @@ const TrainerSignup: React.FC = () => {
 
   return (
     <BackgroundImageWrapper image={signuppic}>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type="success"
+          onClose={() => setToast(null)}
+        />
+      )}
       <div className="flex justify-center md:justify-end w-full min-h-screen items-center p-4 md:pr-12 lg:pr-24 py-10">
 
         <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-10 w-full max-w-[600px] border border-white/40 max-h-[90vh] overflow-y-auto custom-scrollbar">

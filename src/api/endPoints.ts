@@ -32,7 +32,6 @@ export const API_ENDPOINTS = {
       METRICS: '/admin/leave/metrics',
       LEAVE_REQUEST_HISTORY: '/admin/leave/history',
       LEAVE_STATUS: '/admin/leave/update-status',
-      EXPORT_REPORT: '/admin/dashboard/export-report',
       EXPORT_LEAVE_REPORT: '/admin/leave/export-leave-report'
     },
 
@@ -94,12 +93,11 @@ export const API_ENDPOINTS = {
     RESCHEDULE_REQUESTS: 'trainer/bookings/reschedule',
     DETAILS: (bookingId: string) => `trainer/bookings/${bookingId}`,
 
-    ACCEPT: 'trainer/bookings/accept',
-    REJECT: 'trainer/bookings/reject',
-    APPROVE_RESCHEDULE: 'trainer/bookings/reschedule/approve',
-    REJECT_RESCHEDULE: 'trainer/bookings/reschedule/reject',
+    ACCEPT: (bookingId: string) => `trainer/bookings/accept/${bookingId}`,
+    REJECT: (bookingId: string) => `trainer/bookings/reject/${bookingId}`,
+    APPROVE_RESCHEDULE: (bookingId: string) => `trainer/bookings/reschedule/approve/${bookingId}`,
+    REJECT_RESCHEDULE: (bookingId: string) => `trainer/bookings/reschedule/reject${bookingId}`,
     RESCHEDULE_BY_TRAINER: 'trainer/bookings/reschedule',
-    GET_MEET_LINK: (bookingId: string) => `trainer/bookings/get-meetlink/${bookingId}`,
     MARK_AS_COMPLETE: (bookingId: string) => `trainer/bookings/mark-as-complete/${bookingId}`
   },
 
@@ -147,7 +145,7 @@ export const API_ENDPOINTS = {
     NON_CHAT_LIST: (role: string) => `${role}/chats/non-chat-list`,
 
     FETCH_MESSAGES: (role: string, chatId: string) => `${role}/chats/messages/${chatId}`,
-    GET_CHAT_ID: (role: string, id: string) => `${role}/chats/chat-id/${id}`,
+    GET_CHAT_ID: (role: string, chatId: string) => `${role}/chats/chat-id/${chatId}`,
     MARK_AS_READ: (role: string, chatId: string) => `${role}/chats/mark-as-read/${chatId}`,
     UPLOAD_FILE: (role: string) => `${role}/chats/upload-file`
   },

@@ -38,8 +38,7 @@ const ForgotPassword: React.FC = () => {
         setMsg(data.message||'Check your inbox! A reset link is on its way.');
       }
     } catch(err:any) {
-       const message = err.response?.data?.message
-      setError(message||"System error. Please try again later.");
+      setError(err.message||"System error. Please try again later.");
     } finally {
       setLoading(false);
     }

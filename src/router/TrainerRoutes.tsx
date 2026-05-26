@@ -12,9 +12,9 @@ import TrainerBookings from '../pages/trainer/TrainerBookings';
 import BookingDetails from '../pages/trainer/BookingDetails';
 import TrainerLeaveManagement from '../pages/trainer/TrainerLeaveManagment';
 import ChatPage from '../pages/trainer/ChatPage';
-import VideoSession from '../pages/shared/VideoSession';
+import { LiveVideoSession } from '../pages/shared/LiveSessionPage';
 import ReviewsPage from '../pages/trainer/ReviewsPage';
-import NotFoundPage from '../components/NotFound';
+import ErrorPage from '../components/ErrorPage';
 const TrainerRoutes = () => (
   <Routes>
     <Route path="login" element={<TrainerPublicRoute><TrainerLogin /></TrainerPublicRoute>} />
@@ -28,9 +28,10 @@ const TrainerRoutes = () => (
     <Route path="/bookings" element={<TrainerPrivateRoute><TrainerBookings /></TrainerPrivateRoute>} />
     <Route path="/bookings/:id" element={<TrainerPrivateRoute><BookingDetails /></TrainerPrivateRoute>} />
     <Route path="/chats" element={<TrainerPrivateRoute><ChatPage /></TrainerPrivateRoute>} />
-    <Route path="/session/:bookingId" element={<TrainerPrivateRoute><VideoSession /></TrainerPrivateRoute>} />
+    <Route path="/session/:bookingId" element={<LiveVideoSession />} />
     <Route path="/reviews" element={<TrainerPrivateRoute><ReviewsPage /></TrainerPrivateRoute>} />
-    <Route path="*" element={<NotFoundPage />} />
+    <Route path="/error" element={<ErrorPage />} />
+    <Route path="*" element={<ErrorPage />} />
   </Routes>
 );
 

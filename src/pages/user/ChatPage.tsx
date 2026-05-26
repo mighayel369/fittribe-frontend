@@ -64,12 +64,11 @@ const ChatPage = () => {
       const formData = new FormData();
       formData.append('file', selectedFile)
       const response = await ChatService.uploadFiles('user', formData)
-      console.log(response)
       attachment = {
-        url: response.fileUrl,
-        type: response.resource_type,
-        name:selectedFile.name,
-        size:selectedFile.size
+        url: response.data.url,
+        type: response.data.resource_type,
+        name: selectedFile.name,
+        size: selectedFile.size
       };
     }
 
@@ -202,8 +201,8 @@ const ChatPage = () => {
                                   <div
                                     onClick={() => downloadFile(msg.file.url, msg.file.name || "document.pdf")}
                                     className={`group cursor-pointer flex items-center gap-3 p-3 rounded-xl transition-all duration-200 border ${isMe
-                                        ? 'bg-black/10 border-black/5 hover:bg-black/20'
-                                        : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                                      ? 'bg-black/10 border-black/5 hover:bg-black/20'
+                                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                                       }`}
                                   >
                                     <div className="relative flex-shrink-0 w-10 h-12 bg-white rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">

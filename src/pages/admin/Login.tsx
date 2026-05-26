@@ -54,7 +54,7 @@ if (response.success) {
     navigate('/admin', { state: { message: response.message } });
   }
     } catch (error: any) {
-      const message = error.response?.data?.message || "Unauthorized access attempt.";
+      const message = error.message || "Unauthorized access attempt.";
       setGeneralError(message);
     } finally {
       setLoading(false);

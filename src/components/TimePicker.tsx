@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
+import { formatTime } from "../utils/formatTime";
 
 interface Props {
-  times: string[];
-  selectedTime: string;
-  onSelect: (time: string) => void;
+  times: number[];
+  selectedTime: number;
+  onSelect: (time: number) => void;
 }
 
 const TimePicker = ({ times, selectedTime, onSelect }: Props) => {
@@ -43,7 +44,7 @@ const TimePicker = ({ times, selectedTime, onSelect }: Props) => {
             }
           `}
         >
-          {time}
+          {formatTime(time)}
         </div>
       ))}
     </div>

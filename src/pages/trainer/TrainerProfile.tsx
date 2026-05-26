@@ -114,8 +114,9 @@ const TrainerProfile = () => {
         setTotalPages(total);
         setWalletBalance(balance)
       }
-    } catch (err) {
-      console.error("Failed to fetch trainer wallet", err);
+    } catch (err: any) {
+      setToastType("error");
+      setToastMessage(err.message ?? "Password updated successfully!");
     } finally {
       setWalletLoading(false);
     }
@@ -137,8 +138,9 @@ const TrainerProfile = () => {
         ...prev,
         profilePic: res.data?.imageUrl
       }))
-    } catch (err) {
-
+    } catch (err:any) {
+      setToastType("error");
+      setToastMessage(err.message ?? "failed to update profile picture!");
     }
   }
 

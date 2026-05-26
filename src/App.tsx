@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import UserRoutes from "./router/UserRoutes";
 import AdminRoutes from "./router/AdminRoutes";
 import TrainerRoutes from "./router/TrainerRoutes";
-import NotFoundPage from "./components/NotFound";
+import NotFoundPage from "./components/ErrorPage";
 export default function App() {
   return (
     <Routes>

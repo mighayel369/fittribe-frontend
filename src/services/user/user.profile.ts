@@ -13,6 +13,7 @@ export const UserProfileService = {
 
   getProfile: async () => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.USER_ACCOUNT.GET_ME);
+    console.log(data)
     return data;
   },
 

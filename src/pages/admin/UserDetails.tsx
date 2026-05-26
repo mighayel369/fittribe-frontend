@@ -8,7 +8,7 @@ import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import { AdminUserService } from "../../services/admin/admin.user.service";
 import Loading from "../../components/Loading";
-import NotFound from "../../components/NotFound";
+import NotFound from "../../components/ErrorPage";
 import Modal from "../../components/Modal";
 import Toast from "../../components/Toast";
 import SubmitButton from "../../components/SubmitButton";
@@ -37,7 +37,7 @@ const UserDetails: React.FC = () => {
       const response = await AdminUserService.getUserDetails(id);
       setUser(response.user);
     } catch (error: any) {
-      const errorMsg = error.response?.data?.message || "Failed to fetch user datas";
+      const errorMsg = error.message || "Failed to fetch user datas";
       setToast({ message: errorMsg, type: "error" });
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ const UserDetails: React.FC = () => {
         setToast({ message: result.message, type: "success" });
       }
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || "Status update failed";
+      const errorMsg = err.message || "Status update failed";
       setToast({ message: errorMsg, type: "error" });
     } finally {
       setActionLoading(false);

@@ -7,6 +7,10 @@ import Toast from "../../components/Toast";
 import { generateTimes } from "../../helperFunctions/generateTimes";
 import TimePicker from "../../components/TimePicker";
 import { TrainerScheduleService } from "../../services/trainer/trainer.schedule";
+import { formatTime } from "../../utils/formatTime";
+import { type TimeRange } from "../../types/slotType";
+import { validateUpdateAvailability } from "../../validations/updateSlotValidation";
+
 const daysMap = [
   { label: "Sun", key: "sunday" },
   { label: "Mon", key: "monday" },
@@ -18,12 +22,14 @@ const daysMap = [
 ] as const;
 
 type dayKey = typeof daysMap[number]["key"];
-type TimeRange = {
-  start: string;
-  end: string;
-};
 
-type WeeklyAvailability = Record<dayKey, TimeRange[]>;
+
+interface BackendDaySchedule {
+  enabled: boolean;
+  slots: TimeRange[];
+}
+
+type WeeklyAvailability = Record<dayKey, BackendDaySchedule>;
 
 const TrainerAvailability = () => {
   const times = generateTimes();
@@ -37,26 +43,28 @@ const TrainerAvailability = () => {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<"success" | "error">("success");
+
+
   const [availability, setAvailability] = useState<WeeklyAvailability>({
-    sunday: [],
-    monday: [],
-    tuesday: [],
-    wednesday: [],
-    thursday: [],
-    friday: [],
-    saturday: []
+    sunday: { enabled: false, slots: [] },
+    monday: { enabled: false, slots: [] },
+    tuesday: { enabled: false, slots: [] },
+    wednesday: { enabled: false, slots: [] },
+    thursday: { enabled: false, slots: [] },
+    friday: { enabled: false, slots: [] },
+    saturday: { enabled: false, slots: [] }
   });
 
   useEffect(() => {
     document.title = "FitTribe | Schedules";
     async function fetchSlot() {
       try {
-        const res = await TrainerScheduleService.getSchedule()
+        const res = await TrainerScheduleService.getSchedule();
         if (res.data?.weeklyAvailability) {
           setAvailability(res.data.weeklyAvailability);
         }
-      } catch (err:any) {
-       let errMesg=err.response?.data?.message
+      } catch (err: any) {
+        const errMesg = err.message || "Failed to load schedule";
         setToastType("error");
         setToastMessage(errMesg);
       } finally {
@@ -68,14 +76,13 @@ const TrainerAvailability = () => {
 
   useEffect(() => {
     if (isInitialLoad.current) return;
-
     const timer = setTimeout(async () => {
       try {
-        let res=await TrainerScheduleService.syncWeeklyTemplate(availability);
+        const res = await TrainerScheduleService.syncWeeklyTemplate(availability);
         setToastType("success");
-        setToastMessage(res.message);
-      } catch (err:any) {
-        let errMesg=err.response?.data?.message
+        setToastMessage(res.message || "Schedule updated successfully");
+      } catch (err: any) {
+        const errMesg = err.message || "Sync failed";
         setToastType("error");
         setToastMessage(errMesg);
       }
@@ -84,27 +91,74 @@ const TrainerAvailability = () => {
     return () => clearTimeout(timer);
   }, [availability]);
 
-  const updateTime = (day: dayKey, index: number, type: "start" | "end", value: string) => {
+  const updateTime = (day: dayKey, index: number, type: "start" | "end", value: number) => {
+    const arrayFormatAvailability = Object.fromEntries(
+      Object.entries(availability).map(([k, v]) => [k, v.slots])
+    ) as Record<dayKey, TimeRange[]>;
+
+    const validationError = validateUpdateAvailability(arrayFormatAvailability, day, index, type, value);
+
+    if (validationError) {
+      setToastType("error");
+      setToastMessage(validationError);
+      return;
+    }
+
     setAvailability(prev => ({
       ...prev,
-      [day]: prev[day].map((slot, i) =>
-        i === index ? { ...slot, [type]: value } : slot
-      )
+      [day]: {
+        ...prev[day],
+        slots: prev[day].slots.map((slot, i) =>
+          i === index ? { ...slot, [type]: value } : slot
+        )
+      }
     }));
   };
 
   const addSlot = (day: dayKey) => {
-    setAvailability(prev => ({
-      ...prev,
-      [day]: [...prev[day], { start: "9:00 AM", end: "5:00 PM" }]
-    }));
+    setAvailability(prev => {
+      const currentDaySlots = prev[day]?.slots || [];
+
+      let newStart = 560;
+      let newEnd = 600;
+
+      if (currentDaySlots.length > 0) {
+        const lastSlot = currentDaySlots[currentDaySlots.length - 1];
+        newStart = lastSlot.end;
+        newEnd = newStart + 60;
+      }
+
+      if (newStart >= 1440) {
+        setToastType("error");
+        setToastMessage("Cannot add more slots. The day schedule boundary has been reached.");
+        return prev;
+      }
+
+      if (newEnd > 1440) {
+        newEnd = 1440;
+      }
+
+      return {
+        ...prev,
+        [day]: {
+          enabled: true,
+          slots: [...currentDaySlots, { start: newStart, end: newEnd }]
+        }
+      };
+    });
   };
 
   const removeSlot = (day: dayKey, index: number) => {
-    setAvailability(prev => ({
-      ...prev,
-      [day]: prev[day].filter((_, i) => i !== index)
-    }));
+    setAvailability(prev => {
+      const filteredSlots = prev[day].slots.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        [day]: {
+          enabled: filteredSlots.length > 0,
+          slots: filteredSlots
+        }
+      };
+    });
   };
 
   return (
@@ -138,7 +192,7 @@ const TrainerAvailability = () => {
                 </span>
 
                 <div className="flex flex-col gap-3">
-                  {availability[key].map((slot, index) => (
+                  {availability[key]?.slots.map((slot, index) => (
                     <div key={index} className="flex items-center gap-4">
                       <div className="relative">
                         <div
@@ -147,13 +201,12 @@ const TrainerAvailability = () => {
                               ? { day: null, type: null, index: null }
                               : { day: key, type: "start", index }
                           )}
-                          className={`w-24 text-center p-2 rounded-md cursor-pointer border transition-colors ${
-                            openPicker.day === key && openPicker.type === "start" && openPicker.index === index
-                              ? "border-indigo-600 bg-indigo-50"
-                              : "border-gray-200 hover:border-gray-400"
-                          }`}
+                          className={`w-24 text-center p-2 rounded-md cursor-pointer border transition-colors ${openPicker.day === key && openPicker.type === "start" && openPicker.index === index
+                            ? "border-indigo-600 bg-indigo-50"
+                            : "border-gray-200 hover:border-gray-400"
+                            }`}
                         >
-                          {slot.start}
+                          {formatTime(slot.start)}
                         </div>
                         {openPicker.day === key && openPicker.type === "start" && openPicker.index === index && (
                           <TimePicker
@@ -168,6 +221,7 @@ const TrainerAvailability = () => {
                       </div>
 
                       <span className="w-2 h-[1px] bg-gray-400" />
+
                       <div className="relative">
                         <div
                           onClick={() => setOpenPicker(
@@ -175,13 +229,12 @@ const TrainerAvailability = () => {
                               ? { day: null, type: null, index: null }
                               : { day: key, type: "end", index }
                           )}
-                          className={`w-24 text-center p-2 rounded-md cursor-pointer border transition-colors ${
-                            openPicker.day === key && openPicker.type === "end" && openPicker.index === index
-                              ? "border-indigo-600 bg-indigo-50"
-                              : "border-gray-200 hover:border-gray-400"
-                          }`}
+                          className={`w-24 text-center p-2 rounded-md cursor-pointer border transition-colors ${openPicker.day === key && openPicker.type === "end" && openPicker.index === index
+                            ? "border-indigo-600 bg-indigo-50"
+                            : "border-gray-200 hover:border-gray-400"
+                            }`}
                         >
-                          {slot.end}
+                          {formatTime(slot.end)}
                         </div>
                         {openPicker.day === key && openPicker.type === "end" && openPicker.index === index && (
                           <TimePicker
@@ -202,18 +255,17 @@ const TrainerAvailability = () => {
                         <HiOutlineX size={18} />
                       </button>
 
-                      {index === 0 && (
-                        <button
-                          onClick={() => addSlot(key)}
-                          className="w-8 h-8 flex items-center justify-center rounded-full border border-emerald-500 text-emerald-600 hover:bg-emerald-50 transition-colors"
-                        >
-                          <FaPlus size={12} />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => addSlot(key)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-emerald-500 text-emerald-600 hover:bg-emerald-50 transition-colors"
+                      >
+                        <FaPlus size={12} />
+                      </button>
                     </div>
                   ))}
 
-                  {availability[key].length === 0 && (
+                  {/* FIX: Conditional display checks length of nested slots array */}
+                  {(!availability[key] || availability[key].slots.length === 0) && (
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => addSlot(key)}

@@ -3,7 +3,7 @@ import React, { useState, useEffect, type FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
 import loginpic from '../../assets/loginpic.webp';
-import {setAuth} from '../../redux/slices/authSlice';
+import { setAuth } from '../../redux/slices/authSlice';
 import LogoHeader from '../../assets/logo.jpg'
 import Toast from "../../components/Toast";
 import TextInput from '../../components/TextInput';
@@ -12,7 +12,7 @@ import SubmitButton from '../../components/SubmitButton';
 import GoogleAuthButton from '../../components/GoogleAuthButton';
 import BackgroundImageWrapper from '../../components/BackgroundImage';
 import { UserAuthService } from '../../services/user/user.auth';
-import {type ValidationErrors } from '../../validations/ValidationErrors';
+import { type ValidationErrors } from '../../validations/ValidationErrors';
 import type { UserLoginDTO } from '../../types/userType';
 import { userLoginValidation } from '../../validations/userLoginValidation';
 
@@ -51,19 +51,18 @@ const UserLogin: React.FC = () => {
 
     try {
       setLoading(true);
-      const result = await UserAuthService.login({email, password});
+      const result = await UserAuthService.login({ email, password });
 
       if (result.success) {
-       dispatch(setAuth({ 
-      accessToken: result.accessToken, 
-      role: result.role,
-      user: result.user
-    }));
+        dispatch(setAuth({
+          accessToken: result.accessToken,
+          role: result.role,
+          user: result.user
+        }));
         navigate(-1)
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || "Invalid credentials. Please try again.";
-      setGeneralError(message);
+      setGeneralError(error.message);
     } finally {
       setLoading(false);
     }
@@ -124,14 +123,14 @@ const UserLogin: React.FC = () => {
               />
 
               <div className="space-y-2">
-              <PasswordInput
-                label="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                error={errors.password}
-                showButton={true} 
-              />
+                <PasswordInput
+                  label="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  error={errors.password}
+                  showButton={true}
+                />
                 <div className="flex justify-end">
                   <button
                     type="button"

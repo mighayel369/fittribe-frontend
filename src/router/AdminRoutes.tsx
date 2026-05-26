@@ -14,7 +14,7 @@ import AdminWallet from '../pages/admin/AdminWallet'
 import OnboardNewProgram from '../pages/admin/OnboardNewProgram';
 import LeaveManagemnt from '../pages/admin/LeaveManagement';
 import AdminReviewsPage from '../pages/admin/ReviewPage';
-import NotFoundPage from '../components/NotFound';
+import ErrorPage from '../components/ErrorPage';
 import BookingList from '../pages/admin/BookingList';
 import BookingDetails from '../pages/admin/BookingDetails';
 const AdminRoutes = () => (
@@ -34,7 +34,8 @@ const AdminRoutes = () => (
     <Route path="reviews" element={<AdminPrivateRoute><AdminReviewsPage /></AdminPrivateRoute>} />
     <Route path="bookings" element={<AdminPrivateRoute><BookingList /></AdminPrivateRoute>} />
     <Route path="bookings/:id" element={<AdminPrivateRoute><BookingDetails /></AdminPrivateRoute>} />
-    <Route path="*" element={<NotFoundPage />} />
+    <Route path="/error" element={<ErrorPage />} />
+    <Route path="*" element={<ErrorPage />} />
   </Routes>
 );
 

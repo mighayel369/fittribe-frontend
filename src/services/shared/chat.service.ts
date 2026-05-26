@@ -5,7 +5,9 @@ export const ChatService = {
   getChatLists: async (role: string, search: string = "") => {
     const { data } = await axiosInstance.get(API_ENDPOINTS.CHAT.CHAT_LIST(role), {
       params: {
-        search: search
+        filter:{
+          search
+        }
       }
     });
     return data;

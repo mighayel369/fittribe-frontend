@@ -1,10 +1,10 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Star, MessageSquare, Loader2, Inbox } from "lucide-react";
 import TrainerTopBar from "../../layout/TrainerTopBar";
 import TrainerSideBar from "../../layout/TrainerSideBar";
 import DEFAULT_IMAGE from '../../assets/default image.png';
 import { sharedReviewService } from '../../services/shared/review.shared';
-
+import Toast from '../../components/Toast';
 
 interface Review {
     name: string;
@@ -22,7 +22,8 @@ const ReviewsPage = () => {
         rating: number;
     } | null>(null);
     const [loading, setLoading] = useState(true);
-
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [toastType, setToastType] = useState<"success" | "error">("success");
     useEffect(() => {
         const fetchReviews = async () => {
             try {
@@ -31,8 +32,10 @@ const ReviewsPage = () => {
                 if (response.success) {
                     setReviewsData(response.data);
                 }
-            } catch (error) {
-                console.error("Failed to fetch reviews:", error);
+            } catch (err:any) {
+                const errMesg = err.message || "Failed to load reviews";
+                setToastType("error");
+                setToastMessage(errMesg);
             } finally {
                 setLoading(false);
             }
@@ -53,7 +56,9 @@ const ReviewsPage = () => {
         <div className="min-h-screen bg-[#F8FAFC]">
             <TrainerTopBar />
             <TrainerSideBar />
-
+            {toastMessage && (
+                <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
+            )}
             <main className="ml-72 pt-28 px-10 pb-12">
                 <header className="mb-10">
                     <h1 className="text-3xl font-black text-slate-900">Client Feedback</h1>
