@@ -16,6 +16,9 @@ const Dashboard = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [loading, setLoading] = useState(false)
+  const [range, setRange] = useState<
+    "7d" | "30d" | "6m" | "1y"
+  >("6m");
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
@@ -37,7 +40,7 @@ const Dashboard = () => {
       window.history.replaceState({}, document.title);
     }
     fetchDashboardData();
-  }, []);
+  }, [range]);
 
   if (!dashboardData) {
     return (
@@ -105,17 +108,32 @@ const Dashboard = () => {
                     <div className="w-3 h-3 bg-[#10B981] rounded-full"></div> New Users
                   </span>
                 </div>
+                <div>
+                  <select
+                    value={range}
+                    onChange={(e) =>
+                      setRange(e.target.value as any)
+                    }
+                    className="border rounded-lg px-3 py-2 text-sm font-semibold bg-gray-100"
+                  >
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                    <option value="6m">Last 6 Months</option>
+                    <option value="1y">Last 1 Year</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="h-[300px] w-full">
+              <div className="h-[300px] w-full bg-gray-100">
                 <GenericAreaChart
                   data={performanceData}
-                  xKey="month"
+                  xKey="period"
                   series={[
                     { key: "revenue", color: "#4F46E5", name: "Revenue ($)" },
                     { key: "users", color: "#10B981", name: "New Users" }
                   ]}
                 />
+
               </div>
             </section>
 

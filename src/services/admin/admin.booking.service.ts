@@ -3,13 +3,14 @@ import { API_ENDPOINTS } from "../../api/endPoints";
 
 
 export const AdminBookingService = {
-    getAllBookings: async (page: number, search: string = "", limit: number = 10) => {
+    getAllBookings: async (page: number, search: string = "", limit: number = 10, currentTab: string) => {
         const { data } = await axiosInstance.get(API_ENDPOINTS.ADMIN_BOOKINGS.GET_ALL_BOOKINGS, {
             params: {
                 currentPage: page,
                 limit,
                 filter: {
-                    search
+                    search,
+                    status: currentTab
                 }
             }
         });

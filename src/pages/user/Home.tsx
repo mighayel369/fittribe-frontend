@@ -2,11 +2,12 @@ import UserNavBar from "../../layout/UserNavBar";
 import homeimage from "../../assets/homepage1.webp";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaArrowRight, FaChevronLeft, FaChevronRight, FaStar,  FaRocket, FaComments, FaChartBar } from "react-icons/fa";
+import { FaArrowRight, FaChevronLeft, FaChevronRight, FaStar, FaRocket, FaComments, FaChartBar } from "react-icons/fa";
 import { type Program } from "../../types/programType";
 import { useAppSelector } from "../../redux/hooks";
 import Toast from "../../components/Toast";
 import { PublicProgramsService } from "../../services/public/programs";
+import Default_Program_Img from './../../assets/default_program_image.jpg'
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -130,7 +131,10 @@ const Home: React.FC = () => {
               visiblePrograms.map((program) => (
                 <div key={program.programId} className="group cursor-pointer overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-red-600/10 transition-all duration-500">
                   <div className="h-64 overflow-hidden relative">
-                    <img src={program.programPic} alt={program.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <img src={program.programPic} alt={program.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = Default_Program_Img;
+                    }} />
                     <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-red-600">
                       Live Sessions
                     </div>
@@ -178,23 +182,23 @@ const Home: React.FC = () => {
               </div>
             </div>
             <div className="relative">
-               <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-[3rem] p-1 w-full aspect-square rotate-3 opacity-20 absolute inset-0"></div>
-               <div className="bg-slate-800 rounded-[3rem] p-12 relative z-10 border border-slate-700 shadow-2xl">
-                  <div className="space-y-6">
-                    <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
-                      <p className="text-red-500 font-black text-xs uppercase mb-2">Next Session</p>
-                      <p className="text-white font-bold text-xl uppercase italic">Strength & Conditioning</p>
-                      <p className="text-slate-400 text-sm">Today at 6:00 PM</p>
-                    </div>
-                    <div className="flex justify-between items-center text-white">
-                       <span className="font-black uppercase text-sm">Progress</span>
-                       <span className="text-red-500 font-black">84%</span>
-                    </div>
-                    <div className="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
-                       <div className="bg-red-600 h-full w-[84%]"></div>
-                    </div>
+              <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-[3rem] p-1 w-full aspect-square rotate-3 opacity-20 absolute inset-0"></div>
+              <div className="bg-slate-800 rounded-[3rem] p-12 relative z-10 border border-slate-700 shadow-2xl">
+                <div className="space-y-6">
+                  <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
+                    <p className="text-red-500 font-black text-xs uppercase mb-2">Next Session</p>
+                    <p className="text-white font-bold text-xl uppercase italic">Strength & Conditioning</p>
+                    <p className="text-slate-400 text-sm">Today at 6:00 PM</p>
                   </div>
-               </div>
+                  <div className="flex justify-between items-center text-white">
+                    <span className="font-black uppercase text-sm">Progress</span>
+                    <span className="text-red-500 font-black">84%</span>
+                  </div>
+                  <div className="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                    <div className="bg-red-600 h-full w-[84%]"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -209,7 +213,7 @@ const Home: React.FC = () => {
                 { name: "Mark Sloan", role: "Entrepreneur", text: "Data-driven results. Finally a platform that respects my time and my goals." }
               ].map((t, i) => (
                 <div key={i} className="p-10 bg-slate-50 rounded-[2.5rem] border border-slate-100">
-                  <div className="flex text-red-600 mb-6"><FaStar/><FaStar/><FaStar/><FaStar/><FaStar/></div>
+                  <div className="flex text-red-600 mb-6"><FaStar /><FaStar /><FaStar /><FaStar /><FaStar /></div>
                   <p className="text-slate-700 font-medium italic mb-8">"{t.text}"</p>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-slate-200 rounded-full"></div>

@@ -16,7 +16,7 @@ const UserNavBar = () => {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const [showNotif, setShowNotif] = useState(false);
-  const { notifications, unreadCount, clearUnread,markAllAsRead,markAsRead } = useNotification();
+  const { notifications, unreadCount, clearUnread, markAllAsRead, markAsRead } = useNotification();
   const { user, role, accessToken } = useAppSelector((state) => state.auth);
   const handleToggleNotif = () => {
     setShowNotif(!showNotif);
@@ -83,7 +83,7 @@ const UserNavBar = () => {
                 {showNotif && (
                   <NotificationDropdown
                     notifications={notifications}
-                    onMarkAsRead={(id:string)=>markAsRead(id)}
+                    onMarkAsRead={(id: string) => markAsRead(id)}
                     onMarkAllAsRead={() => markAllAsRead()}
                     onClose={() => setShowNotif(false)}
                   />
@@ -112,7 +112,7 @@ const UserNavBar = () => {
               </div>
             ) : (
               <button className="nav-login-btn" onClick={() => navigate("/login")}>
-                Join Vitalic
+                Join FitTribe
               </button>
             )}
           </div>

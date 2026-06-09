@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState,  useCallback } from "react";
 import AdminTopBar from "../../layout/AdminTopBar";
 import AdminSideBar from "../../layout/AdminSideBar";
 import GenericTable from "../../components/GenericTable";
@@ -11,18 +11,17 @@ import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/formatTime";
 const BookingList = () => {
 
-  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const [limit] = useState(10);
+  const [currentTab, setCurrentTab] = useState("confirmed")
+  const [totalPages, setTotalPages] = useState(0)
 
   const [bookings, setBookings] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any | null>(null);
   const [trendRange, setTrendRange] = useState<'7days' | '6months'>('7days');
 
-  const totalPages = Math.ceil(totalCount / limit);
 
   const navigate = useNavigate()
 
@@ -38,15 +37,15 @@ const BookingList = () => {
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await AdminBookingService.getAllBookings(page, searchTerm, limit);
+      const res = await AdminBookingService.getAllBookings(page, searchTerm, limit, currentTab);
       setBookings(res.data || []);
-      setTotalCount(res.totalPages || 0);
+      setTotalPages(res.totalPages || 0);
     } catch (error) {
       console.error("Pagination Error:", error);
     } finally {
       setLoading(false);
     }
-  }, [page, searchTerm, limit]);
+  }, [page, searchTerm, limit, currentTab]);
 
 
   const handleSyncData = async () => {
@@ -72,15 +71,6 @@ const BookingList = () => {
     setPage(1);
   };
 
-  const handleStatusChange = (status: string) => {
-    setStatusFilter(status);
-    setPage(1);
-  };
-
-  const displayBookings = useMemo(() => {
-    if (statusFilter === "all") return bookings;
-    return bookings.filter(b => b.status.toLowerCase() === statusFilter.toLowerCase());
-  }, [bookings, statusFilter]);
 
   const statCards = [
     {
@@ -190,11 +180,11 @@ const BookingList = () => {
               />
             </div>
             <div className="flex gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-              {['all', 'completed', 'pending', 'cancelled'].map((s) => (
+              {['confirmed', 'completed', 'pending', 'cancelled'].map((s) => (
                 <button
                   key={s}
-                  onClick={() => handleStatusChange(s)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all ${statusFilter === s ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  onClick={() => setCurrentTab(s)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all ${currentTab === s ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   {s}
                 </button>
@@ -205,7 +195,7 @@ const BookingList = () => {
 
         <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
           <GenericTable
-            data={displayBookings}
+            data={bookings}
             page={page}
             loading={loading}
             columns={[

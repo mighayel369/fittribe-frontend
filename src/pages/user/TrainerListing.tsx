@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import UserNavBar from "../../layout/UserNavBar";
 import { FaMapMarkerAlt, FaStar, FaChevronDown } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,8 @@ import { type Program } from "../../types/programType";
 import { type UserSideTrainer } from "../../types/trainerType";
 import { PublicTrainersService } from "../../services/public/trainers";
 import { PublicProgramsService } from "../../services/public/programs";
-import { cleanTrainerFilters } from "../../helperFunctions/cleanFilters";
+import { cleanTrainerFilters } from "../../helperFunctions/cleanFilters"
+import DEFAULT_IMAGE from './../../assets/default image.png'
 import Toast from "../../components/Toast";
 type ProgramOption = {
   programId: string;
@@ -16,12 +17,15 @@ type ProgramOption = {
 };
 const TrainerListing = () => {
   const navigate = useNavigate();
+  const [startPrice, setStartPrice] = useState<number>(0)
+  const [endPrice, setEndPrice] = useState<number>(3000)
   const [filters, setFilters] = useState({
     gender: "",
-    availability: "",
     language: "",
     programId: "",
-    sort: "rating"
+    sort: "rating",
+    startPrice: 0,
+    endPrice: 3000
   });
   const [search, setSearch] = useState("");
   const [programs, setPrograms] = useState<ProgramOption[]>([])
@@ -30,7 +34,59 @@ const TrainerListing = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-  const DEFAULT_IMAGE = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const maxLimit = 3000;
+  const priceRangeLeftPercent = (startPrice / maxLimit) * 100;
+  const priceRangeRightPercent = (endPrice / maxLimit) * 100;
+  const priceFilterDivRef = useRef<HTMLDivElement>(null)
+  const [activeHandle, setActiveHandle] = useState<"left" | "right" | null>(null);
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!activeHandle || !priceFilterDivRef.current) return;
+
+      const rect = priceFilterDivRef.current.getBoundingClientRect();
+
+      let percentage = (e.clientX - rect.left) / rect.width;
+      percentage = Math.max(0, Math.min(1, percentage));
+
+      const rawPrice = percentage * maxLimit;
+      const steppedPrice = Math.round(rawPrice / 50) * 50;
+
+      if (activeHandle === "left") {
+        if (steppedPrice < endPrice) {
+          setStartPrice(steppedPrice);
+        }
+      } else if (activeHandle === "right") {
+        if (steppedPrice > startPrice) {
+          setEndPrice(steppedPrice);
+        }
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      setFilters(prev => ({ ...prev, startPrice: startPrice, endPrice: endPrice }))
+      console.log(filters)
+      setActiveHandle(null);
+    };
+    if (activeHandle) {
+      window.addEventListener("mousemove", handleGlobalMouseMove);
+      window.addEventListener("mouseup", handleGlobalMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleGlobalMouseMove);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
+  }, [activeHandle, startPrice, endPrice]);
+
+  const handleLeftMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveHandle("left");
+  };
+
+  const handleRightMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveHandle("right");
+  };
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -45,7 +101,7 @@ const TrainerListing = () => {
           );
           setPrograms(programData)
         }
-      } catch (error:any) {
+      } catch (error: any) {
         setToast({ message: error.message, type: 'error' });
       }
     };
@@ -59,6 +115,7 @@ const TrainerListing = () => {
     const fetchTrainers = async () => {
       try {
         setLoading(true);
+        console.log(filters)
         const cleanedFilter = cleanTrainerFilters({ ...filters, search })
         const response = await PublicTrainersService.exploreTrainers(page, cleanedFilter);
         setTrainers(response.data || []);
@@ -71,6 +128,10 @@ const TrainerListing = () => {
     };
     fetchTrainers();
   }, [page, search, filters]);
+
+
+
+
   useEffect(() => {
     setPage(1);
   }, [search, filters]);
@@ -111,7 +172,6 @@ const TrainerListing = () => {
             {[
               { label: "Gender", key: "gender", options: ["male", "female"] },
               { label: "Programs", key: "programId", options: [...programs] },
-              { label: "Availability", key: "availability", options: ["Morning", "Evening"] }
             ].map((item) => (
               <div key={item.key} className="relative group">
                 <select
@@ -135,16 +195,53 @@ const TrainerListing = () => {
                   })}
                 </select>
                 <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+
               </div>
             ))}
 
-            <select
-              onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
-              className="pl-4 pr-10 py-3 bg-red-50 text-red-700 border-none rounded-xl font-bold cursor-pointer focus:ring-2 focus:ring-red-500 transition-all"
+            <div className="relative">
+              <select
+                onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
+                className="appearance-none pl-4 pr-10 py-3 bg-gray-50 border-none rounded-xl font-medium text-gray-700 cursor-pointer focus:ring-2 focus:ring-red-500 transition-all"
+              >
+                <option value="rating">Rating</option>
+                <option value="exp">Experience</option>
+              </select>
+              <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+
+            </div>
+
+          </div>
+          <div className="flex flex-col gap-2 w-[300px]">
+            <div className="flex justify-between items-center px-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Price Range</span>
+              <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">₹{startPrice} - ₹{endPrice}</span>
+            </div>
+
+            <div
+              className="w-full h-2 bg-slate-100 border border-slate-200 rounded-full relative flex items-center"
+              ref={priceFilterDivRef}
             >
-              <option value="rating">Top Rated</option>
-              <option value="exp">Experience</option>
-            </select>
+              <div
+                className="absolute h-full bg-blue-500 rounded-full"
+                style={{
+                  left: `${priceRangeLeftPercent}%`,
+                  right: `${100 - priceRangeRightPercent}%`
+                }}
+              />
+
+              <div
+                className="absolute -translate-x-1/2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform select-none"
+                style={{ left: `${priceRangeLeftPercent}%` }}
+                onMouseDown={handleLeftMouseDown}
+              />
+
+              <div
+                className="absolute -translate-x-1/2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform select-none"
+                style={{ left: `${priceRangeRightPercent}%` }}
+                onMouseDown={handleRightMouseDown}
+              />
+            </div>
           </div>
         </div>
 
@@ -188,9 +285,22 @@ const TrainerListing = () => {
                         <h3 className="text-xl font-bold text-gray-900 group-hover:text-red-600 transition-colors">
                           {trainer.name}
                         </h3>
-                        <p className="text-sm font-semibold text-red-500 uppercase tracking-widest mt-1">
-                          {trainer.programs || "Fitness Coach"}
-                        </p>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {Array.isArray(trainer.programs) && trainer.programs.length > 0 ? (
+                            trainer.programs.map((program, index) => (
+                              <span
+                                key={index}
+                                className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md uppercase tracking-wider border border-red-100/50"
+                              >
+                                {program}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              Fitness Coach
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="space-y-2 mb-6">
@@ -205,6 +315,12 @@ const TrainerListing = () => {
                             Yr
                           </div>
                           {trainer.experience || "0"} + Years Experience
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-500 text-sm">
+                          <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center italic font-bold text-[8px]">
+                            Rs
+                          </div>
+                          {trainer.pricePerSession}
                         </div>
                       </div>
 
@@ -233,7 +349,7 @@ const TrainerListing = () => {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

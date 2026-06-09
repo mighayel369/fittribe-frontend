@@ -2,8 +2,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
     Calendar, Clock, IndianRupee, ArrowLeft, MessageSquare,
-    CheckCircle, CalendarClock, Phone, Mail, ChevronRight
+    CheckCircle, CalendarClock, Phone, Mail, ChevronRight, CreditCard, Wallet,
+    Shield
 } from "lucide-react";
+
 import TrainerTopBar from "../../layout/TrainerTopBar";
 import TrainerSideBar from "../../layout/TrainerSideBar";
 import { TrainerBookingService } from "../../services/trainer/trainer.booking";
@@ -64,8 +66,6 @@ const BookingDetails = () => {
         setShowModal(true);
     };
 
-
-
     const handleConfirmAction = async (reason?: string) => {
         if (!pendingAction || !id) return;
         if (pendingAction.type === 'reject' && (!reason || reason.trim().length < 5)) {
@@ -120,7 +120,6 @@ const BookingDetails = () => {
             <main className="ml-72 pt-24 px-8 pb-12 max-w-7xl mx-auto mt-12">
                 {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
-
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-5">
                         <button
@@ -147,9 +146,7 @@ const BookingDetails = () => {
 
                     <div className="col-span-12 lg:col-span-8 space-y-6">
 
-
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 overflow-hidden relative">
-
                             <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Primary Client</h2>
                             <div className="flex flex-col md:flex-row md:items-center gap-6">
                                 <div className="h-24 w-24 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2rem] flex items-center justify-center border-4 border-white shadow-inner">
@@ -167,14 +164,13 @@ const BookingDetails = () => {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => navigate('/trainer/chats', { state: { receiverId: booking.clientId, name: booking.clientName } })}
+                                    onClick={() => navigate('/trainer/chats', { state: { receiverId: booking.clientId, name: booking.clientName,profilePic:booking.clientProfilePic, activeChatId: booking.chatId } })}
                                     className="px-6 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all flex items-center gap-2"
                                 >
                                     <MessageSquare size={18} /> Chat with Client
                                 </button>
                             </div>
                         </div>
-
 
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100">
                             <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8">Schedule & Service</h2>
@@ -215,29 +211,78 @@ const BookingDetails = () => {
                         </div>
                     </div>
 
-
                     <div className="col-span-12 lg:col-span-4 space-y-6">
-
-
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100">
-                            <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Payment Status</h2>
                             <div className="flex items-center justify-between mb-6">
-                                <span className="text-3xl font-black text-gray-900 flex items-center gap-1">
-                                    <IndianRupee size={24} className="text-gray-400" /> {booking.trainerEarning}
-                                </span>
-                                <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tighter ${booking.paymentStatus === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Financial Invoice</h2>
+                                <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tighter ${booking.paymentStatus === 'paid' || booking.paymentStatus === 'completed'
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : 'bg-amber-100 text-amber-700'
                                     }`}>
                                     {booking.paymentStatus}
                                 </div>
                             </div>
-                            <div className="pt-6 border-t border-gray-50 flex justify-between items-center">
+
+
+                            <div className="bg-gradient-to-br from-gray-50 to-indigo-50/30 rounded-3xl p-5 mb-6 border border-gray-100">
+                                <span className="text-[10px] font-black text-gray-400 uppercase block mb-1">Your Net Earnings</span>
+                                <div className="flex items-baseline text-3xl font-black text-indigo-600">
+                                    <IndianRupee size={22} className="self-center mr-0.5" />
+                                    {booking.trainerEarning}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 text-sm font-medium text-gray-600 mb-6">
+                                <div className="flex justify-between items-center pb-3 border-b border-gray-50">
+                                    <span className="text-gray-400 text-xs flex items-center gap-1.5">
+                                        <CreditCard size={14} /> Gross Base Price
+                                    </span>
+                                    <span className="font-bold text-gray-800 flex items-center">
+                                        <IndianRupee size={12} /> {booking.totalAmount || (booking.trainerEarning + (booking.adminCommission || 0))}
+                                    </span>
+                                </div>
+
+                                {booking.adminCommission !== undefined && (
+                                    <div className="flex justify-between items-center pb-3 border-b border-gray-50">
+                                        <span className="text-gray-400 text-xs flex items-center gap-1.5">
+                                            <Shield size={14} className="text-amber-500" /> Platform Fee
+                                        </span>
+                                        <span className="font-bold text-rose-500 flex items-center">
+                                            -<IndianRupee size={12} /> {booking.adminCommission}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {booking.paymentMethod && (
+                                    <div className="flex justify-between items-center pb-3 border-b border-gray-50">
+                                        <span className="text-gray-400 text-xs flex items-center gap-1.5">
+                                            <Wallet size={14} /> Channel
+                                        </span>
+                                        <span className="font-bold text-gray-700 uppercase text-xs tracking-wider">
+                                            {booking.paymentMethod}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {booking.paymentId && (
+                                    <div className="pt-1">
+                                        <span className="text-gray-400 text-[10px] font-bold uppercase block mb-1">Gateway Transaction ID</span>
+                                        <span className="font-mono text-xs font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg block overflow-x-auto whitespace-nowrap scrollbar-none border border-gray-100">
+                                            {booking.paymentId}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+
+                            <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
                                 <span className="text-xs font-bold text-gray-400">Booking Status</span>
-                                <span className={`text-xs font-black uppercase ${booking.bookingStatus === 'confirmed' ? 'text-emerald-600' : 'text-amber-600'
-                                    }`}>
+                                <span className={`text-xs font-black uppercase ${booking.bookingStatus === 'confirmed' ? 'text-emerald-600' : 'text-amber-600'}`}>
                                     {booking.bookingStatus}
                                 </span>
                             </div>
                         </div>
+
 
                         {booking.bookingStatus === 'pending' && !booking.rescheduleRequest && (
                             <div className="bg-indigo-900 rounded-[2.5rem] p-8 shadow-2xl shadow-indigo-200 text-white relative overflow-hidden">

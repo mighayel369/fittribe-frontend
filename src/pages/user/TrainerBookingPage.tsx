@@ -178,6 +178,8 @@ const TrainerBookingPage = () => {
         modal: {
           ondismiss: function () {
             setLoading(false);
+            setToastType("error");
+            setToastMessage("Payment window was closed. Booking not completed.");
           }
         }
       };

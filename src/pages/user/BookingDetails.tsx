@@ -10,7 +10,7 @@ import {
   ArrowLeft, RefreshCw, Timer,
   ShieldCheck, Info, MapPin, Receipt,
   ChevronRight, AlertCircle, XCircle,
-  MessageSquare
+  MessageSquare, CreditCard
 } from "lucide-react";
 import { UserBookingService } from "../../services/user/user.booking";
 import { PublicTrainersService } from "../../services/public/trainers";
@@ -55,12 +55,14 @@ const BookingDetails = () => {
       const res = await UserBookingService.getBookingDetails(id);
       setBooking(res.data);
       document.title = `Session | ${res.data.bookedProgram}`;
-    } catch (error:any) {
+    } catch (error: any) {
       setToast({ message: error.message || "Could not fetch bookings", type: "error" });
     } finally {
       setLoading(false);
     }
   };
+
+  console.log(booking)
 
   useEffect(() => {
     if (!newDate || !booking?.trainerId) return;
@@ -93,7 +95,6 @@ const BookingDetails = () => {
             selected.getDate() === now.getDate();
 
           if (isToday) {
-
             const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
             const buffer = 30;
             const filtered = allSlots.filter(slot => slot > (currentTotalMinutes + buffer));
@@ -159,6 +160,21 @@ const BookingDetails = () => {
     setReason("");
     setNewDate("");
   }
+
+  const handleMessageClick = async () => {
+    if (!booking) return;
+
+    try {
+      if (booking.chatId) {
+        navigate(`/chat/${booking.trainerId}/${booking.chatId}`);
+      } else {
+        navigate(`/chat/${booking.trainerId}`);
+      }
+    } catch (error) {
+      console.error("Error fetching chat ID:", error);
+      navigate(`/chat/${booking.trainerId}`);
+    }
+  };
 
   const handleCancelBooking = async () => {
     try {
@@ -236,10 +252,19 @@ const BookingDetails = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-indigo-500 text-[10px] font-black uppercase tracking-[0.3em] mb-3">
-                <ShieldCheck size={14} />
-                SECURE BOOKING ID: {booking.bookingId.slice(-12)}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-indigo-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck size={14} />
+                  BOOKING ID: {booking.bookingId.slice(-12)}
+                </div>
+                {booking.payment?.paymentId && (
+                  <div className="flex items-center gap-1.5 border-l border-gray-200 pl-6 text-gray-400">
+                    <CreditCard size={14} className="text-gray-400" />
+                    PAYMENT ID: {booking.payment.paymentId.slice(-12)}
+                  </div>
+                )}
               </div>
+
               <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-6">
                 {booking.bookedProgram}
               </h1>
@@ -338,8 +363,8 @@ const BookingDetails = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => console.log("chat")}
-                  className="px-6 py-4 bg-red-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                  onClick={handleMessageClick}
+                  className="px-6 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all flex items-center gap-2"
                 >
                   <MessageSquare size={18} /> Chat with Trainer
                 </button>
@@ -358,6 +383,7 @@ const BookingDetails = () => {
           </div>
 
 
+          {/* Right hand Panel - Payments Section */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-gray-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl"></div>
@@ -374,14 +400,28 @@ const BookingDetails = () => {
                   <span className="text-gray-400 font-bold">Platform fee</span>
                   <span className="font-mono text-emerald-400 font-black">INCLUDED</span>
                 </div>
+
+                {/* Dynamically integrated comprehensive Payment ID & details section */}
+                {booking.payment?.paymentId && (
+                  <div className="border-t border-gray-800 pt-4 flex flex-col gap-1 text-xs">
+                    <span className="text-gray-500 text-[9px] font-black uppercase tracking-wider">Transaction Reference</span>
+                    <span className="font-mono text-gray-300 break-all select-all font-medium bg-white/5 px-3 py-2 rounded-xl border border-white/5">
+                      {booking.payment.paymentId}
+                    </span>
+                  </div>
+                )}
+
                 <div className="border-t border-gray-800 my-6 pt-6 flex justify-between items-end">
                   <div>
                     <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Total Paid</p>
                     <span className="text-4xl font-black font-mono tracking-tighter">₹{booking.totalAmount}</span>
                   </div>
                   <div className="text-right">
-                    <span className={`text-[8px] font-black px-2 py-1 rounded bg-indigo-500/20 text-indigo-300 uppercase tracking-tighter`}>
-                      {booking.payment?.status}
+                    <span className={`text-[8px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider ${booking.payment?.status?.toLowerCase() === 'completed' || booking.payment?.status?.toLowerCase() === 'captured'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                      }`}>
+                      {booking.payment?.status || 'Paid'}
                     </span>
                   </div>
                 </div>
@@ -393,7 +433,7 @@ const BookingDetails = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Paid via</p>
-                  <p className="text-xs font-bold text-gray-200">{booking.payment?.method || 'Secure Payment'}</p>
+                  <p className="text-xs font-bold text-gray-200">{booking.payment?.method || 'Secure Gateway'}</p>
                 </div>
               </div>
             </div>

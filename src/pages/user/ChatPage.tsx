@@ -16,13 +16,34 @@ const ChatPage = () => {
   const [fetchingTrainer, setFetchingTrainer] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedFile, setSelectedFile] = useState<any>(null);
-  const { messages, sendMessage, loading } = useChat(chatId, trainerId);
+  const { messages, sendMessage, loading } = useChat(
+    chatId,
+    trainerId,
+    "",
+    (newChatId) => {
+      navigate(`/chat/${trainerId}/${newChatId}`, { replace: true });
+    }
+  );
   const [isUploading, setIsUploading] = useState(false);
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    const clearInitialUnreadCount = async () => {
+      if (!chatId) return;
+
+      try {
+        await ChatService.markAsRead('user', chatId);
+      } catch (err) {
+        console.error("Failed to clear initial unread count:", err);
+      }
+    };
+
+    clearInitialUnreadCount();
+  }, [chatId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -152,10 +173,10 @@ const ChatPage = () => {
             ) : (
               <>
                 {messages.map((msg, index) => {
-                  const isMe = msg.sender !== trainerId;
+                  const isMe = msg.senderId !== trainerId;
 
-                  const currentDate = FormatDate(msg.time || msg.date);
-                  const previousDate = index > 0 ? FormatDate(messages[index - 1].date) : null;
+                  const currentDate = FormatDate(msg.createdAt);
+                  const previousDate = index > 0 ? FormatDate(messages[index - 1].createdAt) : null;
                   const showDateBadge = currentDate !== previousDate;
 
                   return (
@@ -249,8 +270,8 @@ const ChatPage = () => {
 
                             <div className={`flex justify-end items-center gap-1 mt-1 pb-0.5 pr-1 ${msg.file ? 'px-1' : ''}`}>
                               <span className="text-[10px] text-slate-500/80 font-medium">
-                                {(msg.date || msg.time)
-                                  ? new Date(msg.date || msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                {msg.createdAt
+                                  ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                   : "Just now"}
                               </span>
                             </div>
