@@ -23,7 +23,7 @@ const TrainerListing = () => {
     gender: "",
     language: "",
     programId: "",
-    sort: "rating",
+    sort: "",
     startPrice: 0,
     endPrice: 3000
   });
@@ -159,91 +159,166 @@ const TrainerListing = () => {
 
       <div className="max-w-7xl mx-auto px-6 -mt-10">
 
-        <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-[200px] relative">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder="Search by name or specialty..."
-            />
-          </div>
+        <div className="bg-white p-5 rounded-2xl shadow-xl border border-gray-100">
+          <div className="flex flex-wrap items-end gap-5">
 
-          <div className="flex flex-wrap gap-3">
-            {[
-              { label: "Gender", key: "gender", options: ["male", "female"] },
-              { label: "Programs", key: "programId", options: [...programs] },
-            ].map((item) => (
-              <div key={item.key} className="relative group">
-                <select
-                  onChange={(e) => setFilters({ ...filters, [item.key]: e.target.value })}
-                  className="appearance-none pl-4 pr-10 py-3 bg-gray-50 border-none rounded-xl font-medium text-gray-700 cursor-pointer focus:ring-2 focus:ring-red-500 transition-all"
-                >
-                  <option value="">{item.label}</option>
-                  {item.options.map((opt: any) => {
-                    if (item.key === "programId") {
-                      return (
-                        <option key={opt.programId} value={opt.programId}>
-                          {opt.name}
-                        </option>
-                      );
-                    }
-                    return (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    );
-                  })}
-                </select>
-                <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+      
+            <div className="flex-1 min-w-[220px]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                Search Trainers
+              </label>
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search by name or specialty..."
+              />
+            </div>
 
-              </div>
-            ))}
-
-            <div className="relative">
-              <select
-                onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
-                className="appearance-none pl-4 pr-10 py-3 bg-gray-50 border-none rounded-xl font-medium text-gray-700 cursor-pointer focus:ring-2 focus:ring-red-500 transition-all"
+        
+            <div className="w-full sm:w-[150px]">
+              <label
+                htmlFor="gender"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2"
               >
-                <option value="rating">Rating</option>
-                <option value="exp">Experience</option>
-              </select>
-              <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+                Gender
+              </label>
 
+              <div className="relative">
+                <select
+                  id="gender"
+                  value={filters.gender}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      gender: e.target.value,
+                    }))
+                  }
+                  className="appearance-none w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                >
+                  <option value="">All Genders</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+
+                <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+              </div>
             </div>
 
-          </div>
-          <div className="flex flex-col gap-2 w-[300px]">
-            <div className="flex justify-between items-center px-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Price Range</span>
-              <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">₹{startPrice} - ₹{endPrice}</span>
+            <div className="w-full sm:w-[180px]">
+              <label
+                htmlFor="programId"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2"
+              >
+                Training Program
+              </label>
+
+              <div className="relative">
+                <select
+                  id="programId"
+                  value={filters.programId}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      programId: e.target.value,
+                    }))
+                  }
+                  className="appearance-none w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                >
+                  <option value="">All Programs</option>
+
+                  {programs.map((program) => (
+                    <option key={program.programId} value={program.programId}>
+                      {program.name}
+                    </option>
+                  ))}
+                </select>
+
+                <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+              </div>
             </div>
 
-            <div
-              className="w-full h-2 bg-slate-100 border border-slate-200 rounded-full relative flex items-center"
-              ref={priceFilterDivRef}
-            >
-              <div
-                className="absolute h-full bg-blue-500 rounded-full"
-                style={{
-                  left: `${priceRangeLeftPercent}%`,
-                  right: `${100 - priceRangeRightPercent}%`
-                }}
-              />
+            <div className="w-full sm:w-[175px]">
+              <label
+                htmlFor="sortBy"
+                className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2"
+              >
+                Sort By
+              </label>
 
-              <div
-                className="absolute -translate-x-1/2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform select-none"
-                style={{ left: `${priceRangeLeftPercent}%` }}
-                onMouseDown={handleLeftMouseDown}
-              />
+              <div className="relative">
+                <select
+                  id="sortBy"
+                  value={filters.sort}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      sort: e.target.value,
+                    }))
+                  }
+                  className="appearance-none w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                >
+                  <option value="">Relevance</option>
+                  <option value="rating">Highest Rated</option>
+                  <option value="exp">Most Experienced</option>
+                </select>
 
-              <div
-                className="absolute -translate-x-1/2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform select-none"
-                style={{ left: `${priceRangeRightPercent}%` }}
-                onMouseDown={handleRightMouseDown}
-              />
+                <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+              </div>
             </div>
+
+        
+            <div className="w-full sm:w-[260px] flex flex-col gap-3">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Price per Session
+                </label>
+
+                <span className="text-xs font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg">
+                  ₹{startPrice} - ₹{endPrice}
+                </span>
+              </div>
+
+              <div
+                className="w-full h-2 bg-slate-100 border border-slate-200 rounded-full relative flex items-center cursor-pointer"
+                ref={priceFilterDivRef}
+              >
+                <div
+                  className="absolute h-full bg-red-500 rounded-full"
+                  style={{
+                    left: `${priceRangeLeftPercent}%`,
+                    right: `${100 - priceRangeRightPercent}%`,
+                  }}
+                />
+
+                <div
+                  role="slider"
+                  aria-label="Minimum price per session"
+                  aria-valuemin={0}
+                  aria-valuemax={endPrice}
+                  aria-valuenow={startPrice}
+                  tabIndex={0}
+                  className="absolute -translate-x-1/2 w-4 h-4 bg-white border-2 border-red-500 rounded-full shadow-md cursor-grab hover:scale-110 transition-transform z-10"
+                  style={{ left: `${priceRangeLeftPercent}%` }}
+                  onMouseDown={handleLeftMouseDown}
+                />
+
+                <div
+                  role="slider"
+                  aria-label="Maximum price per session"
+                  aria-valuemin={startPrice}
+                  aria-valuemax={maxLimit}
+                  aria-valuenow={endPrice}
+                  tabIndex={0}
+                  className="absolute -translate-x-1/2 w-4 h-4 bg-white border-2 border-red-500 rounded-full shadow-md cursor-grab hover:scale-110 transition-transform z-10"
+                  style={{ left: `${priceRangeRightPercent}%` }}
+                  onMouseDown={handleRightMouseDown}
+                />
+              </div>
+            </div>
+
           </div>
         </div>
+
 
 
         <div className="py-12">
