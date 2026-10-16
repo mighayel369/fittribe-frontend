@@ -45,6 +45,85 @@ const TrainerHome = () => {
     return days;
   }, []);
 
+  const TRAINER_BOOKING_ACTIONS = {
+    booking: {
+      accept: (id: string) =>
+        TrainerBookingService.acceptBooking(id),
+      reject: (id: string, reason: string) =>
+        TrainerBookingService.rejectBooking(id, reason),
+    },
+    reschedule: {
+      accept: (id: string) =>
+        TrainerBookingService.approveReschedule(id),
+      reject: (id: string, reason: string) =>
+        TrainerBookingService.rejectReschedule(id, reason),
+    },
+  };
+
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [selectedActionBookingId, setSelectedActionBookingId] = useState<string | null>(null);
+
+
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
+  const [action, setAction] = useState<{
+    type: "accept" | "reject";
+    context: "booking" | "reschedule";
+  } | null>(null);
+
+  const triggerAction = (
+    bookingId: string,
+    type: "accept" | "reject",
+    context: "booking" | "reschedule"
+  ) => {
+    setSelectedActionBookingId(bookingId);
+    setAction({ type, context });
+    setShowActionModal(true);
+  };
+
+  const handleConfirmAction = async (reason?: string) => {
+    if (!action || !selectedActionBookingId) return;
+
+    if (action.type === "reject" && (!reason || reason.trim().length < 5)) {
+      setToast({
+        message: "Please provide a valid reason (at least 5 characters).",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      setIsActionLoading(true);
+
+      const serviceFn = TRAINER_BOOKING_ACTIONS[action.context][action.type];
+
+      const response = await serviceFn(
+        selectedActionBookingId,
+        reason ?? ""
+      );
+
+      if (response.success) {
+        setToast({
+          message: response.message || "Action completed successfully",
+          type: "success",
+        });
+
+        setShowActionModal(false);
+        setSelectedActionBookingId(null);
+        setAction(null);
+
+        await loadInitialDashboard();
+      }
+    } catch (error: any) {
+      setToast({
+        message: error.message || "Action failed",
+        type: "error",
+      });
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     loadInitialDashboard();
@@ -162,8 +241,41 @@ const TrainerHome = () => {
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4">
-                      <button className="flex-1 py-1.5 bg-white text-slate-500 border border-slate-200 rounded-lg text-[9px] font-bold uppercase hover:bg-slate-100">Decline</button>
-                      <button className="flex-1 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-bold uppercase hover:bg-rose-600">Approve</button>
+                      <button
+                        disabled={isActionLoading}
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          triggerAction(
+                            action.bookingId,
+                            "reject",
+                            action.type.toLowerCase().includes("reschedule")
+                              ? "reschedule"
+                              : "booking"
+                          );
+                        }}
+                        className="flex-1 py-1.5 bg-white text-slate-500 border border-slate-200 rounded-lg text-[9px] font-bold uppercase hover:bg-slate-100 disabled:opacity-50"
+                      >
+                        Decline
+                      </button>
+
+                      <button
+                        disabled={isActionLoading}
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          triggerAction(
+                            action.bookingId,
+                            "accept",
+                            action.type.toLowerCase().includes("reschedule")
+                              ? "reschedule"
+                              : "booking"
+                          );
+                        }}
+                        className="flex-1 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-bold uppercase hover:bg-rose-600 disabled:opacity-50"
+                      >
+                        Approve
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -373,6 +485,24 @@ const TrainerHome = () => {
           onConfirm={handleConfirmComplete}
           title="Complete Session"
           message="Are you sure this training session is finished? This will update the client's record and finalize your session earnings."
+        />
+
+        <Modal
+          isVisible={showActionModal}
+          onCancel={() => {
+            setShowActionModal(false);
+            setSelectedActionBookingId(null);
+            setAction(null);
+          }}
+          onConfirm={handleConfirmAction}
+          title={
+            action?.type === "reject"
+              ? "Decline Request"
+              : "Approve Request"
+          }
+          message={`Are you sure you want to ${action?.type === "reject" ? "decline" : "approve"
+            } this ${action?.context === "reschedule" ? "reschedule" : "booking"} request?`}
+          showReasonInput={action?.type === "reject"}
         />
       </main>
     </div>
